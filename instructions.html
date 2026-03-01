@@ -74,8 +74,8 @@ body{font-family:'Inter',-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;
 .slide-track{display:flex;align-items:flex-start;transition:transform .4s cubic-bezier(.4,0,.2,1);will-change:transform}
 .slide-track .step-card{width:100%;min-width:100%;flex-shrink:0;margin:0}
 
-/* Nav buttons — sticky at bottom */
-.slide-nav{display:flex;justify-content:center;gap:10px;position:sticky;bottom:0;padding:.6rem 1rem;background:rgba(10,14,26,0.95);backdrop-filter:blur(12px);border-top:1px solid var(--border);margin:0 -1rem;z-index:50}
+/* Nav buttons — normal flow on desktop, sticky on mobile */
+.slide-nav{display:flex;justify-content:center;gap:10px;padding:.75rem 1rem;margin:.5rem 0 0}
 .nav-btn{display:flex;align-items:center;gap:6px;padding:12px 24px;border:1px solid var(--border);background:var(--card);color:var(--text);font-size:.9rem;font-weight:700;border-radius:12px;cursor:pointer;transition:all .2s;font-family:inherit;min-width:110px;justify-content:center}
 .nav-btn:hover{background:var(--surface);border-color:var(--dim)}
 .nav-btn:disabled{opacity:.3;cursor:not-allowed}
@@ -198,6 +198,7 @@ footer a{color:var(--teal);text-decoration:none}
   .progress-label{font-size:.65rem}
   .bottom-cta{padding:1.25rem .75rem;margin:1rem 0 .5rem}
   .bottom-cta h2{font-size:1.1rem}
+  .slide-nav{position:sticky;bottom:0;background:rgba(10,14,26,0.95);backdrop-filter:blur(12px);border-top:1px solid var(--border);margin:0 -.75rem;padding:.5rem .75rem;z-index:50}
   .nav-btn{padding:10px 18px;font-size:.85rem;min-width:90px}
   .lab-cta{padding:.5rem .7rem;gap:8px}
   .lab-cta-text{font-size:.78rem;min-width:120px}
