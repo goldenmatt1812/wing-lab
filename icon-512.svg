@@ -1,0 +1,21 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 192 192" width="192" height="192">
+  <rect width="192" height="192" rx="32" fill="#0a0e1a"/>
+  <!-- Left wing -->
+  <path d="M96 96 Q40 30 25 70 Q15 100 50 120 Q70 130 96 96Z" fill="#00843D" opacity="0.9"/>
+  <path d="M96 96 Q60 110 45 140 Q38 160 65 155 Q85 148 96 96Z" fill="#0057B8" opacity="0.85"/>
+  <!-- Right wing -->
+  <path d="M96 96 Q152 30 167 70 Q177 100 142 120 Q122 130 96 96Z" fill="#00843D" opacity="0.9"/>
+  <path d="M96 96 Q132 110 147 140 Q154 160 127 155 Q107 148 96 96Z" fill="#0057B8" opacity="0.85"/>
+  <!-- Body -->
+  <ellipse cx="96" cy="96" rx="4" ry="18" fill="#FFCD00"/>
+  <!-- Antennae -->
+  <path d="M94 80 Q85 55 75 48" stroke="#FFCD00" stroke-width="2" fill="none" stroke-linecap="round"/>
+  <path d="M98 80 Q107 55 117 48" stroke="#FFCD00" stroke-width="2" fill="none" stroke-linecap="round"/>
+  <circle cx="75" cy="48" r="3" fill="#FFCD00"/>
+  <circle cx="117" cy="48" r="3" fill="#FFCD00"/>
+  <!-- Wing details -->
+  <circle cx="70" cy="85" r="8" fill="rgba(255,205,0,0.3)"/>
+  <circle cx="122" cy="85" r="8" fill="rgba(255,205,0,0.3)"/>
+  <circle cx="60" cy="130" r="5" fill="rgba(255,205,0,0.2)"/>
+  <circle cx="132" cy="130" r="5" fill="rgba(255,205,0,0.2)"/>
+</svg>

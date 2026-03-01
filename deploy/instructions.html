@@ -1,0 +1,803 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="theme-color" content="#00843D">
+  <meta name="mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+  <link rel="icon" type="image/svg+xml" href="/icon-192.svg">
+  <link rel="apple-touch-icon" href="/icon-192.svg">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700;800;900&display=swap" rel="stylesheet">
+  <title>Build Guide — Wing Lab</title>
+  <style>
+:root {
+  --bg: #0a0e1a;
+  --card: #111827;
+  --surface: #1a2236;
+  --border: #2a3450;
+  --text: #e2e8f0;
+  --dim: #8892a8;
+  --bright: #f8fafc;
+  --green: #00843D;
+  --blue: #0057B8;
+  --teal: #0092BC;
+  --gold: #c4a469;
+  --gold-lt: #e8c98e;
+  --mint: #34d399;
+  --yellow: #fbbf24;
+  --orange: #fb923c;
+  --red: #f87171;
+}
+*{margin:0;padding:0;box-sizing:border-box}
+body{font-family:'Inter',-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;background:var(--bg);color:var(--text);line-height:1.65;min-height:100vh;font-size:16px;overflow-x:hidden}
+
+/* Nav */
+.nav{position:sticky;top:0;z-index:100;background:rgba(10,14,26,0.95);backdrop-filter:blur(16px);border-bottom:1px solid var(--border);padding:12px 1.5rem;display:flex;align-items:center;justify-content:space-between}
+.nav a{color:var(--teal);font-size:1rem;font-weight:700;text-decoration:none;padding:8px 18px;border-radius:10px;border:1px solid var(--border);background:rgba(0,146,188,0.06);transition:all .2s}
+.nav a:hover{background:rgba(0,146,188,0.15);border-color:var(--teal)}
+.nav-label{font-size:.85rem;color:var(--dim);font-weight:600}
+
+/* Hero */
+.hero{text-align:center;padding:2.5rem 1.5rem 1.5rem;position:relative}
+.hero::before{content:'';position:absolute;top:0;left:50%;transform:translateX(-50%);width:100%;max-width:900px;height:200px;background:radial-gradient(ellipse,rgba(196,164,105,0.06) 0%,transparent 70%);pointer-events:none}
+.hero-icon{font-size:3.5rem;display:block;margin-bottom:.75rem;animation:bob 3s ease-in-out infinite}
+@keyframes bob{0%,100%{transform:translateY(0)}50%{transform:translateY(-8px)}}
+.badge{display:inline-block;font-size:.65rem;font-weight:700;letter-spacing:.2em;text-transform:uppercase;color:var(--gold);border:1px solid rgba(196,164,105,0.3);padding:4px 14px;border-radius:20px;margin-bottom:.75rem;background:rgba(196,164,105,0.06)}
+.hero h1{font-size:2.2rem;font-weight:900;letter-spacing:-.02em;background:linear-gradient(135deg,var(--green),var(--teal) 40%,var(--blue) 70%,var(--gold-lt));-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text;line-height:1.15;margin-bottom:.5rem}
+.hero-sub{font-size:1rem;color:var(--dim);max-width:540px;margin:0 auto;line-height:1.7}
+
+/* Container */
+.wrap{max-width:760px;margin:0 auto;padding:0 1.5rem 4rem}
+
+/* View toggle */
+.view-toggle{display:flex;justify-content:center;gap:8px;margin:1.5rem 0}
+.view-btn{padding:8px 20px;border:1px solid var(--border);background:var(--card);color:var(--dim);font-size:.85rem;font-weight:700;border-radius:10px;cursor:pointer;transition:all .2s;font-family:inherit}
+.view-btn.active{background:linear-gradient(135deg,var(--green),var(--teal));color:#fff;border-color:transparent;box-shadow:0 2px 12px rgba(0,132,61,0.3)}
+
+/* Progress bar (linear) */
+.progress-wrap{margin:1rem 0 .75rem;position:relative}
+.progress-track{height:6px;background:var(--surface);border-radius:3px;overflow:hidden}
+.progress-fill{height:100%;background:linear-gradient(90deg,var(--green),var(--teal),var(--gold));border-radius:3px;transition:width .4s cubic-bezier(.4,0,.2,1)}
+.progress-label{text-align:center;font-size:.8rem;color:var(--dim);font-weight:600;margin-top:.4rem}
+
+/* Dots (below progress bar) */
+.progress-dots{display:flex;justify-content:center;gap:6px;margin:.5rem 0}
+.dot{width:10px;height:10px;border-radius:50%;background:var(--border);cursor:pointer;transition:all .25s}
+.dot.active{background:var(--gold);transform:scale(1.3);box-shadow:0 0 8px rgba(196,164,105,0.4)}
+.dot.visited{background:var(--dim)}
+
+/* === SLIDE VIEW === */
+.slide-container{position:relative;overflow:hidden;width:100%}
+.slide-track{display:flex;transition:transform .4s cubic-bezier(.4,0,.2,1);will-change:transform}
+.slide-track .step-card{width:100%;min-width:100%;flex-shrink:0;padding:2rem;margin:0}
+
+/* Nav buttons */
+.slide-nav{display:flex;justify-content:center;gap:12px;margin:1rem 0}
+.nav-btn{display:flex;align-items:center;gap:8px;padding:14px 28px;border:1px solid var(--border);background:var(--card);color:var(--text);font-size:1rem;font-weight:700;border-radius:14px;cursor:pointer;transition:all .2s;font-family:inherit;min-width:120px;justify-content:center}
+.nav-btn:hover{background:var(--surface);border-color:var(--dim)}
+.nav-btn:disabled{opacity:.3;cursor:not-allowed}
+.nav-btn.primary{background:linear-gradient(135deg,var(--green),var(--teal));border-color:transparent;color:#fff;box-shadow:0 3px 14px rgba(0,132,61,0.2)}
+.nav-btn.primary:hover{transform:translateY(-1px);box-shadow:0 5px 20px rgba(0,132,61,0.3)}
+
+/* === SHOW ALL VIEW === */
+body.show-all .slide-container{overflow:visible}
+body.show-all .slide-track{display:block}
+body.show-all .slide-track .step-card{min-width:auto;width:auto;margin-bottom:1.5rem}
+body.show-all .slide-nav,
+body.show-all .progress-wrap,
+body.show-all .progress-dots{display:none}
+
+/* Step cards */
+.step-card{background:var(--card);border:1px solid var(--border);border-radius:20px;padding:2rem 2rem 1.75rem;position:relative;overflow:hidden}
+.step-card::before{content:'';position:absolute;top:0;left:0;right:0;height:4px;background:linear-gradient(90deg,var(--gold),var(--gold-lt))}
+.step-head{display:flex;align-items:center;gap:14px;margin-bottom:.75rem}
+.step-num{width:48px;height:48px;border-radius:50%;background:linear-gradient(135deg,var(--gold),var(--gold-lt));display:flex;align-items:center;justify-content:center;font-size:1.2rem;font-weight:900;color:var(--bg);flex-shrink:0;box-shadow:0 3px 12px rgba(196,164,105,0.25)}
+.step-head h3{font-size:1.2rem;font-weight:800;color:var(--bright)}
+.step-illust{font-size:3.5rem;text-align:center;padding:.75rem 0;display:block}
+.step-body{font-size:1rem;line-height:1.8;color:var(--text)}
+.step-body ul{list-style:none;padding:0;margin:.5rem 0}
+.step-body li{padding:.35rem 0;padding-left:1.5rem;position:relative}
+.step-body li::before{content:'';position:absolute;left:0;top:.7rem;width:8px;height:8px;border-radius:50%;background:var(--teal)}
+.step-body strong{color:var(--bright)}
+.step-encourage{margin-top:.75rem;font-size:.9rem;color:var(--mint);font-weight:600;font-style:italic}
+
+/* Learn More button */
+.learn-more-btn{display:inline-flex;align-items:center;gap:6px;margin-top:1rem;padding:8px 18px;border:1px solid var(--border);background:rgba(0,146,188,0.06);color:var(--teal);font-size:.85rem;font-weight:700;border-radius:10px;cursor:pointer;transition:all .2s;font-family:inherit}
+.learn-more-btn:hover{background:rgba(0,146,188,0.15);border-color:var(--teal)}
+
+/* Wing Lab callout (compact) */
+.lab-cta{margin-top:.75rem;padding:.85rem 1rem;background:linear-gradient(135deg,rgba(0,146,188,0.08),rgba(0,87,184,0.06));border:1px solid rgba(0,146,188,0.25);border-radius:12px;display:flex;align-items:center;gap:12px;flex-wrap:wrap}
+.lab-cta-text{font-size:.88rem;color:var(--dim);flex:1;min-width:180px}
+.lab-cta-text strong{color:var(--teal)}
+.lab-link{display:inline-flex;align-items:center;gap:6px;padding:8px 16px;background:linear-gradient(135deg,var(--green),var(--teal));color:#fff;font-size:.85rem;font-weight:700;border-radius:10px;text-decoration:none;transition:all .2s;box-shadow:0 2px 10px rgba(0,132,61,0.2);white-space:nowrap;flex-shrink:0}
+.lab-link:hover{transform:translateY(-1px);box-shadow:0 4px 16px rgba(0,132,61,0.3)}
+
+/* Materials button */
+.materials-btn{display:flex;align-items:center;justify-content:center;gap:10px;width:100%;margin-top:1rem;padding:14px 24px;border:2px solid rgba(196,164,105,0.3);background:linear-gradient(135deg,rgba(196,164,105,0.08),rgba(0,146,188,0.05));color:var(--gold-lt);font-size:1rem;font-weight:800;border-radius:14px;cursor:pointer;transition:all .2s;font-family:inherit}
+.materials-btn:hover{background:linear-gradient(135deg,rgba(196,164,105,0.15),rgba(0,146,188,0.1));border-color:rgba(196,164,105,0.5);transform:translateY(-1px)}
+
+/* Detail Modal */
+.detail-overlay{position:fixed;inset:0;z-index:10000;background:rgba(0,0,0,0.65);backdrop-filter:blur(6px);display:none;align-items:center;justify-content:center;padding:1rem}
+.detail-overlay.open{display:flex}
+.detail-modal{background:var(--card);border:1px solid var(--border);border-radius:20px;max-width:560px;width:100%;max-height:80vh;overflow-y:auto;padding:2rem;position:relative;box-shadow:0 20px 60px rgba(0,0,0,0.5)}
+.detail-close{position:absolute;top:12px;right:16px;background:none;border:none;color:var(--dim);font-size:1.5rem;cursor:pointer;padding:4px 8px;border-radius:8px;transition:all .2s}
+.detail-close:hover{color:var(--text);background:var(--surface)}
+.detail-modal h3{font-size:1.15rem;color:var(--gold-lt);margin:0 0 .75rem;font-weight:800}
+.detail-modal p,.detail-modal li{font-size:.92rem;color:var(--dim);line-height:1.75;margin:.4rem 0}
+.detail-modal strong{color:var(--bright)}
+.detail-modal .tip-box{padding:.75rem 1rem;background:rgba(251,191,36,0.05);border:1px solid rgba(251,191,36,0.15);border-radius:10px;margin:.75rem 0;font-size:.88rem}
+.detail-modal .tip-box::before{content:'💡 ';font-size:1rem}
+.detail-modal .big-note{padding:.75rem 1rem;background:rgba(251,146,60,0.06);border:1px solid rgba(251,146,60,0.2);border-radius:10px;margin:.75rem 0;font-size:.88rem;color:var(--dim)}
+.detail-modal .big-note::before{content:'🏗️ Large Builds: ';color:var(--orange);font-weight:800}
+
+/* Materials Modal */
+#materials-overlay{position:fixed;inset:0;z-index:10001;background:rgba(0,0,0,0.7);backdrop-filter:blur(6px);display:none;align-items:flex-start;justify-content:center;padding:1.5rem;overflow-y:auto}
+#materials-overlay.open{display:flex}
+#materials-modal{background:var(--card);border:1px solid var(--border);border-radius:20px;max-width:700px;width:100%;padding:2rem 2.5rem;position:relative;box-shadow:0 24px 80px rgba(0,0,0,0.6);margin:1rem 0}
+.mat-cat{font-size:1.05rem;font-weight:800;color:var(--teal);margin:1.5rem 0 .75rem;padding-left:12px;border-left:3px solid var(--teal)}
+.mat-cat:first-of-type{margin-top:.75rem}
+.mat-grid{display:grid;gap:.75rem}
+.mat{background:var(--surface);border:1px solid var(--border);border-radius:12px;padding:1rem 1.25rem;transition:border-color .2s}
+.mat:hover{border-color:var(--dim)}
+.mat-head{display:flex;align-items:center;gap:10px;margin-bottom:.35rem}
+.mat-head span:first-child{font-size:1.2rem}
+.mat-head strong{font-size:.95rem;color:var(--bright)}
+.mat-head .mat-size{font-size:.72rem;color:var(--dim);font-weight:600;margin-left:auto;white-space:nowrap}
+.mat p{font-size:.88rem;color:var(--dim);line-height:1.65}
+.mat-tags{display:flex;flex-wrap:wrap;gap:5px;margin-top:.5rem}
+.mat-tag{padding:2px 8px;border-radius:5px;font-size:.68rem;font-weight:700;letter-spacing:.02em}
+.mat-tag.pro{background:rgba(52,211,153,0.1);border:1px solid rgba(52,211,153,0.2);color:var(--mint)}
+.mat-tag.con{background:rgba(248,113,113,0.08);border:1px solid rgba(248,113,113,0.15);color:var(--red)}
+.mat-tag.tip{background:rgba(251,191,36,0.08);border:1px solid rgba(251,191,36,0.15);color:var(--yellow)}
+.mat-expand{color:var(--teal);font-size:.78rem;font-weight:700;cursor:pointer;margin-top:.35rem;display:inline-block;border:none;background:none;font-family:inherit;padding:0}
+.mat-detail{max-height:0;overflow:hidden;transition:max-height .3s ease}
+.mat-detail.open{max-height:400px}
+.mat-detail-inner{padding-top:.6rem;font-size:.85rem;color:var(--dim);line-height:1.7;border-top:1px solid var(--border);margin-top:.6rem}
+.mat .rec{display:inline-block;margin-top:.4rem;padding:3px 10px;background:rgba(52,211,153,0.1);border:1px solid rgba(52,211,153,0.2);border-radius:5px;font-size:.72rem;font-weight:700;color:var(--mint)}
+.combo-card{background:linear-gradient(135deg,rgba(196,164,105,0.06),rgba(0,146,188,0.04));border:1px solid rgba(196,164,105,0.2);border-radius:12px;padding:1rem 1.25rem;margin-bottom:.75rem}
+.combo-card h4{font-size:.95rem;font-weight:800;color:var(--gold-lt);margin-bottom:.25rem}
+.combo-card p{font-size:.88rem;color:var(--dim);line-height:1.65}
+
+/* Celebration card (step 10) */
+.celebration-card{text-align:center;background:linear-gradient(135deg,rgba(0,132,61,0.1),rgba(0,87,184,0.08),rgba(196,164,105,0.1));border-color:rgba(196,164,105,0.3)}
+.celebration-card .step-illust{font-size:4rem}
+.celebration-emoji{font-size:2.5rem;margin-top:1rem;animation:bounce 1s ease-in-out infinite}
+@keyframes bounce{0%,100%{transform:translateY(0)}50%{transform:translateY(-10px)}}
+
+/* Bottom CTA */
+.bottom-cta{text-align:center;margin:2.5rem 0 1rem;padding:2.5rem 1.5rem;background:linear-gradient(135deg,rgba(0,132,61,0.08),rgba(0,87,184,0.06),rgba(196,164,105,0.08));border:1px solid rgba(196,164,105,0.2);border-radius:20px}
+.bottom-cta h2{font-size:1.4rem;font-weight:900;color:var(--gold-lt);margin-bottom:.4rem}
+.bottom-cta p{font-size:1rem;color:var(--dim);margin-bottom:1.25rem}
+.big-btn{display:inline-flex;align-items:center;gap:10px;padding:14px 36px;background:linear-gradient(135deg,var(--green),var(--teal));color:#fff;font-size:1.1rem;font-weight:800;border:none;border-radius:14px;text-decoration:none;transition:all .2s;box-shadow:0 4px 20px rgba(0,132,61,0.3)}
+.big-btn:hover{transform:translateY(-2px);box-shadow:0 6px 28px rgba(0,132,61,0.4)}
+
+footer{text-align:center;padding:2rem 1rem;color:var(--dim);font-size:.8rem;border-top:1px solid var(--border)}
+footer a{color:var(--teal);text-decoration:none}
+
+/* Mobile */
+@media(max-width:600px){
+  .hero h1{font-size:1.7rem}
+  .hero-sub{font-size:.92rem}
+  .hero-icon{font-size:2.8rem}
+  .hero{padding:2rem 1rem 1rem}
+  .step-card{padding:1.4rem}
+  .step-head h3{font-size:1.05rem}
+  .step-num{width:40px;height:40px;font-size:1rem}
+  .step-illust{font-size:2.5rem;padding:.5rem 0}
+  .step-body{font-size:.95rem}
+  .wrap{padding:0 1rem 3rem}
+  .bottom-cta{padding:1.75rem 1rem}
+  .bottom-cta h2{font-size:1.2rem}
+  .nav-btn{padding:12px 20px;font-size:.9rem;min-width:100px}
+  #materials-modal{padding:1.5rem}
+  .detail-modal{padding:1.5rem}
+}
+  </style>
+</head>
+<body>
+
+<nav class="nav">
+  <a href="/">&#x2190; Wing Lab</a>
+  <span class="nav-label">Build Guide</span>
+</nav>
+
+<div class="hero">
+  <span class="hero-icon">&#x1F98B;</span>
+  <div class="badge">San Domenico 175th &middot; Roots & Wings</div>
+  <h1>Build a Giant<br>Flapping Butterfly</h1>
+  <p class="hero-sub">10 simple steps. No engineering degree needed. Just follow along and you'll have a gorgeous butterfly flapping at the gala!</p>
+</div>
+
+<div class="wrap">
+
+<!-- VIEW TOGGLE -->
+<div class="view-toggle">
+  <button class="view-btn active" id="btn-slide" onclick="setView('slide')">&#x1F4F1; Step by Step</button>
+  <button class="view-btn" id="btn-all" onclick="setView('all')">&#x1F4DC; Show All</button>
+</div>
+
+<!-- Progress bar -->
+<div class="progress-wrap" id="progress-wrap">
+  <div class="progress-track"><div class="progress-fill" id="progress-fill" style="width:10%"></div></div>
+  <div class="progress-label" id="progress-label">Step 1 of 10</div>
+</div>
+<div class="progress-dots" id="progress-dots"></div>
+
+<!-- SLIDES -->
+<div class="slide-container">
+  <div class="slide-track" id="slide-track">
+
+    <!-- Step 1: Pick Your Size -->
+    <div class="step-card" data-step="1">
+      <div class="step-head"><div class="step-num">1</div><h3>Pick Your Size</h3></div>
+      <div class="step-illust">&#x1F4CF;</div>
+      <div class="step-body">
+        <ul>
+          <li><strong>Go big!</strong> A few 6-8 ft butterflies make way more impact than lots of little ones</li>
+          <li>Small (3 ft) is great for a first try or kids' project</li>
+          <li>Medium (6 ft) and Large (8 ft) look stunning at the gala</li>
+        </ul>
+      </div>
+      <p class="step-encourage">Size picked? Awesome! Everything else follows from here.</p>
+      <div class="lab-cta">
+        <span class="lab-cta-text">&#x1F3AF; Tap a <strong>preset</strong> in Wing Lab to load all the right numbers</span>
+        <a href="/" class="lab-link">Open Wing Lab &#x2192;</a>
+      </div>
+      <button class="learn-more-btn" onclick="showDetail('d1')">&#x1F4A1; Tips & Details</button>
+    </div>
+
+    <!-- Step 2: Pick Your Materials -->
+    <div class="step-card" data-step="2">
+      <div class="step-head"><div class="step-num">2</div><h3>Pick Your Materials</h3></div>
+      <div class="step-illust">&#x1F6D2;</div>
+      <div class="step-body">
+        <p><strong>Our top recommendation for the gala:</strong></p>
+        <ul>
+          <li><strong>Bamboo stakes</strong> for the wing frame (light, strong, cheap)</li>
+          <li><strong>Ripstop nylon</strong> for the wing skin (nearly weightless, gorgeous)</li>
+          <li><strong>Wooden dowel</strong> for the body</li>
+        </ul>
+      </div>
+      <p class="step-encourage">This combo gives you the lightest wings with the most dramatic flap!</p>
+      <button class="materials-btn" onclick="document.getElementById('materials-overlay').classList.add('open')">
+        &#x1F50D; Explore All Materials &mdash; see every option with pros & cons
+      </button>
+      <button class="learn-more-btn" onclick="showDetail('d2')">&#x1F4A1; Shopping Tips</button>
+    </div>
+
+    <!-- Step 3: Build Your Frame -->
+    <div class="step-card" data-step="3">
+      <div class="step-head"><div class="step-num">3</div><h3>Build the Wing Frame</h3></div>
+      <div class="step-illust">&#x1F528;</div>
+      <div class="step-body">
+        <ul>
+          <li><strong>Bend bamboo or wire</strong> into your wing outline shape</li>
+          <li>Add ribs every 15-20 cm so the skin doesn't sag</li>
+          <li>Make <strong>both wings identical</strong> &mdash; lay one on top of the other to check</li>
+        </ul>
+      </div>
+      <p class="step-encourage">Symmetry matters! Take your time matching the pair.</p>
+      <button class="learn-more-btn" onclick="showDetail('d3')">&#x1F4A1; Frame Tips</button>
+    </div>
+
+    <!-- Step 4: Attach the Skin -->
+    <div class="step-card" data-step="4">
+      <div class="step-head"><div class="step-num">4</div><h3>Stretch & Attach Skin</h3></div>
+      <div class="step-illust">&#x1F9F5;</div>
+      <div class="step-body">
+        <ul>
+          <li><strong>Lay fabric over the frame</strong> &mdash; pull gently taut, no wrinkles</li>
+          <li>Hot glue or sew the skin to the frame edges</li>
+          <li>Trim excess, leaving 1 cm overlap</li>
+        </ul>
+      </div>
+      <p class="step-encourage">Don't stress about perfection &mdash; a little character adds charm!</p>
+      <button class="learn-more-btn" onclick="showDetail('d4')">&#x1F4A1; Attachment Tips</button>
+    </div>
+
+    <!-- Step 5: Decorate -->
+    <div class="step-card" data-step="5">
+      <div class="step-head"><div class="step-num">5</div><h3>Decorate!</h3></div>
+      <div class="step-illust">&#x1F3A8;</div>
+      <div class="step-body">
+        <ul>
+          <li>Paint or decorate <strong>before</strong> attaching wings to the body</li>
+          <li>Real butterflies are symmetrical &mdash; match both sides</li>
+          <li>Let paint dry <strong>completely</strong> before moving on</li>
+        </ul>
+      </div>
+      <p class="step-encourage">This is the fun part! Make it yours. &#x1F308;</p>
+      <button class="learn-more-btn" onclick="showDetail('d5')">&#x1F4A1; Decoration Ideas</button>
+    </div>
+
+    <!-- Step 6: Build the Body -->
+    <div class="step-card" data-step="6">
+      <div class="step-head"><div class="step-num">6</div><h3>Build the Body</h3></div>
+      <div class="step-illust">&#x1FAB5;</div>
+      <div class="step-body">
+        <ul>
+          <li>Cut a <strong>dowel or tube</strong> to 15-25 cm</li>
+          <li>Drill a hole through the center for the wing hinge</li>
+          <li>Add a hook or loop at the top for the ceiling string</li>
+        </ul>
+      </div>
+      <p class="step-encourage">The body is just a connector &mdash; keep it simple!</p>
+      <button class="learn-more-btn" onclick="showDetail('d6')">&#x1F4A1; Body Tips</button>
+    </div>
+
+    <!-- Step 7: Attach Wings -->
+    <div class="step-card" data-step="7">
+      <div class="step-head"><div class="step-num">7</div><h3>Attach the Wings</h3></div>
+      <div class="step-illust">&#x1F4CC;</div>
+      <div class="step-body">
+        <ul>
+          <li>Push a <strong>wire or bolt</strong> through both wings and the body hole</li>
+          <li>Wings must <strong>swing freely</strong> &mdash; like a seesaw</li>
+          <li>Test: push one wingtip down. Does it swing smoothly? &#x2705;</li>
+        </ul>
+      </div>
+      <p class="step-encourage">This is THE most important step. Free movement = beautiful flapping!</p>
+      <button class="learn-more-btn" onclick="showDetail('d7')">&#x1F4A1; Hinge Tips</button>
+    </div>
+
+    <!-- Step 8: Get Your Numbers -->
+    <div class="step-card" data-step="8">
+      <div class="step-head"><div class="step-num">8</div><h3>Get Your Numbers</h3></div>
+      <div class="step-illust">&#x1F9EE;</div>
+      <div class="step-body">
+        <ul>
+          <li><strong>Weigh your wings</strong> on a kitchen scale</li>
+          <li><strong>Measure wingspan</strong> (tip to tip) and chord (front to back)</li>
+          <li>Enter numbers in Wing Lab &mdash; it tells you <strong>exactly</strong> how much weight to use</li>
+        </ul>
+      </div>
+      <p class="step-encourage">The calculator does the hard math. Trust it!</p>
+      <div class="lab-cta">
+        <span class="lab-cta-text">&#x1F4F8; Take a photo of your wing &mdash; Wing Lab <strong>auto-measures</strong> everything</span>
+        <a href="/" class="lab-link">Open Wing Lab &#x2192;</a>
+      </div>
+      <button class="learn-more-btn" onclick="showDetail('d8')">&#x1F4A1; Measuring Tips</button>
+    </div>
+
+    <!-- Step 9: String & Weight -->
+    <div class="step-card" data-step="9">
+      <div class="step-head"><div class="step-num">9</div><h3>Add String & Weight</h3></div>
+      <div class="step-illust">&#x2696;&#xFE0F;</div>
+      <div class="step-body">
+        <ul>
+          <li>Tie fishing line to each wing at the <strong>linkage point</strong> (Wing Lab tells you where)</li>
+          <li>Run both strings down through the body to the <strong>pull weight</strong></li>
+          <li>Use the exact weight Wing Lab calculated &mdash; coins, washers, or clay work great</li>
+        </ul>
+      </div>
+      <p class="step-encourage">Almost there! One more step and you'll see it fly!</p>
+      <button class="learn-more-btn" onclick="showDetail('d9')">&#x1F4A1; Rigging Tips</button>
+    </div>
+
+    <!-- Step 10: Hang & Fly! -->
+    <div class="step-card celebration-card" data-step="10">
+      <div class="step-head"><div class="step-num">10</div><h3>Hang It Up & Watch It Fly!</h3></div>
+      <div class="step-illust">&#x1F98B;&#x2728;</div>
+      <div class="step-body">
+        <ul>
+          <li><strong>Hang from the ceiling</strong> with a hook or strong tape</li>
+          <li>Give the weight a <strong>gentle tug</strong> and let go</li>
+          <li>Watch your butterfly <strong>flap beautifully!</strong></li>
+        </ul>
+        <p style="margin-top:.75rem"><strong>Quick fixes if needed:</strong></p>
+        <ul>
+          <li>Barely moves? &#x2192; Add more weight</li>
+          <li>Slams too hard? &#x2192; Remove some weight</li>
+          <li>Too fast? &#x2192; Add paperclips to wingtips</li>
+          <li>Only flaps once? &#x2192; Lengthen the string</li>
+        </ul>
+      </div>
+      <div class="celebration-emoji">&#x1F389;&#x1F98B;&#x1F389;</div>
+      <div class="lab-cta" style="margin-top:1rem">
+        <span class="lab-cta-text">&#x1F3AF; Drag the weight in Wing Lab to <strong>preview your flap</strong> before hanging!</span>
+        <a href="/" class="lab-link">Open Wing Lab &#x2192;</a>
+      </div>
+    </div>
+
+  </div><!-- /slide-track -->
+</div><!-- /slide-container -->
+
+<!-- Slide navigation -->
+<div class="slide-nav">
+  <button class="nav-btn" id="btn-prev" onclick="slideNav(-1)">&#x2190; Back</button>
+  <button class="nav-btn primary" id="btn-next" onclick="slideNav(1)">Next &#x2192;</button>
+</div>
+
+<!-- Bottom CTA -->
+<div class="bottom-cta">
+  <h2>&#x1F98B; You've Got This!</h2>
+  <p>Open Wing Lab to calculate your perfect setup and see your butterfly flap before you even build it.</p>
+  <a href="/" class="big-btn">&#x1F680; Open Wing Lab</a>
+</div>
+
+</div><!-- /wrap -->
+
+<!-- ========== MATERIALS MODAL ========== -->
+<div id="materials-overlay" onclick="if(event.target===this)this.classList.remove('open')">
+  <div id="materials-modal">
+    <button class="detail-close" onclick="document.getElementById('materials-overlay').classList.remove('open')">&times;</button>
+    <h2 style="font-size:1.3rem;color:var(--gold-lt);margin:0 0 .25rem;font-weight:800">&#x1F6D2; Wing Materials Guide</h2>
+    <p style="font-size:.85rem;color:var(--dim);margin-bottom:.5rem">Pick the right material for your size. For large builds, you want a rigid <strong style="color:var(--bright)">frame</strong> + separate <strong style="color:var(--bright)">skin</strong>.</p>
+
+    <!-- Recommended combos -->
+    <div class="combo-card">
+      <h4>&#x2B50; Recommended: 6-8 ft Gala Butterfly</h4>
+      <p><strong>Frame:</strong> Bamboo stakes or fiberglass rods &middot; <strong>Skin:</strong> Ripstop nylon &middot; <strong>Body:</strong> Wooden dowel</p>
+    </div>
+    <div class="combo-card">
+      <h4>&#x1F31F; Budget-Friendly Alternative</h4>
+      <p><strong>Frame:</strong> Wooden dowels &middot; <strong>Skin:</strong> Tissue paper (2 layers) &middot; <strong>Body:</strong> Cardboard tube</p>
+    </div>
+
+    <h3 class="mat-cat">Wing Surfaces (Skin)</h3>
+    <div class="mat-grid">
+      <div class="mat">
+        <div class="mat-head"><span>&#x1FA01;</span><strong>Ripstop Nylon</strong><span class="mat-size">3-8 ft</span></div>
+        <p>The gold standard. Nearly tear-proof, ultralight, stunning colors. Available at fabric stores.</p>
+        <div class="mat-tags">
+          <span class="mat-tag pro">&#x2713; Lightest</span>
+          <span class="mat-tag pro">&#x2713; Tear-proof</span>
+          <span class="mat-tag pro">&#x2713; Beautiful drape</span>
+          <span class="mat-tag tip">Needs frame support</span>
+        </div>
+        <span class="rec">&#x2605; Our Pick for Gala</span>
+      </div>
+      <div class="mat">
+        <div class="mat-head"><span>&#x1F48E;</span><strong>Organza / Sheer Fabric</strong><span class="mat-size">2-6 ft</span></div>
+        <p>Semi-transparent with a magical shimmer. Light passes through beautifully.</p>
+        <div class="mat-tags">
+          <span class="mat-tag pro">&#x2713; Ethereal look</span>
+          <span class="mat-tag pro">&#x2713; Very light</span>
+          <span class="mat-tag con">&#x2717; Tears easily</span>
+        </div>
+      </div>
+      <div class="mat">
+        <div class="mat-head"><span>&#x2728;</span><strong>Mylar / Gift Wrap</strong><span class="mat-size">1-4 ft</span></div>
+        <p>Metallic shimmer, catches light beautifully. Lightweight but crinkles.</p>
+        <div class="mat-tags">
+          <span class="mat-tag pro">&#x2713; Eye-catching</span>
+          <span class="mat-tag pro">&#x2713; Cheap</span>
+          <span class="mat-tag con">&#x2717; Crinkly sound</span>
+        </div>
+      </div>
+      <div class="mat">
+        <div class="mat-head"><span>&#x1F4C4;</span><strong>Tissue Paper (2 layers)</strong><span class="mat-size">1-4 ft</span></div>
+        <p>Cheapest option. Layer 2 sheets for strength. Great for quick builds or kids.</p>
+        <div class="mat-tags">
+          <span class="mat-tag pro">&#x2713; Ultralight</span>
+          <span class="mat-tag pro">&#x2713; $1 per sheet</span>
+          <span class="mat-tag con">&#x2717; Fragile</span>
+        </div>
+      </div>
+      <div class="mat">
+        <div class="mat-head"><span>&#x1F4E6;</span><strong>Tyvek (house wrap)</strong><span class="mat-size">3-8 ft</span></div>
+        <p>Incredibly tough synthetic paper. Holds paint well, easy to cut. Free from construction sites!</p>
+        <div class="mat-tags">
+          <span class="mat-tag pro">&#x2713; Indestructible</span>
+          <span class="mat-tag pro">&#x2713; Paintable</span>
+          <span class="mat-tag tip">Slightly stiffer</span>
+        </div>
+      </div>
+    </div>
+
+    <h3 class="mat-cat">Rigid Panels (small builds without frame)</h3>
+    <div class="mat-grid">
+      <div class="mat">
+        <div class="mat-head"><span>&#x1F7E6;</span><strong>Foam Board</strong><span class="mat-size">1-3 ft</span></div>
+        <p>Dollar store staple. Easy to cut, paint, and decorate. Perfect for small builds.</p>
+        <div class="mat-tags">
+          <span class="mat-tag pro">&#x2713; Easy to cut</span>
+          <span class="mat-tag pro">&#x2713; Cheap ($1-2)</span>
+          <span class="mat-tag con">&#x2717; Dents easily</span>
+        </div>
+      </div>
+      <div class="mat">
+        <div class="mat-head"><span>&#x1F4CB;</span><strong>Coroplast (corrugated plastic)</strong><span class="mat-size">2-4 ft</span></div>
+        <p>Like cardboard but waterproof. Campaign signs are made of this. Strong for its weight.</p>
+        <div class="mat-tags">
+          <span class="mat-tag pro">&#x2713; Waterproof</span>
+          <span class="mat-tag pro">&#x2713; Very light</span>
+          <span class="mat-tag con">&#x2717; Hard to curve</span>
+        </div>
+      </div>
+      <div class="mat">
+        <div class="mat-head"><span>&#x1FAB5;</span><strong>Plywood (1/8" / 3mm)</strong><span class="mat-size">1-3 ft</span></div>
+        <p>Natural wood grain looks elegant. Laser-cut for precision or jigsaw by hand.</p>
+        <div class="mat-tags">
+          <span class="mat-tag pro">&#x2713; Beautiful grain</span>
+          <span class="mat-tag pro">&#x2713; Strong</span>
+          <span class="mat-tag con">&#x2717; Heavy</span>
+          <span class="mat-tag tip">Sand edges smooth!</span>
+        </div>
+      </div>
+    </div>
+
+    <h3 class="mat-cat">Frame / Spar Materials</h3>
+    <div class="mat-grid">
+      <div class="mat">
+        <div class="mat-head"><span>&#x1F38D;</span><strong>Bamboo Stakes</strong><span class="mat-size">3-8 ft</span></div>
+        <p>Garden stakes are perfect wing spars. Strong, flexible, dirt cheap. Bundle 2-3 for the main spar.</p>
+        <div class="mat-tags">
+          <span class="mat-tag pro">&#x2713; Strong & light</span>
+          <span class="mat-tag pro">&#x2713; $2-3 per 6-pack</span>
+          <span class="mat-tag pro">&#x2713; Flexible</span>
+        </div>
+        <span class="rec">&#x2605; Best Frame Material</span>
+      </div>
+      <div class="mat">
+        <div class="mat-head"><span>&#x1FAB5;</span><strong>Wooden Dowels</strong><span class="mat-size">2-5 ft</span></div>
+        <p>Hardware store classic. 6mm (1/4") for ribs, 10mm (3/8") for main spars.</p>
+        <div class="mat-tags">
+          <span class="mat-tag pro">&#x2713; Easy to find</span>
+          <span class="mat-tag pro">&#x2713; Easy to drill</span>
+          <span class="mat-tag con">&#x2717; Doesn't bend</span>
+        </div>
+      </div>
+      <div class="mat">
+        <div class="mat-head"><span>&#x1F3A3;</span><strong>Fiberglass Rods</strong><span class="mat-size">4-8 ft</span></div>
+        <p>Kite-building material. Incredibly light and flexible. Bends into curves without breaking.</p>
+        <div class="mat-tags">
+          <span class="mat-tag pro">&#x2713; Lightest frame</span>
+          <span class="mat-tag pro">&#x2713; Bends perfectly</span>
+          <span class="mat-tag con">&#x2717; Harder to find</span>
+          <span class="mat-tag tip">Kite supply shops</span>
+        </div>
+      </div>
+      <div class="mat">
+        <div class="mat-head"><span>&#x1F527;</span><strong>PVC Pipe (thin wall)</strong><span class="mat-size">4-8 ft</span></div>
+        <p>1/2" PVC bends with a heat gun. Cheap and available everywhere.</p>
+        <div class="mat-tags">
+          <span class="mat-tag pro">&#x2713; Very cheap</span>
+          <span class="mat-tag pro">&#x2713; Easy joins</span>
+          <span class="mat-tag con">&#x2717; Heavier than bamboo</span>
+        </div>
+      </div>
+    </div>
+
+    <div style="text-align:center;margin-top:1.5rem">
+      <button class="nav-btn primary" onclick="document.getElementById('materials-overlay').classList.remove('open')" style="display:inline-flex">Got it! &#x2192; Back to building</button>
+    </div>
+  </div>
+</div>
+
+<!-- ========== DETAIL MODALS ========== -->
+<div class="detail-overlay" id="detail-overlay" onclick="if(event.target===this)this.classList.remove('open')">
+  <div class="detail-modal" id="detail-content"></div>
+</div>
+
+<footer>
+  <p>San Domenico School &middot; 175th Anniversary &middot; Roots & Wings Gala</p>
+  <p style="margin-top:.25rem"><a href="/">&#x2190; Back to Wing Lab</a></p>
+</footer>
+
+<script>
+// ===== DETAIL MODAL CONTENT =====
+const details = {
+  d1: {
+    title: '&#x1F4CF; Size Tips & Details',
+    html: `<p><strong>Wingspan guide:</strong></p>
+<ul>
+<li><strong>Small (3 ft / 91 cm)</strong> &mdash; Good for tables, first builds, kids. Easy to handle.</li>
+<li><strong>Medium (6 ft / 183 cm)</strong> &mdash; Eye-catching from across the room. One person can carry it.</li>
+<li><strong>Large (8 ft / 244 cm)</strong> &mdash; Show-stopper! Needs two people to hang. Maximum gala impact.</li>
+</ul>
+<div class="tip-box">Bigger butterflies actually flap MORE gracefully &mdash; they have more inertia and swing slower. Don't be afraid to go big!</div>
+<div class="big-note">Large builds need a rigid frame (bamboo, dowels). Wings over 60 cm will droop without internal structure.</div>`
+  },
+  d2: {
+    title: '&#x1F6D2; Shopping Tips',
+    html: `<p><strong>Where to buy:</strong></p>
+<ul>
+<li><strong>Bamboo stakes</strong> &mdash; Garden section at Home Depot, Lowe's, or dollar stores</li>
+<li><strong>Ripstop nylon</strong> &mdash; Jo-Ann Fabric, online kite shops, or Amazon</li>
+<li><strong>Dowels</strong> &mdash; Hardware store craft section</li>
+<li><strong>Fishing line</strong> &mdash; Walmart sporting goods (get 10-20 lb test)</li>
+<li><strong>Weights</strong> &mdash; Coins, washers, clay, or fishing sinkers</li>
+</ul>
+<div class="tip-box">Buy 20% more material than you think you need. First cuts rarely come out perfect!</div>`
+  },
+  d3: {
+    title: '&#x1F528; Frame Building Tips',
+    html: `<p><strong>Frame structure for 6-8 ft wings:</strong></p>
+<ul>
+<li><strong>Main spar</strong> &mdash; Runs along the top edge (leading edge). Use the thickest bamboo/dowel.</li>
+<li><strong>Ribs</strong> &mdash; Branch off the main spar every 15-20 cm. Use thinner bamboo.</li>
+<li><strong>Joints</strong> &mdash; Hot glue + wrapping with thread or floral wire. Super strong!</li>
+</ul>
+<div class="tip-box">Shape the frame FIRST, then attach the skin. Much easier than trying to add structure to loose fabric.</div>
+<div class="big-note">For 8 ft builds, bundle 2-3 bamboo stakes together for the main spar (wrap with tape). Single stakes flex too much at that length.</div>`
+  },
+  d4: {
+    title: '&#x1F9F5; Skin Attachment Tips',
+    html: `<p><strong>Method depends on material:</strong></p>
+<ul>
+<li><strong>Ripstop nylon</strong> &mdash; Fold edges over frame, hot glue every 5 cm. Pull gently taut.</li>
+<li><strong>Tissue paper</strong> &mdash; Lay paper over frame, brush with diluted white glue. Wraps around edges naturally.</li>
+<li><strong>Tyvek</strong> &mdash; Staple to frame, trim with scissors. Can also use spray adhesive.</li>
+</ul>
+<div class="tip-box">Work from the center outward. Attach the main spar first, then stretch toward edges. This prevents wrinkles.</div>`
+  },
+  d5: {
+    title: '&#x1F3A8; Decoration Ideas',
+    html: `<p><strong>Techniques that work great:</strong></p>
+<ul>
+<li><strong>Fabric markers</strong> on organza &mdash; draw patterns directly</li>
+<li><strong>Spray paint + stencils</strong> on ripstop &mdash; bold, even coverage</li>
+<li><strong>Acrylic paint</strong> on foam board or Tyvek &mdash; any design you want</li>
+<li><strong>Tissue paper collage</strong> &mdash; layer colored tissue for stained glass effect</li>
+</ul>
+<div class="tip-box">Glitter glue is heavier than you'd expect &mdash; go light! A little goes a long way. Spray fabric wings with clear fabric stiffener after decorating (2 light coats).</div>
+<p><strong>San Domenico colors:</strong> Green (#00843D), Blue (#0057B8), Gold (#FFCD00)</p>`
+  },
+  d6: {
+    title: '&#x1FAB5; Body Construction',
+    html: `<p><strong>Keep it simple!</strong></p>
+<ul>
+<li><strong>Dowel body</strong> &mdash; 3/4" (20mm) diameter, 15-25 cm long. Drill a hole through the center for the wing pivot.</li>
+<li><strong>Ceiling attachment</strong> &mdash; Screw a small eye hook into the top of the dowel.</li>
+<li><strong>Weight attachment</strong> &mdash; Another eye hook or notch at the bottom for the string.</li>
+</ul>
+<div class="tip-box">Wrap in decorative tape or paint it gold/green for the gala. Hot-glue pipe cleaners to the top for antennae!</div>
+<div class="big-note">For 8 ft builds, use a plywood plate (15&times;5 cm) instead of a round dowel. More surface area for mounting wings and distributes stress better.</div>`
+  },
+  d7: {
+    title: '&#x1F4CC; Hinge &mdash; The Critical Step',
+    html: `<p><strong>This is where most builds succeed or fail!</strong></p>
+<ul>
+<li><strong>Pin hinge</strong> &mdash; Wire or nail through wing tabs + body. Add bead spacers if too loose.</li>
+<li><strong>Bolt hinge</strong> &mdash; For large builds. 1/4" bolt through spar + body plate. Nylon bushings = smooth!</li>
+<li><strong>Too tight</strong> = wings won't flap. Too loose = wings wobble sideways.</li>
+</ul>
+<div class="tip-box">The sweet spot: wings swing freely with just a WHISPER of friction. Hold the body in one hand, push a wingtip down gently &mdash; both wings should swing smoothly like a seesaw.</div>
+<p><strong>Test it:</strong> Hold the body, lift one wing 30&deg; and let go. It should swing past horizontal and oscillate 4-5 times before stopping. If it stops after 1-2 swings, there's too much friction.</p>`
+  },
+  d8: {
+    title: '&#x1F9EE; Measuring Tips',
+    html: `<p><strong>What to measure:</strong></p>
+<ul>
+<li><strong>Wingspan</strong> &mdash; Tip to tip when wings are flat. Measure the finished wing, not the material.</li>
+<li><strong>Chord</strong> &mdash; Front edge to back edge at the widest point.</li>
+<li><strong>Wing weight</strong> &mdash; Weigh ONE wing on a kitchen scale. Include frame + skin + decorations.</li>
+<li><strong>Body weight</strong> &mdash; The body piece alone (without wings or weight attached).</li>
+</ul>
+<div class="tip-box">Both wings should weigh within 2-3 grams of each other. Add a small piece of tape to the lighter one if needed!</div>
+<p><strong>Wing Lab shortcut:</strong> Lay your wing flat next to a ruler or credit card (for scale). Take a photo from straight above. Wing Lab's photo analysis can auto-measure everything!</p>`
+  },
+  d9: {
+    title: '&#x1F9F5; String & Weight Rigging',
+    html: `<p><strong>How the linkage works:</strong></p>
+<ul>
+<li>One string goes to each wing at the <strong>linkage point</strong> (Wing Lab tells you the distance from the body &mdash; usually 25-30% of wingspan).</li>
+<li>Both strings run down through the body and connect to the <strong>pull weight</strong>.</li>
+<li>When the weight drops, it pulls both inner wings down, causing the outer wings to tilt UP.</li>
+</ul>
+<div class="tip-box">Use fishing line (monofilament) &mdash; it's nearly invisible and doesn't stretch. 10-20 lb test is plenty.</div>
+<p><strong>Weight ideas:</strong> Stack washers on a bolt, use fishing sinkers, wrap coins in tape, or shape modeling clay. Easy to add/remove for fine-tuning!</p>
+<div class="big-note">Make the string length adjustable! Tie a small loop, thread through, and use a bead as a stopper. This lets you tune the drop distance without re-tying.</div>`
+  }
+};
+
+function showDetail(id) {
+  const d = details[id];
+  if (!d) return;
+  const el = document.getElementById('detail-content');
+  el.innerHTML = '<button class="detail-close" onclick="document.getElementById(\'detail-overlay\').classList.remove(\'open\')">&times;</button>' +
+    '<h3>' + d.title + '</h3>' + d.html;
+  document.getElementById('detail-overlay').classList.add('open');
+}
+
+// ===== SLIDE VIEW LOGIC =====
+let currentStep = 0;
+const totalSteps = 10;
+const visited = new Set([0]);
+
+function initSlider() {
+  const bar = document.getElementById('progress-dots');
+  bar.innerHTML = '';
+  for (let i = 0; i < totalSteps; i++) {
+    const d = document.createElement('span');
+    d.className = 'dot' + (i === 0 ? ' active' : '');
+    d.onclick = () => goToStep(i);
+    bar.appendChild(d);
+  }
+  updateSlider();
+}
+
+function goToStep(idx) {
+  if (idx < 0 || idx >= totalSteps) return;
+  currentStep = idx;
+  visited.add(idx);
+  updateSlider();
+}
+
+function slideNav(dir) {
+  goToStep(currentStep + dir);
+}
+
+function updateSlider() {
+  const track = document.getElementById('slide-track');
+  track.style.transform = 'translateX(-' + (currentStep * 100) + '%)';
+
+  const dots = document.querySelectorAll('.dot');
+  dots.forEach(function(d, i) {
+    d.className = 'dot';
+    if (i === currentStep) d.classList.add('active');
+    else if (visited.has(i)) d.classList.add('visited');
+  });
+
+  // Progress bar
+  var pct = ((currentStep + 1) / totalSteps) * 100;
+  document.getElementById('progress-fill').style.width = pct + '%';
+  document.getElementById('progress-label').textContent = 'Step ' + (currentStep + 1) + ' of ' + totalSteps;
+
+  document.getElementById('btn-prev').disabled = currentStep === 0;
+  var nextBtn = document.getElementById('btn-next');
+  if (currentStep === totalSteps - 1) {
+    nextBtn.innerHTML = '&#x1F389; Done!';
+    nextBtn.disabled = true;
+  } else {
+    nextBtn.innerHTML = 'Next &#x2192;';
+    nextBtn.disabled = false;
+  }
+}
+
+// ===== VIEW TOGGLE =====
+function setView(mode) {
+  var body = document.body;
+  var btnSlide = document.getElementById('btn-slide');
+  var btnAll = document.getElementById('btn-all');
+  if (mode === 'all') {
+    body.classList.add('show-all');
+    btnAll.classList.add('active');
+    btnSlide.classList.remove('active');
+  } else {
+    body.classList.remove('show-all');
+    btnSlide.classList.add('active');
+    btnAll.classList.remove('active');
+    updateSlider();
+  }
+}
+
+// ===== KEYBOARD NAV =====
+document.addEventListener('keydown', function(e) {
+  if (document.body.classList.contains('show-all')) return;
+  // Don't navigate if a modal is open
+  if (document.querySelector('.detail-overlay.open') || document.querySelector('#materials-overlay.open')) return;
+  if (e.key === 'ArrowRight' || e.key === 'ArrowDown') { e.preventDefault(); slideNav(1); }
+  if (e.key === 'ArrowLeft' || e.key === 'ArrowUp') { e.preventDefault(); slideNav(-1); }
+});
+
+// ===== SWIPE NAV =====
+var _tx = 0;
+document.querySelector('.slide-container').addEventListener('touchstart', function(e) {
+  _tx = e.touches[0].clientX;
+}, { passive: true });
+document.querySelector('.slide-container').addEventListener('touchend', function(e) {
+  if (document.body.classList.contains('show-all')) return;
+  var dx = e.changedTouches[0].clientX - _tx;
+  if (Math.abs(dx) > 50) slideNav(dx < 0 ? 1 : -1);
+});
+
+// ===== MATERIAL EXPAND =====
+document.querySelectorAll('.mat-expand').forEach(function(btn) {
+  btn.addEventListener('click', function() {
+    var detail = this.nextElementSibling;
+    if (detail) detail.classList.toggle('open');
+    this.textContent = detail && detail.classList.contains('open') ? '▾ Less' : '▸ More details';
+  });
+});
+
+// Init
+initSlider();
+</script>
+
+</body>
+</html>

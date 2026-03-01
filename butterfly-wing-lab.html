@@ -1,0 +1,2925 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="theme-color" content="#00843D">
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+  <link rel="manifest" href="/manifest.json">
+  <link rel="icon" type="image/svg+xml" href="/icon-192.svg">
+  <link rel="apple-touch-icon" href="/icon-192.svg">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700;800;900&display=swap" rel="stylesheet">
+  <title>Wing Lab — San Domenico 175th · Roots & Wings</title>
+  <style>
+:root {
+  --bg-deep: #0a0e1a;
+  --bg-card: #111827;
+  --bg-surface: #1a2236;
+  --border: #2a3450;
+  --text: #e2e8f0;
+  --text-dim: #8892a8;
+  --text-bright: #f8fafc;
+  --sd-green: #00843D;
+  --sd-blue: #0057B8;
+  --sd-yellow: #FFCD00;
+  --sd-teal: #0092BC;
+  --accent: #0092BC;
+  --accent-glow: rgba(0, 146, 188, 0.3);
+  --gold: #c4a469;
+  --gold-light: #e8c98e;
+  --green: #34d399;
+  --green-dim: rgba(52, 211, 153, 0.15);
+  --yellow: #fbbf24;
+  --yellow-dim: rgba(251, 191, 36, 0.15);
+  --orange: #fb923c;
+  --orange-dim: rgba(251, 146, 60, 0.15);
+  --red: #f87171;
+  --red-dim: rgba(248, 113, 113, 0.15);
+  --purple: #a78bfa;
+}
+*{margin:0;padding:0;box-sizing:border-box}
+body{font-family:'Inter',-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;background:var(--bg-deep);color:var(--text);line-height:1.5;min-height:100vh}
+
+header{text-align:center;padding:2.5rem 1rem 1.5rem;background:linear-gradient(180deg,#12091e 0%,var(--bg-deep) 100%);position:relative;overflow:hidden}
+header::before{content:'';position:absolute;top:-20px;left:50%;transform:translateX(-50%);width:700px;height:250px;background:radial-gradient(ellipse,rgba(196,164,105,0.1) 0%,transparent 70%);pointer-events:none}
+.gala-badge{display:inline-block;font-size:.7rem;font-weight:700;letter-spacing:.18em;text-transform:uppercase;color:var(--gold);border:1px solid rgba(196,164,105,0.3);padding:5px 18px;border-radius:20px;margin-bottom:.75rem;background:rgba(196,164,105,0.06)}
+header h1{font-size:2.8rem;font-weight:800;letter-spacing:-.03em;background:linear-gradient(135deg,var(--sd-green) 0%,var(--sd-teal) 35%,var(--sd-blue) 70%,var(--gold-light) 100%);-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text}
+.subtitle{color:var(--text-dim);font-size:1.05rem;letter-spacing:.08em;margin-top:.25rem}
+.header-desc{color:var(--text-dim);font-size:.85rem;margin-top:.5rem;max-width:560px;margin-left:auto;margin-right:auto;line-height:1.5}
+main{max-width:1200px;margin:0 auto;padding:0 1rem 3rem}
+
+#wing-viz-section{position:relative;margin:1.5rem 0;border-radius:16px;overflow:hidden;border:1px solid var(--border);background:radial-gradient(ellipse at 50% 20%,#131b2e 0%,#090d18 70%)}
+#wingCanvas{display:block;width:100%;height:640px;touch-action:pan-y}
+#anim-controls{position:absolute;bottom:14px;left:50%;transform:translateX(-50%);display:flex;gap:8px}
+#anim-controls button{background:rgba(17,24,39,0.9);border:1px solid var(--border);color:var(--accent);padding:8px 20px;border-radius:10px;font-size:.85rem;font-weight:600;cursor:pointer;backdrop-filter:blur(8px);transition:all .2s}
+#anim-controls button:hover{background:rgba(56,189,248,0.15);border-color:var(--accent);transform:translateY(-1px)}
+#anim-controls button.active{background:var(--accent);color:var(--bg-deep)}
+#canvas-label{position:absolute;top:10px;left:14px;font-size:.7rem;color:var(--text-dim);text-transform:uppercase;letter-spacing:.1em}
+#physics-math-btn{position:absolute;top:10px;right:14px;background:rgba(9,13,24,0.7);border:1px solid var(--border);color:var(--accent);width:32px;height:32px;border-radius:50%;font-size:.9rem;font-weight:700;cursor:pointer;backdrop-filter:blur(6px);transition:all .2s;display:flex;align-items:center;justify-content:center;z-index:10}
+#physics-math-btn:hover{background:rgba(56,189,248,0.2);border-color:var(--accent);transform:scale(1.1)}
+#physics-modal-overlay{position:fixed;inset:0;z-index:10001;background:rgba(0,0,0,0.7);backdrop-filter:blur(6px);display:none;align-items:flex-start;justify-content:center;padding:1.5rem;overflow-y:auto}
+#physics-modal-overlay.open{display:flex}
+#physics-modal{background:var(--bg-card);border:1px solid var(--border);border-radius:20px;max-width:680px;width:100%;max-height:none;padding:2rem 2.5rem;position:relative;box-shadow:0 24px 80px rgba(0,0,0,0.6);margin:1rem 0}
+#physics-modal h3{font-size:1.15rem;color:var(--gold-light);margin:1.5rem 0 .5rem;font-weight:700}
+#physics-modal h3:first-of-type{margin-top:.5rem}
+#physics-modal .eq{font-family:'Cambria Math','Latin Modern Math','STIX Two Math',Georgia,serif;font-size:1.05rem;color:#e2e8f0;background:rgba(56,189,248,0.06);border:1px solid rgba(56,189,248,0.12);border-radius:12px;padding:1rem 1.25rem;margin:.75rem 0;line-height:1.8;overflow-x:auto}
+#physics-modal .eq-label{font-size:.75rem;color:var(--accent);text-transform:uppercase;letter-spacing:.1em;margin-bottom:.25rem;font-family:Inter,system-ui,sans-serif}
+#physics-modal p{font-size:.9rem;color:var(--text-soft);line-height:1.6;margin:.5rem 0}
+#physics-modal .var-def{display:grid;grid-template-columns:auto 1fr;gap:4px 12px;font-size:.85rem;margin:.5rem 0}
+#physics-modal .var-def dt{color:var(--accent);font-family:'Cambria Math',Georgia,serif;font-style:italic;text-align:right}
+#physics-modal .var-def dd{color:var(--text-soft);margin:0}
+#physics-modal-close{position:absolute;top:12px;right:16px;background:none;border:none;color:var(--text-dim);font-size:1.5rem;cursor:pointer;padding:4px 8px;border-radius:8px;transition:all .2s}
+#physics-modal-close:hover{color:var(--text);background:var(--bg-surface)}
+
+/* Auto-calc */
+#auto-calc-section{margin:1.5rem 0;background:linear-gradient(135deg,rgba(196,164,105,0.08),rgba(167,139,250,0.08));border:1px solid rgba(196,164,105,0.25);border-radius:16px;padding:1.5rem 2rem}
+#auto-calc-section h2{font-size:1.2rem;font-weight:700;color:var(--gold-light);margin-bottom:.25rem}
+.auto-desc{font-size:.82rem;color:var(--text-dim);margin-bottom:1rem;line-height:1.4}
+.auto-row{display:grid;grid-template-columns:repeat(auto-fill,minmax(140px,1fr));gap:1rem;align-items:end;margin-bottom:1rem}
+.auto-field{display:flex;flex-direction:column;gap:4px}
+.auto-field span{font-size:.72rem;font-weight:600;color:var(--text-dim);text-transform:uppercase;letter-spacing:.05em}
+.auto-field input,.auto-field select{background:var(--bg-surface);border:1px solid var(--border);color:var(--text-bright);padding:8px 12px;border-radius:8px;font-size:.9rem;width:100%;outline:none;font-weight:600}
+.auto-field input:focus{border-color:var(--gold)}
+.auto-field input::placeholder{color:#4a5a78}
+#autoCalcBtn{grid-column:1/-1;background:linear-gradient(135deg,var(--gold),var(--gold-light));color:var(--bg-deep);border:none;padding:12px 24px;border-radius:10px;font-size:.95rem;font-weight:700;cursor:pointer;transition:transform .15s,box-shadow .15s;white-space:nowrap;width:100%}
+#autoCalcBtn:hover{transform:translateY(-1px);box-shadow:0 4px 16px rgba(196,164,105,0.3)}
+#auto-result{background:var(--bg-card);border:1px solid var(--border);border-radius:10px;padding:1rem 1.25rem;display:none;margin-top:.75rem}
+#auto-result.visible{display:block}
+#auto-result h3{font-size:.85rem;font-weight:700;color:var(--green);margin-bottom:.5rem}
+.auto-result-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(150px,1fr));gap:.75rem}
+.ari{text-align:center;padding:.5rem;background:var(--bg-surface);border-radius:8px;border:2px solid transparent;transition:border-color .3s}
+.ari.highlight{border-color:var(--gold);background:rgba(196,164,105,0.08)}
+.ari .ari-label{font-size:.68rem;color:var(--text-dim);text-transform:uppercase;letter-spacing:.06em;margin-bottom:2px}
+.ari .ari-value{font-size:1.3rem;font-weight:800;color:var(--gold-light)}
+.ari .ari-detail{font-size:.7rem;color:var(--text-dim)}
+
+/* Controls */
+#controls-section{margin:2rem 0}
+#controls-section h2,#dashboard-section h2,#plot-section h2{font-size:1.35rem;font-weight:700;margin-bottom:1rem;color:var(--text-bright)}
+.controls-grid{display:grid;grid-template-columns:repeat(2,1fr);gap:1rem}
+.control-group{background:var(--bg-card);border:1px solid var(--border);border-radius:14px;padding:1.25rem 1.5rem;transition:border-color .3s}
+.control-group:hover{border-color:rgba(56,189,248,0.3)}
+.control-group h3{font-size:.95rem;font-weight:700;margin-bottom:1rem;color:var(--accent)}
+.control-group label{display:block;margin-bottom:1.1rem}
+.control-group label:last-child{margin-bottom:0}
+.label-text{display:block;font-size:.85rem;font-weight:600;color:var(--text)}
+.label-detail{display:block;font-size:.72rem;color:var(--text-dim);margin-bottom:6px;line-height:1.3}
+.slider-row{display:flex;align-items:center;gap:12px}
+.slider-row input[type="range"]{flex:1;-webkit-appearance:none;appearance:none;height:6px;background:var(--bg-surface);border-radius:3px;outline:none;transition:background .2s;touch-action:manipulation}
+.slider-row input[type="range"]:hover{background:#222d45}
+.slider-row input[type="range"]::-webkit-slider-thumb{-webkit-appearance:none;width:20px;height:20px;border-radius:50%;background:var(--thumb-color,var(--accent));cursor:pointer;box-shadow:0 0 10px var(--thumb-glow,var(--accent-glow)),0 2px 6px rgba(0,0,0,0.3);transition:transform .15s,box-shadow .15s,background .3s}
+.slider-row input[type="range"]::-webkit-slider-thumb:hover{transform:scale(1.15)}
+.slider-row input[type="range"]:active::-webkit-slider-thumb{transform:scale(1.25)}
+.slider-row input[type="range"]::-moz-range-thumb{width:20px;height:20px;border-radius:50%;background:var(--thumb-color,var(--accent));cursor:pointer;border:none;transition:background .3s}
+.slider-row output{min-width:72px;text-align:right;font-size:.85rem;font-weight:700;color:var(--accent);font-variant-numeric:tabular-nums}
+.slider-hint{width:22px;font-size:1.1rem;text-align:center;font-weight:900;opacity:1;transition:opacity .3s,color .3s;flex-shrink:0;line-height:1;text-shadow:0 0 6px currentColor}
+.slider-lock{width:28px;height:28px;border:1px solid var(--border);background:transparent;color:var(--text-dim);border-radius:6px;cursor:pointer;font-size:.85rem;flex-shrink:0;display:flex;align-items:center;justify-content:center;transition:all .2s;padding:0}
+.slider-lock:hover{border-color:var(--accent);color:var(--accent)}
+.slider-lock.locked{background:rgba(251,191,36,0.15);border-color:var(--yellow);color:var(--yellow)}
+.slider-row.locked input[type="range"]{opacity:0.35;pointer-events:none}
+.slider-row.locked output{opacity:0.5}
+.slider-row.locked .slider-hint{opacity:0.2}
+#optimize-btn{display:block;width:100%;margin-top:1rem;padding:12px;background:linear-gradient(135deg,rgba(0,146,188,0.15),rgba(167,139,250,0.15));border:1px solid var(--accent);color:var(--accent);border-radius:10px;font-size:.9rem;font-weight:700;cursor:pointer;transition:all .2s}
+#optimize-btn:hover{background:rgba(0,146,188,0.25);transform:translateY(-1px);box-shadow:0 4px 16px rgba(0,146,188,0.2)}
+.slider-row.computed output{color:var(--gold-light);text-shadow:0 0 8px rgba(196,164,105,0.3)}
+.slider-row select{flex:1;background:var(--bg-surface);border:1px solid var(--border);color:var(--text);padding:6px 10px;border-radius:8px;font-size:.85rem;cursor:pointer;outline:none}
+.slider-row select:focus{border-color:var(--accent)}
+
+/* Speedometer Gauge */
+#speedo-section{margin:2rem 0 1rem;text-align:center}
+#speedo-wrap{position:relative;display:inline-block;width:280px;height:170px}
+#speedo-canvas{width:280px;height:170px}
+#speedo-value{position:absolute;bottom:12px;left:50%;transform:translateX(-50%);text-align:center;line-height:1}
+#speedo-num{font-size:2.8rem;font-weight:900;color:var(--text-bright);transition:color .3s;font-variant-numeric:tabular-nums}
+#speedo-label{font-size:.65rem;text-transform:uppercase;letter-spacing:.12em;color:var(--text-dim);margin-top:2px}
+#speedo-msg{font-size:.88rem;font-weight:600;margin-top:6px;min-height:1.3em;transition:color .3s}
+@media(max-width:600px){
+  #speedo-wrap{width:240px;height:150px}
+  #speedo-canvas{width:240px;height:150px}
+  #speedo-num{font-size:2.2rem}
+}
+
+/* Dashboard */
+#dashboard-section{margin:2.5rem 0 1.5rem}
+.dashboard-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:1rem}
+.metric-card{background:var(--bg-card);border:1px solid var(--border);border-radius:14px;padding:1.25rem;text-align:center;transition:border-color .3s,box-shadow .3s,transform .2s}
+.metric-card:hover{transform:translateY(-2px);box-shadow:0 4px 20px rgba(0,0,0,0.3)}
+.metric-card.status-great{border-color:var(--green);box-shadow:0 0 15px var(--green-dim)}
+.metric-card.status-ok{border-color:var(--yellow);box-shadow:0 0 15px var(--yellow-dim)}
+.metric-card.status-warn{border-color:var(--orange);box-shadow:0 0 15px var(--orange-dim)}
+.metric-card.status-bad{border-color:var(--red);box-shadow:0 0 15px var(--red-dim)}
+.metric-icon{font-size:2rem;margin-bottom:.3rem}
+.metric-label{font-size:.72rem;font-weight:700;text-transform:uppercase;letter-spacing:.1em;color:var(--text-dim);margin-bottom:.25rem}
+.metric-value{font-size:1.7rem;font-weight:800;color:var(--text-bright);line-height:1.2}
+.metric-sublabel{font-size:.78rem;color:var(--text-dim);margin-bottom:.5rem}
+.metric-bar-wrap{height:6px;background:var(--bg-surface);border-radius:3px;overflow:hidden;margin-bottom:.6rem}
+.metric-bar{height:100%;border-radius:3px;transition:width .5s cubic-bezier(0.4,0,0.2,1),background .3s;width:0%}
+.metric-explain{font-size:.78rem;color:var(--text-dim);line-height:1.4;min-height:2.5em}
+.math-details{margin-top:.6rem;text-align:left}
+.math-details summary{font-size:.68rem;color:var(--purple);cursor:pointer;text-transform:uppercase;letter-spacing:.08em;font-weight:600;user-select:none}
+.math-details summary:hover{color:var(--accent)}
+.math-content{margin-top:.5rem;font-size:.72rem;font-family:'SF Mono','Fira Code','Consolas',monospace;color:var(--text-dim);line-height:1.7;background:var(--bg-surface);padding:.75rem;border-radius:8px;white-space:pre-wrap;word-break:break-word}
+
+/* Verdict */
+#verdict-section{margin:1.5rem 0 2rem}
+#verdict-box{background:var(--bg-card);border:2px solid var(--border);border-radius:16px;padding:1.75rem 2rem;text-align:center;transition:border-color .4s,box-shadow .4s}
+#verdict-box.verdict-great{border-color:var(--green);box-shadow:0 0 30px var(--green-dim)}
+#verdict-box.verdict-good{border-color:var(--yellow);box-shadow:0 0 30px var(--yellow-dim)}
+#verdict-box.verdict-meh{border-color:var(--orange);box-shadow:0 0 30px var(--orange-dim)}
+#verdict-box.verdict-bad{border-color:var(--red);box-shadow:0 0 30px var(--red-dim)}
+#verdict-icon{font-size:2.8rem;margin-bottom:.4rem}
+#verdict-text{font-size:1.3rem;font-weight:800;color:var(--text-bright);margin-bottom:.6rem}
+#verdict-tips{font-size:.85rem;color:var(--text-dim);line-height:1.6;max-width:650px;margin:0 auto}
+#verdict-tips strong{color:var(--text)}
+
+/* Plot */
+#plot-section{margin:2rem 0}
+#plotCanvas{display:block;width:100%;height:200px;background:var(--bg-card);border:1px solid var(--border);border-radius:14px}
+
+footer{text-align:center;padding:2rem 1rem;color:var(--text-dim);font-size:.75rem;border-top:1px solid var(--border)}
+
+/* Preset buttons */
+#presets-section{margin:1.5rem 0}
+.preset-btn{display:flex;flex-direction:column;align-items:center;gap:4px;padding:18px 16px;background:linear-gradient(135deg,var(--bg-surface),var(--bg-card));border:2px solid var(--border);border-radius:16px;cursor:pointer;transition:all .25s;color:var(--text);min-height:60px}
+.preset-btn:hover{border-color:var(--gold);background:linear-gradient(135deg,rgba(196,164,105,0.08),var(--bg-card));transform:translateY(-2px);box-shadow:0 6px 20px rgba(196,164,105,0.15)}
+.preset-btn:active{transform:translateY(0);box-shadow:none}
+.preset-btn.active{border-color:var(--sd-green);box-shadow:0 0 16px rgba(0,132,61,0.3)}
+.preset-icon{font-size:1.6rem;line-height:1}
+.preset-label{font-size:1.1rem;font-weight:700;color:var(--gold-light)}
+.preset-size{font-size:.78rem;color:var(--text-dim)}
+
+@media(max-width:900px){.controls-grid{grid-template-columns:1fr}.dashboard-grid{grid-template-columns:repeat(2,1fr)}#auto-calc-section{padding:1.25rem 1rem}}
+@media(max-width:600px){
+  header{padding:1.5rem .75rem 1rem}
+  header h1{font-size:1.8rem}
+  .subtitle{font-size:1rem}
+  .header-desc{font-size:.88rem}
+  main{padding:0 .5rem 2rem}
+  section{margin:1rem 0!important}
+  #wingCanvas{height:380px}
+  #auto-calc-section{padding:1rem .75rem}
+  .auto-row{grid-template-columns:1fr 1fr!important;gap:.75rem}
+  #autoCalcBtn{padding:14px;font-size:1.05rem}
+  .control-group{padding:.75rem}
+  .control-group label .label-text{font-size:.92rem}
+  .control-group label .label-detail{font-size:.82rem}
+  .slider-row{gap:8px}
+  .slider-row output{min-width:55px;font-size:.88rem}
+  .slider-row input[type="range"]{height:36px}
+  .slider-row input[type="range"]::-webkit-slider-thumb{width:44px;height:44px}
+  .slider-row input[type="range"]::-moz-range-thumb{width:44px;height:44px}
+  .slider-lock{width:44px;height:44px;font-size:1.1rem;border-radius:10px}
+  .dashboard-grid{grid-template-columns:1fr}
+  .metric-value{font-size:1.6rem}
+  .metric-sublabel{font-size:.82rem}
+  .metric-explain{font-size:.85rem}
+  .auto-field span{font-size:.82rem}
+  .ari .ari-label{font-size:.78rem}
+  .ari .ari-detail{font-size:.78rem}
+  .metric-label{font-size:.82rem}
+  .math-content{font-size:.82rem}
+  #speedo-label{font-size:.75rem}
+  #canvas-label{font-size:.78rem}
+  #openShapeModal{font-size:.82rem;padding:6px 14px;min-height:36px}
+  #plotCanvas{height:160px}
+  #verdict-box{padding:1rem}
+  #verdict-box #verdict-text{font-size:1.05rem}
+  #photo-dropzone{padding:1.25rem}
+  footer{padding:1.5rem .5rem}
+}
+@media(max-width:380px){
+  header h1{font-size:1.5rem}
+  .auto-row{grid-template-columns:1fr!important}
+  .gala-badge{font-size:.6rem;padding:4px 12px}
+}
+@keyframes hintPulse{0%,100%{opacity:1;transform:translateY(0)}50%{opacity:0.6;transform:translateY(4px)}}
+@keyframes guideFlap{0%,100%{transform:rotate(0deg) scaleX(1)}25%{transform:rotate(-8deg) scaleX(0.85)}50%{transform:rotate(0deg) scaleX(1)}75%{transform:rotate(8deg) scaleX(0.85)}}
+.guide-btn{display:inline-flex;align-items:center;gap:8px;margin-top:1rem;padding:12px 28px;background:linear-gradient(135deg,rgba(196,164,105,0.15),rgba(0,146,188,0.12));border:1.5px solid rgba(196,164,105,0.35);color:var(--gold-light);font-size:.9rem;font-weight:700;border-radius:12px;text-decoration:none;transition:all .25s;box-shadow:0 2px 12px rgba(196,164,105,0.1);letter-spacing:.02em}
+.guide-btn:hover{transform:translateY(-2px);box-shadow:0 4px 20px rgba(196,164,105,0.25);border-color:rgba(196,164,105,0.55);background:linear-gradient(135deg,rgba(196,164,105,0.22),rgba(0,146,188,0.18))}
+.guide-btn .gb-fly{display:inline-block;transition:all .3s}
+.guide-btn:hover .gb-fly{animation:guideFlap .6s ease-in-out infinite}
+#loading-overlay{position:fixed;inset:0;z-index:9999;background:var(--bg-deep);display:flex;flex-direction:column;align-items:center;justify-content:center;transition:opacity .5s;font-size:2rem}
+#loading-overlay span{font-size:1rem;color:var(--text-dim);margin-top:1rem;font-weight:600}
+#loading-overlay.fade-out{opacity:0;pointer-events:none}
+
+/* Help Modal */
+#help-modal-overlay{position:fixed;inset:0;z-index:10000;background:rgba(0,0,0,0.6);backdrop-filter:blur(4px);display:none;align-items:center;justify-content:center;padding:1rem}
+#help-modal-overlay.open{display:flex}
+#help-modal{background:var(--bg-card);border:1px solid var(--border);border-radius:20px;max-width:440px;width:100%;max-height:80vh;overflow-y:auto;padding:2rem;position:relative;box-shadow:0 20px 60px rgba(0,0,0,0.5)}
+#help-modal-close{position:absolute;top:12px;right:16px;background:none;border:none;color:var(--text-dim);font-size:1.5rem;cursor:pointer;padding:4px 8px;border-radius:8px;transition:all .2s}
+#help-modal-close:hover{color:var(--text);background:var(--bg-surface)}
+#help-modal h3{font-size:1.2rem;font-weight:800;color:var(--gold-light);margin-bottom:.75rem;padding-right:2rem}
+#help-modal .help-body{font-size:.92rem;color:var(--text);line-height:1.6;margin-bottom:1rem}
+#help-modal .help-tip{background:rgba(0,132,61,0.1);border:1px solid rgba(0,132,61,0.25);border-radius:12px;padding:10px 14px;font-size:.85rem;color:var(--green);line-height:1.5}
+#help-modal .help-tip::before{content:'\uD83D\uDCA1 ';font-size:1rem}
+.help-btn{display:inline-flex;align-items:center;justify-content:center;width:22px;height:22px;border-radius:50%;background:rgba(0,146,188,0.15);border:1px solid rgba(0,146,188,0.3);color:var(--accent);font-size:.7rem;font-weight:700;cursor:pointer;margin-left:6px;transition:all .2s;vertical-align:middle;flex-shrink:0}
+.help-btn:hover{background:rgba(0,146,188,0.3);transform:scale(1.1)}
+@media(max-width:600px){.help-btn{width:28px;height:28px;font-size:.8rem}}
+  </style>
+</head>
+<body>
+  <div id="loading-overlay">&#x1F98B;<span>Loading Wing Lab...</span></div>
+  <header>
+    <div class="gala-badge">San Domenico &middot; 175th Anniversary &middot; Roots & Wings</div>
+    <h1>&#x1F98B; Wing Lab</h1>
+    <p class="subtitle">Design Hanging Butterflies That Flap Beautifully</p>
+    <p class="header-desc">Cut your wings, weigh them, enter what you know &mdash; we'll tell you exactly what weights to add and where, so your butterfly hangs flat and flaps gracefully.</p>
+    <a href="/instructions.html" class="guide-btn"><span class="gb-fly">&#x1F98B;</span> Step-by-Step Build Guide</a>
+  </header>
+
+  <main>
+    <!-- Visualization -->
+    <section id="wing-viz-section">
+      <canvas id="wingCanvas" role="img" aria-label="Interactive butterfly wing simulation — drag the weight to flap"></canvas>
+      <div id="anim-controls">
+        <div id="drag-hint" style="color:var(--gold-light);font-size:1rem;font-weight:600;opacity:1;pointer-events:none;text-align:center;animation:hintPulse 2s ease-in-out infinite">
+          &#11015;&#65039; Pull weight down to flap &mdash; double&#8209;tap for full pull &#11015;&#65039;
+        </div>
+      </div>
+      <div id="canvas-label">Side view &middot; hanging from ceiling</div>
+      <button id="physics-math-btn" title="View the physics equations" onclick="document.getElementById('physics-modal-overlay').classList.add('open')">?</button>
+    </section>
+
+    <!-- Physics Math Modal -->
+    <div id="physics-modal-overlay" onclick="if(event.target===this)this.classList.remove('open')">
+      <div id="physics-modal">
+        <button id="physics-modal-close" onclick="this.parentElement.parentElement.classList.remove('open')">&times;</button>
+        <h2 style="font-size:1.3rem;color:var(--gold-light);margin:0 0 .25rem;font-weight:800">&#x1F9EE; The Physics Behind the Flap</h2>
+        <p style="color:var(--text-dim);font-size:.8rem;margin-bottom:1rem">Real equations &mdash; this is exactly what the simulator computes</p>
+
+        <h3>&#9878;&#65039; Equation of Motion</h3>
+        <p>Each wing pivots at the body. The angular acceleration <em>d&sup2;&theta;/dt&sup2;</em> comes from summing all torques and dividing by the moment of inertia:</p>
+        <div class="eq">
+          <div class="eq-label">Angular acceleration</div>
+          I &middot; &theta;&#776; = &tau;<sub>pendulum</sub> + &tau;<sub>gravity</sub> + &tau;<sub>spring</sub> + &tau;<sub>elastic</sub> + &tau;<sub>friction</sub> + &tau;<sub>air drag</sub> &minus; c &middot; &theta;&#775;
+        </div>
+
+        <h3>&#128270; Torque Terms</h3>
+        <div class="eq">
+          <div class="eq-label">Pull weight pendulum (nonlinear)</div>
+          &tau;<sub>pendulum</sub> = &minus;m<sub>pull</sub> &middot; g &middot; r<sub>link</sub> &middot; sin(&theta;)
+        </div>
+        <div class="eq">
+          <div class="eq-label">Net gravitational bias (string tension vs wing weight)</div>
+          &tau;<sub>gravity</sub> = &tau;<sub>net</sub> &middot; cos(&theta;)<br>
+          <span style="font-size:.85rem;color:var(--text-dim)">where &tau;<sub>net</sub> = T &middot; r<sub>link</sub> &minus; (m<sub>wing</sub> &middot; g &middot; r<sub>cg</sub> + m<sub>tip</sub> &middot; g &middot; L)</span><br>
+          <span style="font-size:.85rem;color:var(--text-dim)">and T = (m<sub>body</sub> + m<sub>pull</sub>) &middot; g / 2 &nbsp; (string tension per wing)</span>
+        </div>
+        <div class="eq">
+          <div class="eq-label">Air drag (quadratic, opposes motion)</div>
+          &tau;<sub>air</sub> = &minus;2 &middot; &frac12;&rho; C<sub>d</sub> A<sub>wing</sub> r<sub>cp</sub> &middot; v &middot; |v|<br>
+          <span style="font-size:.85rem;color:var(--text-dim)">where v = &theta;&#775; &middot; L/2 (tip velocity) and C<sub>d</sub> = 1.2 (flat plate)</span>
+        </div>
+
+        <h3>&#128736;&#65039; Rest Angle</h3>
+        <p>At equilibrium, the pendulum torque and gravitational bias cancel:</p>
+        <div class="eq">
+          <div class="eq-label">Static equilibrium</div>
+          tan(&theta;<sub>rest</sub>) = &tau;<sub>net</sub> / (m<sub>pull</sub> &middot; g &middot; r<sub>link</sub>)
+        </div>
+        <p>When &tau;<sub>net</sub> &gt; 0 (heavy body/pull weight): wings tilt <strong>up</strong> (V-shape).<br>
+        When &tau;<sub>net</sub> &lt; 0 (heavy wings): wings <strong>droop</strong> down.</p>
+
+        <h3>&#9881;&#65039; Moment of Inertia</h3>
+        <div class="eq">
+          <div class="eq-label">Total rotational inertia</div>
+          I = 2(I<sub>wing</sub> + I<sub>tip</sub>) + I<sub>pull</sub><br>
+          <span style="font-size:.85rem;color:var(--text-dim)">I<sub>wing</sub> = m<sub>wing</sub> &middot; L&sup2; &middot; (1+3&lambda;) / (6(1+&lambda;)) &nbsp; (&lambda; = taper ratio)</span><br>
+          <span style="font-size:.85rem;color:var(--text-dim)">I<sub>tip</sub> = m<sub>tip</sub> &middot; L&sup2; &nbsp; (point mass at tip)</span><br>
+          <span style="font-size:.85rem;color:var(--text-dim)">I<sub>pull</sub> = m<sub>pull</sub> &middot; r<sub>link</sub>&sup2; &nbsp; (weight on linkage arm)</span>
+        </div>
+
+        <h3>&#127926; Natural Frequency</h3>
+        <div class="eq">
+          <div class="eq-label">Linearized stiffness near rest</div>
+          k<sub>eff</sub> = m<sub>pull</sub> g r<sub>link</sub> cos(&theta;<sub>rest</sub>) + &tau;<sub>net</sub> sin(&theta;<sub>rest</sub>) + k<sub>spring</sub> + k<sub>elastic</sub>
+        </div>
+        <div class="eq">
+          <div class="eq-label">Damped natural frequency</div>
+          &omega;<sub>n</sub> = &radic;(k<sub>eff</sub> / I) &nbsp;&nbsp;&nbsp; f<sub>d</sub> = &omega;<sub>n</sub>&radic;(1&minus;&zeta;&sup2;) / 2&pi;
+        </div>
+
+        <h3>&#128187; Numerical Integration</h3>
+        <p>4th-order Runge-Kutta (RK4) at 120 Hz timestep. Captures nonlinear large-angle dynamics, air drag v&sup2; effects, and Coulomb friction transitions that closed-form solutions miss.</p>
+
+        <h3>&#128065;&#65039; Perceptibility Analysis</h3>
+        <p>Flap duration uses human motion perception thresholds at 3m viewing distance:</p>
+        <dl class="var-def">
+          <dt>Displacement</dt><dd>&ge; 5mm tip movement (visual acuity threshold at gala distance)</dd>
+          <dt>Velocity</dt><dd>&ge; 5mm/s tip speed (motion detection threshold)</dd>
+        </dl>
+        <p>A flap is "visible" only when <strong>both</strong> thresholds are exceeded simultaneously.</p>
+
+        <div style="margin-top:1.5rem;padding-top:1rem;border-top:1px solid var(--border);color:var(--text-dim);font-size:.75rem">
+          Wing Lab &middot; San Domenico 175th Anniversary Gala &middot; Physics engine v2.0
+        </div>
+      </div>
+    </div>
+
+    <!-- AUTO-CALCULATE -->
+    <section id="auto-calc-section">
+      <h2>&#10024; Auto-Calculate: Design Your Best Butterfly</h2>
+      <p class="auto-desc">Tell us about your wings and your goal. We'll calculate the exact weights and placements for the longest, most graceful flapping possible.</p>
+
+      <!-- PHOTO UPLOAD -->
+      <div id="photo-panel">
+        <div id="photo-toggle" style="cursor:pointer;display:flex;align-items:center;gap:10px;margin-bottom:1rem;padding:12px 18px;background:var(--bg-surface);border:1px dashed rgba(196,164,105,0.3);border-radius:12px;transition:all .2s">
+          <span style="font-size:1.5rem">&#128247;</span>
+          <div><span style="font-weight:600;color:var(--gold-light)">Upload a Photo of Your Wing</span><br><span style="font-size:.75rem;color:var(--text-dim)">Lay wing flat with a ruler or coin &mdash; AI measures it automatically</span></div>
+          <span id="photo-arrow" style="margin-left:auto;color:var(--text-dim);transition:transform .2s">&#9660;</span>
+        </div>
+        <div id="photo-inner" style="display:none;padding:0 0 1.5rem">
+          <div id="photo-dropzone" style="border:2px dashed var(--border);border-radius:12px;padding:2rem;text-align:center;cursor:pointer;transition:border-color .2s,background .2s;margin-bottom:1rem">
+            <input type="file" id="wingPhotoInput" accept="image/*" style="display:none">
+            <input type="file" id="wingCameraInput" accept="image/*" capture="environment" style="display:none">
+            <div id="photo-placeholder">
+              <div style="font-size:2.5rem;margin-bottom:.5rem;opacity:0.5">&#128247;</div>
+              <div style="color:var(--text-dim)"><span style="color:var(--accent);text-decoration:underline;cursor:pointer" id="photoCameraBtn">Take a photo</span> or <span style="color:var(--accent);text-decoration:underline;cursor:pointer" id="photoSelectBtn">choose from gallery</span></div>
+              <div style="font-size:.72rem;margin-top:.5rem;color:var(--text-dim);opacity:0.6">Lay your wing flat with a ruler or coin for scale &middot; JPEG recommended</div>
+            </div>
+            <img id="photo-preview" style="display:none;max-width:100%;max-height:300px;border-radius:8px;margin:0 auto">
+            <button id="photo-retake" style="display:none;margin-top:8px;padding:6px 16px;background:transparent;border:1px solid var(--border);color:var(--text-dim);border-radius:8px;font-size:.78rem;cursor:pointer">&#128247; Retake photo</button>
+          </div>
+          <!-- Photo guide -->
+          <details id="photo-guide" open style="margin-bottom:1rem">
+            <summary style="font-size:.82rem;font-weight:600;color:var(--accent);cursor:pointer;user-select:none;padding:6px 0">&#9432; How to take a great wing photo</summary>
+            <div style="font-size:.78rem;color:var(--text-dim);line-height:1.6;padding:.75rem;background:var(--bg-surface);border-radius:10px;margin-top:.5rem">
+              <p style="margin:0 0 .75rem"><strong style="color:var(--text)">1. Lay the wing flat</strong> on a plain, contrasting surface. Press edges flat if they curl. Use dark paper under light wings, white paper under dark wings.</p>
+              <p style="margin:0 0 .75rem"><strong style="color:var(--text)">2. Place a reference object</strong> on the SAME flat surface (not overlapping the wing) so AI can measure real-world size:</p>
+              <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(140px,1fr));gap:8px;margin:8px 0 12px;padding:10px;background:rgba(56,189,248,0.06);border-radius:8px;border:1px solid rgba(56,189,248,0.12)">
+                <div>&#128207; <strong style="color:var(--accent)">Ruler</strong> (best!) &mdash; place along the wing, markings visible</div>
+                <div>&#128179; <strong style="color:var(--accent)">Credit card</strong> &mdash; 8.56 &times; 5.40 cm</div>
+                <div>&#128181; <strong style="color:var(--accent)">Dollar bill</strong> &mdash; 15.6 &times; 6.6 cm</div>
+                <div>&#129689; <strong style="color:var(--accent)">US quarter</strong> &mdash; 2.43 cm diameter</div>
+                <div>&#128196; <strong style="color:var(--accent)">Letter paper</strong> &mdash; lay wing ON it (27.9 &times; 21.6 cm)</div>
+                <div>&#128203; <strong style="color:var(--accent)">Sticky note</strong> &mdash; 7.6 &times; 7.6 cm</div>
+              </div>
+              <p style="margin:0 0 .75rem"><strong style="color:var(--text)">3. Lighting:</strong> Even, diffused light. No harsh shadows. Near a window is great. No flash!</p>
+              <p style="margin:0 0 .75rem"><strong style="color:var(--text)">4. Angle:</strong> Shoot straight down (bird's-eye). Keep your phone level and parallel to the table. Hold about 30&ndash;40 cm (12&ndash;16 in) above the wing.</p>
+              <p style="margin:0 0 .75rem"><strong style="color:var(--text)">5. Frame it:</strong> Get the <em>whole wing</em> + <em>whole reference</em> in the shot. Don't crop the edges.</p>
+              <p style="margin:0;font-size:.72rem;opacity:0.7">You can photograph one wing or both &mdash; the AI handles either. Make sure your hand doesn't cast a shadow on the wing.</p>
+            </div>
+          </details>
+          <div style="display:flex;gap:10px;align-items:end;flex-wrap:wrap">
+            <div class="auto-field" style="flex:1;min-width:200px">
+              <span>Claude API Key <span style="font-size:.7rem;opacity:0.5">(saved in browser, sent securely)</span> <a href="https://console.anthropic.com" target="_blank" rel="noopener" style="font-size:.68rem;color:var(--accent);text-decoration:none;opacity:0.7">Get a key &rarr;</a></span>
+              <input type="password" id="apiKeyInput" placeholder="sk-ant-..." style="width:100%;background:var(--bg-surface);border:1px solid var(--border);color:var(--text);padding:8px 12px;border-radius:8px;font-size:.85rem">
+            </div>
+            <button id="analyzeBtn" disabled style="padding:10px 24px;background:linear-gradient(135deg,rgba(196,164,105,0.2),rgba(167,139,250,0.2));border:1px solid rgba(196,164,105,0.3);color:var(--gold-light);border-radius:10px;font-size:.9rem;font-weight:600;cursor:pointer;white-space:nowrap;opacity:0.5">&#128269; Analyze Wing</button>
+          </div>
+          <div id="analyzeHint" style="display:none;margin-top:6px;font-size:.72rem;color:var(--text-dim);opacity:0.7"></div>
+          <div id="photo-status" style="display:none;margin-top:1rem;padding:12px 16px;background:var(--bg-surface);border-radius:10px;font-size:.85rem"></div>
+        </div>
+      </div>
+
+      <div class="auto-row">
+        <div class="auto-field" style="min-width:220px">
+          <span>Wing Shape</span>
+          <select id="ac-shape">
+            <option value="monarch">Monarch (wide base, narrow tips)</option>
+            <option value="swallowtail">Swallowtail (wide mid-wing)</option>
+            <option value="luna">Luna Moth (long &amp; narrow)</option>
+            <option value="rounded" selected>Rounded (broad &amp; even)</option>
+          </select>
+        </div>
+        <div class="auto-field">
+          <span>Wingspan (cm)</span>
+          <input type="number" id="ac-wingspan" placeholder="e.g. 60" value="">
+        </div>
+        <div class="auto-field">
+          <span>Each Wing Weight (g)</span>
+          <input type="number" id="ac-wingWeight" placeholder="e.g. 15" value="">
+        </div>
+        <div class="auto-field">
+          <span>Body Weight (g)</span>
+          <input type="number" id="ac-bodyWeight" placeholder="e.g. 30" value="">
+        </div>
+      </div>
+      <div class="auto-row" style="margin-top:.75rem">
+        <div class="auto-field" style="min-width:220px">
+          <span>Goal</span>
+          <select id="ac-goal">
+            <option value="long" selected>Max slow gentle flaps</option>
+            <option value="moderate">Moderate (balanced)</option>
+            <option value="lively">Quick lively flutters</option>
+          </select>
+        </div>
+        <div class="auto-field">
+          <span>Max Added Weight (g)</span>
+          <input type="number" id="ac-maxWeight" placeholder="no limit" value="">
+        </div>
+        <button id="autoCalcBtn">&#9889; Calculate Best Setup</button>
+      </div>
+      <div id="auto-result">
+        <h3 id="auto-result-title">&#10003; Your Optimal Build Sheet</h3>
+        <div class="auto-result-grid" id="auto-result-grid"></div>
+        <p id="auto-result-note" style="margin-top:.75rem;font-size:.78rem;color:var(--text-dim);line-height:1.4"></p>
+      </div>
+    </section>
+
+    <!-- Quick Start Presets -->
+    <section id="presets-section">
+      <h2>Quick Start Presets</h2>
+      <p style="font-size:.85rem;color:var(--text-dim);margin-bottom:1rem">Pick your butterfly size — all sliders auto-set to physics-optimized values</p>
+      <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(160px,1fr));gap:12px">
+        <button class="preset-btn" data-preset="small">
+          <span class="preset-icon">&#x1FABD;</span>
+          <span class="preset-label">Small</span>
+          <span class="preset-size">3 ft &middot; 91 cm</span>
+        </button>
+        <button class="preset-btn" data-preset="medium">
+          <span class="preset-icon">&#x1FABD;&#x1FABD;</span>
+          <span class="preset-label">Medium</span>
+          <span class="preset-size">6 ft &middot; 183 cm</span>
+        </button>
+        <button class="preset-btn" data-preset="large">
+          <span class="preset-icon">&#x1FABD;&#x1FABD;&#x1FABD;</span>
+          <span class="preset-label">Large</span>
+          <span class="preset-size">8 ft &middot; 244 cm</span>
+        </button>
+      </div>
+    </section>
+
+    <!-- Controls -->
+    <section id="controls-section">
+      <h2>Fine-Tune Your Butterfly</h2>
+      <div style="display:flex;align-items:center;gap:14px;padding:8px 16px;margin-bottom:1rem;font-size:.78rem;color:var(--text-dim);background:var(--bg-surface);border-radius:10px;flex-wrap:wrap">
+        <span style="color:hsl(50,80%,55%);font-size:1.1em">&#9679;</span> Needs more <span style="color:hsl(120,70%,50%);font-size:1.1em;margin-left:6px">&#9679;</span> Sweet spot <span style="color:hsl(0,70%,55%);font-size:1.1em;margin-left:6px">&#9679;</span> Too much
+        <span style="opacity:0.5;margin-left:8px">&mdash; arrows show which way to adjust</span>
+        <span id="perfGauge" style="margin-left:auto;display:flex;align-items:center;gap:8px;padding:4px 14px;background:var(--bg-card);border:1px solid var(--border);border-radius:20px">
+          <svg width="32" height="32" viewBox="0 0 36 36" style="flex-shrink:0">
+            <circle cx="18" cy="18" r="15" fill="none" stroke="var(--bg-surface)" stroke-width="4" stroke-dasharray="70.7 23.6" stroke-dashoffset="-11.8" transform="rotate(-90 18 18)"/>
+            <circle id="perfArc" cx="18" cy="18" r="15" fill="none" stroke="#34d399" stroke-width="4" stroke-dasharray="0 94.2" stroke-dashoffset="-11.8" transform="rotate(-90 18 18)" stroke-linecap="round" style="transition:stroke-dasharray .5s,stroke .3s"/>
+          </svg>
+          <div style="line-height:1.1;min-width:36px">
+            <div id="perfNum" style="font-size:1.1rem;font-weight:800;color:#34d399;transition:color .3s">0</div>
+            <div style="font-size:.55rem;text-transform:uppercase;letter-spacing:.04em;opacity:0.6">score</div>
+          </div>
+        </span>
+      </div>
+      <div class="controls-grid">
+        <div class="control-group">
+          <h3>&#x1FABD; Wings</h3>
+          <label><span class="label-text">Wingspan (tip to tip)</span><span class="label-detail">Total spread when wings are flat/level</span><div class="slider-row"><input type="range" id="wingspan" min="15" max="300" step="1" value="60"><output id="wingspan-val">60 cm</output></div></label>
+          <label><span class="label-text">Wing Width (front to back)</span><span class="label-detail">How wide each wing is, leading to trailing edge</span><div class="slider-row"><input type="range" id="chord" min="3" max="60" step="0.5" value="10"><output id="chord-val">10 cm</output></div></label>
+          <label><span class="label-text">Weight of Each Wing</span><span class="label-detail">Weigh one wing after cutting it</span><div class="slider-row"><input type="range" id="wingWeight" min="1" max="300" step="1" value="15"><output id="wingWeight-val">15 g</output></div></label>
+          <label><span class="label-text">Wing Shape (taper) <button id="openShapeModal" style="font-size:.7rem;padding:2px 8px;background:var(--bg-surface);border:1px solid var(--border);color:var(--accent);border-radius:6px;cursor:pointer;margin-left:6px">Shape Helper</button></span><span class="label-detail">100% = rectangular &middot; Lower = pointy tips</span><div class="slider-row"><input type="range" id="taper" min="20" max="100" step="5" value="50"><output id="taper-val">50%</output></div></label>
+        </div>
+        <div class="control-group">
+          <h3>&#9878;&#65039; Body & Weights</h3>
+          <label><span class="label-text">Body Weight</span><span class="label-detail">Center body piece the wings attach to</span><div class="slider-row"><input type="range" id="bodyWeight" min="5" max="500" step="1" value="30"><output id="bodyWeight-val">30 g</output></div></label>
+          <label><span class="label-text">Hanging Pull-Weight</span><span class="label-detail">Weight below that pulls the wings &mdash; the "engine"</span><div class="slider-row"><input type="range" id="pullWeight" min="1" max="500" step="1" value="20"><output id="pullWeight-val">20 g</output></div></label>
+          <label><span class="label-text">Wingtip Weights</span><span class="label-detail">Extra mass at each tip &mdash; slows flapping</span><div class="slider-row"><input type="range" id="tipWeight" min="0" max="150" step="0.5" value="2"><output id="tipWeight-val">2 g</output></div></label>
+        </div>
+        <div class="control-group">
+          <h3>&#128295; Mechanism</h3>
+          <label><span class="label-text">String Drop Length</span><span class="label-detail">Distance from body to pull-weight</span><div class="slider-row"><input type="range" id="stringLength" min="5" max="150" step="1" value="25"><output id="stringLength-val">25 cm</output></div></label>
+          <label><span class="label-text">Hinge Friction</span><span class="label-detail">How sticky the pivot is &mdash; more = dies faster</span><div class="slider-row"><input type="range" id="friction" min="1" max="100" step="1" value="15"><output id="friction-val">Low</output></div></label>
+          <label><span class="label-text">Return Spring / Elasticity</span><span class="label-detail">Rubber band, bent wire, etc.</span><div class="slider-row"><input type="range" id="springK" min="0" max="100" step="1" value="10"><output id="springK-val">Slight</output></div></label>
+          <label><span class="label-text">Initial Pull Angle</span><span class="label-detail">How far you tug before letting go</span><div class="slider-row"><input type="range" id="initialPull" min="5" max="60" step="1" value="25"><output id="initialPull-val">25&deg;</output></div></label>
+        </div>
+        <div class="control-group">
+          <h3>&#128279; Linkage</h3>
+          <label><span class="label-text">Linkage Attach Point</span><span class="label-detail">Where string connects on wing (% from pivot to tip)</span><div class="slider-row"><input type="range" id="linkagePoint" min="10" max="90" step="5" value="30"><output id="linkagePoint-val">30%</output></div></label>
+          <label><span class="label-text">Wing Pivot Type</span><span class="label-detail">How the wings attach to the body at the center</span><div class="slider-row"><select id="pivotType"><option value="pin">Pin Hinge (smooth pivot)</option><option value="living">Living Hinge (bent material)</option><option value="friction">Friction Hinge (tight pivot)</option></select></div></label>
+          <label><span class="label-text">Upper Attachment</span><span class="label-detail">What connects spreader bar to wing attachment points</span><div class="slider-row"><select id="upperAttach"><option value="string" selected>Fixed String / Wire</option><option value="elastic">Elastic / Bungee Cord</option></select></div></label>
+          <label id="elasticRow" style="display:none"><span class="label-text">Elastic Stiffness</span><span class="label-detail">How stretchy the bungee cord is</span><div class="slider-row"><input type="range" id="elasticK" min="1" max="100" step="1" value="30"><output id="elasticK-val">Moderate</output></div></label>
+        </div>
+      </div>
+      <button id="optimize-btn">&#9889; Optimize Unlocked Sliders for Best Flapping</button>
+    </section>
+
+    <!-- Speedometer Gauge -->
+    <section id="speedo-section">
+      <div id="speedo-wrap">
+        <canvas id="speedo-canvas" role="img" aria-label="Wing design quality score gauge"></canvas>
+        <div id="speedo-value">
+          <div id="speedo-num">0</div>
+          <div id="speedo-label">Wing Score</div>
+        </div>
+      </div>
+      <div id="speedo-msg">Adjust sliders to reach 100%</div>
+    </section>
+
+    <!-- Dashboard -->
+    <section id="dashboard-section">
+      <h2>How It Will Behave</h2>
+      <div class="dashboard-grid">
+        <div class="metric-card" id="card-freq"><div class="metric-icon">&#128260;</div><div class="metric-label">Flap Speed</div><div class="metric-value" id="freq-val">&mdash;</div><div class="metric-sublabel" id="freq-sub"></div><div class="metric-bar-wrap"><div class="metric-bar" id="freq-bar"></div></div><div class="metric-explain" id="freq-explain"></div><details class="math-details"><summary>Show the math</summary><div class="math-content" id="freq-math"></div></details></div>
+        <div class="metric-card" id="card-damping"><div class="metric-icon">&#127754;</div><div class="metric-label">Flap Style</div><div class="metric-value" id="damping-val">&mdash;</div><div class="metric-sublabel" id="damping-sub"></div><div class="metric-bar-wrap"><div class="metric-bar" id="damping-bar"></div></div><div class="metric-explain" id="damping-explain"></div><details class="math-details"><summary>Show the math</summary><div class="math-content" id="damping-math"></div></details></div>
+        <div class="metric-card" id="card-inertia"><div class="metric-icon">&#128170;</div><div class="metric-label">Wing Heaviness</div><div class="metric-value" id="inertia-val">&mdash;</div><div class="metric-sublabel" id="inertia-sub"></div><div class="metric-bar-wrap"><div class="metric-bar" id="inertia-bar"></div></div><div class="metric-explain" id="inertia-explain"></div><details class="math-details"><summary>Show the math</summary><div class="math-content" id="inertia-math"></div></details></div>
+        <div class="metric-card" id="card-duration"><div class="metric-icon">&#9201;&#65039;</div><div class="metric-label">How Long It Flaps</div><div class="metric-value" id="duration-val">&mdash;</div><div class="metric-sublabel" id="duration-sub"></div><div class="metric-bar-wrap"><div class="metric-bar" id="duration-bar"></div></div><div class="metric-explain" id="duration-explain"></div><details class="math-details"><summary>Show the math</summary><div class="math-content" id="duration-math"></div></details></div>
+        <div class="metric-card" id="card-torque"><div class="metric-icon">&#128295;</div><div class="metric-label">Pull Force</div><div class="metric-value" id="torque-val">&mdash;</div><div class="metric-sublabel" id="torque-sub"></div><div class="metric-bar-wrap"><div class="metric-bar" id="torque-bar"></div></div><div class="metric-explain" id="torque-explain"></div><details class="math-details"><summary>Show the math</summary><div class="math-content" id="torque-math"></div></details></div>
+        <div class="metric-card" id="card-amplitude"><div class="metric-icon">&#128208;</div><div class="metric-label">Wing Sweep</div><div class="metric-value" id="amplitude-val">&mdash;</div><div class="metric-sublabel" id="amplitude-sub"></div><div class="metric-bar-wrap"><div class="metric-bar" id="amplitude-bar"></div></div><div class="metric-explain" id="amplitude-explain"></div><details class="math-details"><summary>Show the math</summary><div class="math-content" id="amplitude-math"></div></details></div>
+      </div>
+    </section>
+
+    <section id="verdict-section">
+      <div id="verdict-box"><div id="verdict-icon"></div><div id="verdict-text"></div><div id="verdict-tips"></div></div>
+    </section>
+
+    <!-- Plot now integrated into wing canvas above -->
+    <section id="plot-section" style="display:none">
+      <canvas id="plotCanvas"></canvas>
+    </section>
+    <!-- Wing Shape Modal -->
+    <div id="shape-modal" style="display:none;position:fixed;inset:0;z-index:5000;background:rgba(0,0,0,0.7);backdrop-filter:blur(4px);align-items:center;justify-content:center">
+      <div style="background:var(--bg-card);border:1px solid var(--border);border-radius:16px;max-width:500px;width:90%;max-height:90vh;overflow-y:auto;padding:1.5rem 2rem;position:relative">
+        <button id="shape-modal-close" style="position:absolute;top:8px;right:8px;background:none;border:none;color:var(--text-dim);font-size:1.5rem;cursor:pointer;width:44px;height:44px;display:flex;align-items:center;justify-content:center">&times;</button>
+        <h3 style="color:var(--gold-light);margin-bottom:.75rem">Wing Shape Helper</h3>
+        <p style="font-size:.82rem;color:var(--text-dim);margin-bottom:1rem">Pick a shape that matches your wing, or describe it. We'll set the taper and dimensions for you.</p>
+        <div id="shape-presets" style="display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:1.5rem">
+          <button class="shape-btn" data-shape="monarch" data-taper="35" data-desc="Wide at the base, narrows to rounded tips" style="padding:14px;background:var(--bg-surface);border:1px solid var(--border);border-radius:12px;cursor:pointer;text-align:center;color:var(--text);transition:all .2s">
+            <div style="font-size:2rem;margin-bottom:4px">&#x1F98B;</div>
+            <div style="font-weight:700;font-size:.9rem">Monarch</div>
+            <div style="font-size:.7rem;color:var(--text-dim);margin-top:2px">Wide base, narrow tips</div>
+          </button>
+          <button class="shape-btn" data-shape="swallowtail" data-taper="45" data-desc="Widest at mid-wing with dramatic taper" style="padding:14px;background:var(--bg-surface);border:1px solid var(--border);border-radius:12px;cursor:pointer;text-align:center;color:var(--text);transition:all .2s">
+            <div style="font-size:2rem;margin-bottom:4px">&#127807;</div>
+            <div style="font-weight:700;font-size:.9rem">Swallowtail</div>
+            <div style="font-size:.7rem;color:var(--text-dim);margin-top:2px">Wide middle, pointed tips</div>
+          </button>
+          <button class="shape-btn" data-shape="luna" data-taper="30" data-desc="Long and narrow with elegant trailing edges" style="padding:14px;background:var(--bg-surface);border:1px solid var(--border);border-radius:12px;cursor:pointer;text-align:center;color:var(--text);transition:all .2s">
+            <div style="font-size:2rem;margin-bottom:4px">&#127769;</div>
+            <div style="font-weight:700;font-size:.9rem">Luna Moth</div>
+            <div style="font-size:.7rem;color:var(--text-dim);margin-top:2px">Long, narrow, elegant</div>
+          </button>
+          <button class="shape-btn" data-shape="rounded" data-taper="70" data-desc="Broad and evenly rounded" style="padding:14px;background:var(--bg-surface);border:1px solid var(--border);border-radius:12px;cursor:pointer;text-align:center;color:var(--text);transition:all .2s">
+            <div style="font-size:2rem;margin-bottom:4px">&#128155;</div>
+            <div style="font-weight:700;font-size:.9rem">Rounded</div>
+            <div style="font-size:.7rem;color:var(--text-dim);margin-top:2px">Broad, even shape</div>
+          </button>
+        </div>
+        <div style="border-top:1px solid var(--border);padding-top:1rem">
+          <p style="font-size:.82rem;font-weight:600;color:var(--text);margin-bottom:.5rem">Or describe your wing:</p>
+          <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px;font-size:.78rem">
+            <label style="display:flex;align-items:center;gap:6px;color:var(--text-dim)">
+              <span>Base (root) width:</span>
+              <select id="shape-base" style="flex:1;background:var(--bg-surface);border:1px solid var(--border);color:var(--text);padding:4px 8px;border-radius:6px">
+                <option value="wide">Wide</option><option value="medium" selected>Medium</option><option value="narrow">Narrow</option>
+              </select>
+            </label>
+            <label style="display:flex;align-items:center;gap:6px;color:var(--text-dim)">
+              <span>Tip shape:</span>
+              <select id="shape-tip" style="flex:1;background:var(--bg-surface);border:1px solid var(--border);color:var(--text);padding:4px 8px;border-radius:6px">
+                <option value="pointed">Pointed</option><option value="rounded" selected>Rounded</option><option value="broad">Broad/Flat</option>
+              </select>
+            </label>
+          </div>
+          <button id="shape-apply-custom" style="margin-top:10px;width:100%;padding:10px;background:linear-gradient(135deg,rgba(0,132,61,0.2),rgba(0,146,188,0.2));border:1px solid var(--sd-green);color:var(--sd-green);border-radius:10px;font-weight:600;cursor:pointer">Apply Custom Shape</button>
+        </div>
+      </div>
+    </div>
+  </main>
+
+  <!-- Help Modal -->
+  <div id="help-modal-overlay">
+    <div id="help-modal">
+      <button id="help-modal-close">&times;</button>
+      <h3 id="help-modal-title"></h3>
+      <div class="help-body" id="help-modal-body"></div>
+      <div class="help-tip" id="help-modal-tip"></div>
+    </div>
+  </div>
+
+  <footer>Wing Lab &mdash; San Domenico 175th Anniversary &middot; Roots & Wings</footer>
+
+<script>
+// ============= PHYSICS =============
+const G = 9.81;
+const Physics = {
+  readParams() {
+    const v = id => parseFloat(document.getElementById(id).value);
+    const wingspanCm=v('wingspan'), chordCm=v('chord'), wingWeightG=v('wingWeight'), taperPct=v('taper');
+    const bodyWeightG=v('bodyWeight'), pullWeightG=v('pullWeight'), tipWeightG=v('tipWeight');
+    const stringLenCm=v('stringLength'), frictionPct=v('friction'), springPct=v('springK');
+    const initialPullDeg=v('initialPull'), linkagePct=v('linkagePoint');
+    const wingspan=wingspanCm/100, halfSpan=wingspan/2, chord=chordCm/100;
+    const wingMass=wingWeightG/1000, bodyMass=bodyWeightG/1000, pullMass=pullWeightG/1000;
+    const tipMass=tipWeightG/1000, stringLen=stringLenCm/100, taper=taperPct/100;
+    const linkageR=(linkagePct/100)*halfSpan, initialPull=initialPullDeg*Math.PI/180;
+    const pivotType=document.getElementById('pivotType').value;
+    const upperAttach=document.getElementById('upperAttach').value;
+    const elasticK=parseFloat(document.getElementById('elasticK').value);
+    return {wingspan,halfSpan,chord,wingMass,bodyMass,pullMass,tipMass,stringLen,taper,linkageR,
+      initialPull,frictionPct,springPct,wingspanCm,chordCm,wingWeightG,bodyWeightG,pullWeightG,
+      tipWeightG,stringLenCm,taperPct,linkagePct,initialPullDeg,pivotType,upperAttach,elasticK};
+  },
+  calcInertia(p) {
+    const {halfSpan:L,wingMass:m,tipMass:mt,taper:t}=p;
+    const tf=(1+3*t)/(6*(1+t));
+    const Iw=m*L*L*tf, It=mt*L*L;
+    // Pull weight swings on linkage arm — contributes to moment of inertia
+    const Ip=p.pullMass*p.linkageR*p.linkageR;
+    return {I_total:2*(Iw+It)+Ip,I_oneWing:Iw,I_oneTip:It,I_pull:Ip,taperFactor:tf};
+  },
+  calcSpring(p) {
+    const kg=p.pullMass*G*p.linkageR; // pull weight pendulum stiffness (linearized)
+    let ks=(p.springPct/100)*0.1;     // material spring stiffness
+    // Living hinge adds natural spring stiffness (material wants to return flat)
+    if(p.pivotType==='living') ks+=0.04;
+    // Elastic upper attachment adds restoring force (bungee stores energy)
+    let kElastic=0;
+    if(p.upperAttach==='elastic') kElastic=(p.elasticK/100)*0.15*p.linkageR*p.linkageR;
+    // Wing gravity is NOT a spring — it's a constant torque -(m*g*r)*cos(θ).
+    // Computed separately for the simulation as an explicit torque term.
+    const wcg=p.halfSpan*(1+2*p.taper)/(3*(1+p.taper));
+    const wingGravTorque=p.wingMass*G*wcg+p.tipMass*G*p.halfSpan; // per-wing downward magnitude
+    return {k_total:kg+ks+kElastic,k_gravity:kg,k_spring:ks,k_elastic:kElastic,wingGravTorque};
+  },
+  calcDamping(p,I,k) {
+    const cc=2*Math.sqrt(I*k);
+    let z=0.02+(p.frictionPct/100)*1.98;
+    // Pivot type modifies damping character
+    if(p.pivotType==='living') z*=0.6; // living hinge has less friction but adds spring
+    else if(p.pivotType==='friction') z*=1.4; // friction hinge = more damping
+    return {c:z*cc,zeta:z,c_crit:cc,pivotType:p.pivotType};
+  },
+  computeAll(p) {
+    const inertia=this.calcInertia(p), I=inertia.I_total;
+    const spring=this.calcSpring(p);
+    // ===== STATIC REST ANGLE (torque balance at the pivot) =====
+    //
+    // Two torque families compete about the wing pivot:
+    //
+    //  UPWARD (V-shape): String tension × linkage arm × cos(θ)
+    //    T ≈ (m_body + m_pull) * g / 2  per wing
+    //    τ_up = T × r_linkage × cos(θ)
+    //
+    //  DOWNWARD (droop): Wing + tip gravity × cos(θ)
+    //    τ_down = (m_wing × g × r_cg + m_tip × g × halfSpan) × cos(θ)
+    //
+    //  RESTORING: Pull weight pendulum → −m_pull × g × r_link × sin(θ)
+    //    Zero at θ=0, opposes displacement in either direction
+    //
+    // At equilibrium all three sum to zero:
+    //   τ_net × cos(θ) − m_pull × g × r_link × sin(θ) = 0
+    //   tan(θ_rest) = τ_net / (m_pull × g × r_link)
+    //
+    // This gives physically correct, visible rest angles that respond
+    // dramatically to pull weight and body weight changes.
+    //
+    const _wcg=p.halfSpan*(1+2*p.taper)/(3*(1+p.taper)); // wing CG distance from pivot
+    const tauDown=p.wingMass*G*_wcg+p.tipMass*G*p.halfSpan; // per-wing downward torque magnitude
+    const stringTension=(p.bodyMass+p.pullMass)*G/2; // tension per wing from suspended mass
+    const tauUp=stringTension*p.linkageR; // upward torque from string at linkage point
+    const tauNet=tauUp-tauDown; // positive = wings tilted up, negative = wings droop
+    const balanceRatio=tauDown>0.00001?tauUp/tauDown:10;
+    const staticImbalance=tauNet;
+    // Physically correct rest angle from torque balance:
+    const pendulumK=p.pullMass*G*p.linkageR; // pull weight pendulum restoring stiffness
+    const restAngle=pendulumK>0.0001
+      ? Math.max(-Math.PI/4, Math.min(Math.PI/6, Math.atan2(tauNet, pendulumK)))
+      : 0;
+    // Linearized effective stiffness near rest angle for frequency/damping:
+    // k_eff = d/dθ[τ_pendulum + τ_net·cos(θ)]|_{θ_rest} + k_spring + k_elastic
+    //       = m_pull·g·r_link·cos(θ_rest) + tauNet·sin(θ_rest) + k_spring + k_elastic
+    const k=Math.max(0.001, pendulumK*Math.cos(restAngle) + tauNet*Math.sin(restAngle) + spring.k_spring + (spring.k_elastic||0));
+    const damping=this.calcDamping(p,I,k), zeta=damping.zeta;
+    const omega_n=Math.sqrt(k/I), freq=omega_n/(2*Math.PI), period=freq>0.001?1/freq:Infinity;
+    let omega_d,freq_d,period_d;
+    if(zeta<1){omega_d=omega_n*Math.sqrt(1-zeta*zeta);freq_d=omega_d/(2*Math.PI);period_d=freq_d>0.001?1/freq_d:Infinity;}
+    else{omega_d=0;freq_d=0;period_d=Infinity;}
+    const dr=zeta*omega_n, dt_=dr>0.001?3/dr:Infinity;
+    const nf=freq_d>0&&dt_<1000?dt_*freq_d:0;
+    const mt=p.pullMass*G*p.linkageR*Math.sin(p.initialPull);
+    // Air drag: 0.5 * rho * Cd * A * v^2 applied at center of pressure
+    const wingArea=p.halfSpan*p.chord*(1+p.taper)/2; // trapezoidal area per wing (m^2)
+    const rho=1.225; // air density kg/m^3
+    const Cd=1.2; // flat plate drag coefficient
+    const rCop=p.halfSpan*(1+2*p.taper)/(3*(1+p.taper)); // center of pressure
+    const airDragCoeff=0.5*rho*Cd*wingArea*rCop; // multiply by v^2 for torque per wing
+    return {params:p,inertia,spring,damping,I,k,omega_n,freq,period,omega_d,freq_d,period_d,zeta,
+      decayRate:dr,decayTime:dt_,numFlaps:nf,maxTorque:mt,sweepDeg:p.initialPullDeg,
+      totalMass:p.bodyMass+2*p.wingMass+2*p.tipMass+p.pullMass,restAngle,balanceRatio,staticImbalance,
+      tauNet,wingArea,airDragCoeff};
+  },
+  simulate(r,dur,dt) {
+    const {params:p,I,damping,spring,tauNet,airDragCoeff:adc}=r, c=damping.c;
+    const ks=spring.k_spring; // material spring only (no more wing gravity baked in)
+    const kEl=spring.k_elastic||0;
+    const isFrictionHinge=p.pivotType==='friction';
+    const coulombTorque=isFrictionHinge?c*0.15:0;
+    const n=Math.ceil(dur/dt), d=new Float64Array(n);
+    let th=p.initialPull, thd=0;
+    const a=(t,td)=>{
+      // Pull weight pendulum (nonlinear restoring force, equilibrium at θ=0)
+      const tg=-p.pullMass*G*p.linkageR*Math.sin(t);
+      // Net gravitational bias: (string tension UP − wing gravity DOWN) × cos(θ)
+      // This is the PHYSICAL torque from the tug-of-war between body weight
+      // lifting the wings vs wing mass pulling them down. cos(θ) is correct
+      // because the effective moment arm decreases as wings tilt.
+      // At θ_rest: tg + tGrav = 0 (equilibrium emerges naturally from physics)
+      const tGrav=tauNet*Math.cos(t);
+      const tEl=-kEl*t;
+      const tCf=coulombTorque>0?-coulombTorque*Math.sign(td||0.0001):0;
+      // Air drag: opposes angular velocity, proportional to v^2
+      const v=td*p.halfSpan*0.5;
+      const tAir=-2*(adc||0)*v*Math.abs(v);
+      return (tg+tGrav+tEl+tCf+tAir-ks*t-c*td)/I;
+    };
+    for(let i=0;i<n;i++){
+      d[i]=th;
+      const k1v=a(th,thd),k1x=thd;
+      const k2v=a(th+.5*dt*k1x,thd+.5*dt*k1v),k2x=thd+.5*dt*k1v;
+      const k3v=a(th+.5*dt*k2x,thd+.5*dt*k2v),k3x=thd+.5*dt*k2v;
+      const k4v=a(th+dt*k3x,thd+dt*k3v),k4x=thd+dt*k3v;
+      th+=(dt/6)*(k1x+2*k2x+2*k3x+k4x);
+      thd+=(dt/6)*(k1v+2*k2v+2*k3v+k4v);
+    }
+    return d;
+  },
+  // ===== PERCEPTIBILITY-BASED FLAP ANALYSIS =====
+  // Uses actual RK4 simulation data (nonlinear pendulum + air drag + Coulomb friction)
+  // to compute REAL visible flap duration via composite perception threshold.
+  //
+  // THE PHYSICS:
+  // Human motion perception depends on BOTH displacement AND velocity.
+  // - Static acuity: ~1 arcmin at 3m ≈ 0.87mm (lab conditions)
+  // - Motion detection: ~5 arcmin/s at 3m ≈ 4.4mm/s (practical gala)
+  // - A wing drifting slowly through 1cm is invisible even though displacement > threshold
+  // - We use a composite: flapping is "visible" only when BOTH tip displacement
+  //   AND tip velocity exceed their perception thresholds simultaneously.
+  //
+  // This gives a more honest estimate than the simplified A₀·e^(-ζω_n·t) decay formula,
+  // because it accounts for all nonlinear effects AND human perception limits.
+
+  analyzeFlaps(simData, dt, halfSpanM) {
+    const n = simData.length;
+    if (n < 3) return { visibleTime: 0, visibleFlaps: 0, totalFlaps: 0, peaks: [],
+      settleTime: 0, minVisibleCm: 0, minVelCmS: 0, threshDeg: 0,
+      initialTipCm: 0, effectiveDecayRate: 0, eleganceRatio: 0 };
+
+    const halfSpanCm = halfSpanM * 100;
+
+    // --- Perception thresholds (gala context: 2-5m viewing, ambient light) ---
+    // Tip displacement: scale with wing size, min 0.5cm, max 2cm
+    const minVisibleCm = Math.max(0.5, Math.min(2.0, halfSpanCm * 0.04));
+    const threshRad = Math.asin(Math.min(0.99, (minVisibleCm / 100) / halfSpanM));
+    // Tip velocity: ~5mm/s min for motion perception at 3m in a lit room
+    const minVelCmS = 0.5; // cm/s — very conservative (0.5cm/s = 5mm/s)
+
+    // --- Compute angular velocity via central finite differences ---
+    // v_tip = dθ/dt × halfSpan; at 120Hz sampling this is plenty accurate
+    const velData = new Float64Array(n);
+    velData[0] = (simData[1] - simData[0]) / dt;
+    for (let i = 1; i < n - 1; i++) {
+      velData[i] = (simData[i + 1] - simData[i - 1]) / (2 * dt);
+    }
+    velData[n - 1] = (simData[n - 1] - simData[n - 2]) / dt;
+
+    // --- Find equilibrium offset (gravity droop / Coulomb stiction) ---
+    // Use the average of the last 10% of simulation as the resting angle
+    const tailStart = Math.floor(n * 0.9);
+    let eqSum = 0;
+    for (let i = tailStart; i < n; i++) eqSum += simData[i];
+    const eqAngle = eqSum / (n - tailStart);
+
+    // --- Extract peaks and zero-crossings relative to equilibrium ---
+    const peaks = [];       // {time, angle, tipCm, velCmS} for each extremum
+    const zeroCross = [];   // sample indices of equilibrium crossings
+    let prevSign = Math.sign(simData[0] - eqAngle);
+    let peakVal = simData[0];
+    let peakIdx = 0;
+
+    for (let i = 1; i < n; i++) {
+      const dev = simData[i] - eqAngle;
+      const sign = Math.sign(dev);
+
+      // Track extremum between crossings
+      if (Math.abs(simData[i] - eqAngle) > Math.abs(peakVal - eqAngle)) {
+        peakVal = simData[i];
+        peakIdx = i;
+      }
+
+      // Zero-crossing of equilibrium
+      if (sign !== 0 && prevSign !== 0 && sign !== prevSign) {
+        const tipCm = Math.abs(halfSpanM * Math.sin(peakVal - eqAngle)) * 100;
+        const peakVel = Math.abs(velData[peakIdx]) * halfSpanCm;
+        peaks.push({
+          time: peakIdx * dt,
+          angle: peakVal,
+          angleDeg: (peakVal - eqAngle) * 180 / Math.PI,
+          tipCm,
+          velCmS: peakVel
+        });
+        zeroCross.push(i);
+        peakVal = simData[i];
+        peakIdx = i;
+      }
+      if (sign !== 0) prevSign = sign;
+    }
+    // Capture final half-cycle
+    if (Math.abs(peakVal - eqAngle) > 0.001) {
+      const tipCm = Math.abs(halfSpanM * Math.sin(peakVal - eqAngle)) * 100;
+      peaks.push({ time: peakIdx * dt, angle: peakVal,
+        angleDeg: (peakVal - eqAngle) * 180 / Math.PI, tipCm,
+        velCmS: Math.abs(velData[peakIdx]) * halfSpanCm });
+    }
+
+    // --- Per-half-cycle visible duration ---
+    // Can't check amplitude AND velocity at the same instant because:
+    //   - At peaks: amplitude is max, velocity ≈ 0
+    //   - At zero-crossings: amplitude ≈ 0, velocity is max
+    // Instead, check per half-cycle: a half-cycle is "visible" if the peak
+    // amplitude is above displacement threshold AND the max velocity in that
+    // half-cycle is above velocity threshold. This correctly models perception:
+    // the eye integrates over one full sweep, not a single instant.
+
+    // Also compute max velocity per half-cycle (between consecutive zero-crossings)
+    for (let p = 0; p < peaks.length; p++) {
+      // Find max velocity in the window around this peak
+      const startSample = p > 0 ? Math.max(0, Math.round(peaks[p].time / dt - (zeroCross.length > 1 ? (zeroCross[1] - zeroCross[0]) * 0.5 : n * 0.1))) : 0;
+      const endSample = Math.min(n - 1, Math.round(peaks[p].time / dt + (zeroCross.length > 1 ? (zeroCross[1] - zeroCross[0]) * 0.5 : n * 0.1)));
+      let maxVel = 0;
+      for (let j = startSample; j <= endSample; j++) {
+        maxVel = Math.max(maxVel, Math.abs(velData[j]) * halfSpanCm);
+      }
+      peaks[p].maxVelCmS = maxVel;
+    }
+
+    // A half-cycle is visible if: peak tip displacement >= threshold
+    // AND max velocity in that half-cycle >= velocity threshold
+    let lastVisiblePeakIdx = -1;
+    for (let i = 0; i < peaks.length; i++) {
+      if (peaks[i].tipCm >= minVisibleCm && peaks[i].maxVelCmS >= minVelCmS) {
+        lastVisiblePeakIdx = i;
+      }
+    }
+
+    // Visible time extends to the end of the last visible half-cycle
+    // (half a period past the last visible peak)
+    const halfPeriod = zeroCross.length >= 2 ? (zeroCross[1] - zeroCross[0]) * dt * 0.5 : 0.5;
+    const visibleTime = lastVisiblePeakIdx >= 0
+      ? Math.min(peaks[lastVisiblePeakIdx].time + halfPeriod, n * dt)
+      : 0;
+
+    // Count visible flaps (full up-down cycles where both conditions are met)
+    const visiblePeaks = peaks.filter(p => p.tipCm >= minVisibleCm && p.maxVelCmS >= minVelCmS);
+    const visibleFlaps = Math.ceil(visiblePeaks.length / 2);
+
+    // --- Settle time: when angle permanently stays within 0.3° of equilibrium ---
+    const settleRad = 0.3 * Math.PI / 180;
+    let settleTime = n * dt;
+    for (let i = n - 1; i >= 0; i--) {
+      if (Math.abs(simData[i] - eqAngle) > settleRad) { settleTime = (i + 1) * dt; break; }
+    }
+
+    // --- Total flaps (all zero-crossings / 2) ---
+    const totalFlaps = Math.floor(zeroCross.length / 2);
+
+    // --- Effective decay rate via linear regression on ln(peak envelope) ---
+    // ln(A) = ln(A₀) - λ·t  →  slope = -λ (effective damping rate in 1/s)
+    // Captures combined viscous + air drag + Coulomb friction decay behavior
+    let effectiveDecayRate = 0;
+    if (peaks.length >= 3) {
+      let sx = 0, sy = 0, sxy = 0, sxx = 0, cnt = 0;
+      for (const pk of peaks) {
+        if (pk.tipCm > 0.05) {
+          const x = pk.time, y = Math.log(pk.tipCm);
+          sx += x; sy += y; sxy += x * y; sxx += x * x; cnt++;
+        }
+      }
+      if (cnt >= 2) effectiveDecayRate = -(cnt * sxy - sx * sy) / (cnt * sxx - sx * sx);
+    }
+
+    // --- Quality metrics ---
+    const initialTipCm = peaks.length > 0 ? peaks[0].tipCm : 0;
+    // Elegance ratio: fraction of total settle time that's visually watchable
+    // 1.0 = every second is beautiful; 0.3 = 70% is invisible tail
+    const eleganceRatio = settleTime > 0.01 ? Math.min(1, visibleTime / settleTime) : 0;
+    // Flap period consistency (std dev of half-cycle times)
+    let avgPeriod = 0, periodStd = 0;
+    if (zeroCross.length >= 4) {
+      const halfPeriods = [];
+      for (let i = 1; i < zeroCross.length; i++) halfPeriods.push((zeroCross[i] - zeroCross[i - 1]) * dt);
+      avgPeriod = halfPeriods.reduce((a, b) => a + b, 0) / halfPeriods.length * 2;
+      const mean = avgPeriod / 2;
+      periodStd = Math.sqrt(halfPeriods.reduce((s, v) => s + (v - mean) ** 2, 0) / halfPeriods.length);
+    }
+
+    return {
+      visibleTime: Math.round(visibleTime * 10) / 10,
+      visibleFlaps,
+      totalFlaps,
+      settleTime: Math.round(settleTime * 10) / 10,
+      peaks,
+      minVisibleCm: Math.round(minVisibleCm * 10) / 10,
+      minVelCmS,
+      threshDeg: Math.round(threshRad * 180 / Math.PI * 10) / 10,
+      initialTipCm: Math.round(initialTipCm * 10) / 10,
+      effectiveDecayRate: Math.round(effectiveDecayRate * 1000) / 1000,
+      eleganceRatio: Math.round(eleganceRatio * 100) / 100,
+      eqAngleDeg: Math.round(eqAngle * 180 / Math.PI * 10) / 10,
+      avgPeriod: Math.round(avgPeriod * 100) / 100,
+      periodStd: Math.round(periodStd * 1000) / 1000,
+    };
+  }
+};
+
+// ============= RENDERER =============
+const R = {
+  canvas:null,ctx:null,plotCanvas:null,plotCtx:null,dpr:1,
+  W:0,H:0, // cached canvas dimensions (updated on resize only)
+  simData:null,simIndex:0,animating:false,animId:null,simDt:1/120,animStartTime:0,
+  currentAngle:0,_lp:null,_r:null,_weightPos:null,
+  _dragging:false,_dragStartY:0,_dragAngle:0,_dragEndTime:0,_lastWeightTap:0,_tapHintTimer:null,
+
+  init() {
+    this.canvas=document.getElementById('wingCanvas');
+    this.ctx=this.canvas.getContext('2d');
+    this.plotCanvas=document.getElementById('plotCanvas');
+    this.plotCtx=this.plotCanvas.getContext('2d');
+    this.dpr=window.devicePixelRatio||1;
+    this.resize();
+    window.addEventListener('resize',()=>this.resize());
+    this._initDrag();
+    this._sparkles = [];
+    this._breathId = null;
+  },
+
+  _initDrag() {
+    const c=this.canvas;
+    const getY=(e)=>{
+      const r=c.getBoundingClientRect();
+      const t=e.touches?e.touches[0]:e;
+      return t.clientY-r.top;
+    };
+    const start=(e)=>{
+      if(!this._weightPos)return;
+      const y=getY(e);
+      const wp=this._weightPos;
+      const dist=Math.abs(y-wp.y);
+      if(dist<wp.r+50){
+        // Stop animation immediately if flapping — user wants to re-pull
+        if(this.animating){this.stopAnimation();recalc();}
+        this._stopBreathing();
+        this._dragging=true;
+        this._dragStartY=wp.y;
+        this._dragAngle=0; // reset stale angle from previous drag
+        c.style.cursor='grabbing';
+        c.style.touchAction='none'; // prevent scroll during drag
+        e.preventDefault();
+      }
+    };
+    const move=(e)=>{
+      if(!this._dragging)return;
+      const y=getY(e);
+      const dy=y-this._dragStartY;
+      // Dynamic max pull based on canvas size — works on mobile + desktop
+      const maxPx=Math.max(80, c.getBoundingClientRect().height*0.4);
+      const maxAng=60*Math.PI/180;
+      const pullAng=Math.max(0,Math.min(maxAng,(dy/maxPx)*maxAng));
+      this._dragAngle=pullAng;
+      this.currentAngle=pullAng;
+      this.draw(pullAng);
+      e.preventDefault();
+    };
+    const end=(e)=>{
+      if(!this._dragging)return;
+      this._dragging=false;
+      this._dragEndTime=performance.now(); // prevent click from killing animation
+      c.style.cursor='grab';
+      c.style.touchAction='pan-y'; // restore scrolling
+      navigator.vibrate?.(15);
+      // Any drag > 0.01 rad (~0.6°) triggers animation — no dead zone
+      if(this._dragAngle>0.01){
+        // Set the initial pull slider to match drag angle (no 5° minimum clamp)
+        const deg=Math.round(this._dragAngle*180/Math.PI);
+        const el=document.getElementById('initialPull');
+        el.value=Math.min(60,Math.max(1,deg));
+        const out=document.getElementById('initialPull-val');
+        if(out)out.textContent=el.value+'\u00B0';
+        // Recalc FIRST (updates dashboard), then animate (avoids visual flash)
+        const p=Physics.readParams();
+        const results=Physics.computeAll(p);
+        if(typeof recalc==='function') recalc();
+        this.startAnimation(results);
+      } else {
+        // Tap/click without dragging — check for double-tap (full pull) vs single tap (hint)
+        const now=performance.now();
+        if(this._lastWeightTap&&now-this._lastWeightTap<400){
+          // DOUBLE-TAP: Full pull using initialPull slider value!
+          clearTimeout(this._tapHintTimer);
+          this._lastWeightTap=0;
+          const p=Physics.readParams();
+          const results=Physics.computeAll(p);
+          if(typeof recalc==='function') recalc();
+          this.startAnimation(results);
+          navigator.vibrate?.([10,50,10]); // distinct vibration pattern for double-tap
+        } else {
+          // First tap — wait to see if it becomes a double-tap
+          this._lastWeightTap=now;
+          const _ra=this._restInfo?this._restInfo.restAngle:0;this.currentAngle=_ra;this.draw(_ra);
+          this._tapHintTimer=setTimeout(()=>{
+            // Single tap confirmed — pulse drag hint to teach user to PULL down
+            const hint=document.getElementById('drag-hint');
+            if(hint&&!hint.classList.contains('hide')){
+              hint.style.animation='none';hint.offsetHeight;
+              hint.style.animation='hintPulse 0.5s ease-in-out 3';
+            }
+            setTimeout(()=>{if(!this.animating&&!this._dragging)this._startBreathing();},500);
+          },350);
+        }
+      }
+    };
+    // Handle touchcancel (e.g., system gesture, notification)
+    c.addEventListener('touchcancel',(e)=>{
+      if(!this._dragging)return;
+      this._dragging=false;
+      c.style.cursor='grab';
+      c.style.touchAction='pan-y';
+      const _ra=this._restInfo?this._restInfo.restAngle:0;this.currentAngle=_ra;this.draw(_ra);
+      setTimeout(()=>{if(!this.animating&&!this._dragging)this._startBreathing();},500);
+    });
+    // Hover cursor
+    c.addEventListener('mousemove',(e)=>{
+      if(this._dragging)return;
+      if(!this._weightPos)return;
+      const r=c.getBoundingClientRect();
+      const y=e.clientY-r.top;
+      const dist=Math.abs(y-this._weightPos.y);
+      // Show grab cursor even during animation — user can stop and re-pull
+      c.style.cursor=dist<this._weightPos.r+30?'grab':'default';
+    });
+    c.addEventListener('mousedown',start);
+    c.addEventListener('mousemove',move);
+    c.addEventListener('mouseup',end);
+    c.addEventListener('mouseleave',(e)=>{if(this._dragging)end(e);});
+    c.addEventListener('touchstart',start,{passive:false});
+    c.addEventListener('touchmove',move,{passive:false});
+    c.addEventListener('touchend',end);
+  },
+  resize() {
+    const r=this.canvas.getBoundingClientRect();
+    this.canvas.width=r.width*this.dpr; this.canvas.height=r.height*this.dpr;
+    this.W=r.width; this.H=r.height; // cache dimensions — avoids layout thrash on every draw
+    this.ctx.setTransform(this.dpr,0,0,this.dpr,0,0);
+    const pr=this.plotCanvas.getBoundingClientRect();
+    this.plotW=pr.width; this.plotH=pr.height;
+    this.plotCanvas.width=pr.width*this.dpr; this.plotCanvas.height=pr.height*this.dpr;
+    this.plotCtx.setTransform(this.dpr,0,0,this.dpr,0,0);
+    this.draw();
+    // Redraw plot on resize (prevents blank plot after orientation change)
+    if(this.simData&&this._restInfo) this.drawPlot(this.simData,this.simDt,this._restInfo);
+  },
+
+  draw(angle, params) {
+    angle = (angle !== undefined && angle !== null) ? angle : (this.currentAngle ?? 0);
+    const ctx = this.ctx;
+    const W = this.W, H = this.H; // use cached dimensions (no layout thrash)
+    const p = params || this._lp;
+    if (!p) return;
+    this._lp = p;
+    ctx.clearRect(0, 0, W, H);
+
+    // Grid
+    ctx.strokeStyle='rgba(255,255,255,0.03)'; ctx.lineWidth=0.5;
+    for(let x=0;x<W;x+=40){ctx.beginPath();ctx.moveTo(x,0);ctx.lineTo(x,H);ctx.stroke();}
+    for(let y=0;y<H;y+=40){ctx.beginPath();ctx.moveTo(0,y);ctx.lineTo(W,y);ctx.stroke();}
+
+    // Scale: fit everything nicely
+    const maxWingPx = W * 0.38; // max wing length in pixels (so it fits)
+    const wingLenPx = Math.min(p.halfSpan * 600, maxWingPx); // scale factor ~600px/m, capped
+    const scaleFactor = wingLenPx / p.halfSpan; // px per meter
+    const chordPx = Math.min(p.chord * scaleFactor, 40); // cap chord display
+    const linkagePx = p.linkageR * scaleFactor;
+
+    const cx = W / 2;
+    // Layout: ceiling -> bar -> strings -> wings+body -> pull string -> weight
+    const ceilingY = 20;
+    const bodyY = H * 0.35; // Move wings down ~35% of canvas
+    const bodyH = Math.max(20, Math.min(40, p.bodyMass * 250));
+    const bodyW = Math.max(10, Math.min(22, bodyH * 0.5));
+    const pivotY = bodyY + bodyH * 0.35;
+    const stringDropPx = Math.max(50, Math.min(180, p.stringLen * scaleFactor));
+    // Weight position responds to wing angle — linkage mechanics:
+    // When wings tilt up, linkage string shortens → weight drops down
+    // When wings return to level, weight rises back up
+    const dragExtra = this._dragging ? (this._dragAngle / (60*Math.PI/180)) * 200 : 0;
+    const _restA = this._restInfo ? this._restInfo.restAngle : 0;
+    const animExtra = (!this._dragging && Math.abs(angle - _restA) > 0.01) ? Math.abs(angle - _restA) * linkagePx * 1.5 : 0;
+    const weightY = bodyY + bodyH + stringDropPx + dragExtra + animExtra;
+    const _mob = window.innerWidth < 600;
+    const weightR = Math.max(_mob?14:7, Math.min(_mob?22:16, Math.sqrt(p.pullMass * 1000) * 2));
+
+    // ===== CEILING (subtle gradient line) =====
+    const ceilW = Math.max(wingLenPx * 2 + 40, 120);
+    const ceilGrd = ctx.createLinearGradient(cx - ceilW/2, 0, cx + ceilW/2, 0);
+    ceilGrd.addColorStop(0, 'transparent'); ceilGrd.addColorStop(0.2, 'rgba(196,164,105,0.25)');
+    ceilGrd.addColorStop(0.5, 'rgba(196,164,105,0.4)'); ceilGrd.addColorStop(0.8, 'rgba(196,164,105,0.25)');
+    ceilGrd.addColorStop(1, 'transparent');
+    ctx.beginPath(); ctx.moveTo(cx - ceilW/2, ceilingY); ctx.lineTo(cx + ceilW/2, ceilingY);
+    ctx.strokeStyle=ceilGrd; ctx.lineWidth=1.5; ctx.stroke();
+    ctx.font='600 9px Inter,system-ui,sans-serif'; ctx.fillStyle='rgba(196,164,105,0.35)';
+    ctx.textAlign='center'; ctx.fillText('\u2302 CEILING', cx, 14);
+
+    // Calculate linkage points on wings (where strings from bar attach)
+    const tipLx = cx - wingLenPx * Math.cos(angle);
+    const tipLy = pivotY - wingLenPx * Math.sin(angle);
+    const tipRx = cx + wingLenPx * Math.cos(angle);
+    const tipRy = tipLy;
+    const lkLx = cx - linkagePx * Math.cos(angle);
+    const lkLy = pivotY - linkagePx * Math.sin(angle);
+    const lkRx = cx + linkagePx * Math.cos(angle);
+    const lkRy = lkLy;
+
+    // ===== SPREADER BAR + CEILING STRING =====
+    // Bar hangs from ceiling by a single string, positioned between ceiling and wings
+    const barY = ceilingY + 22;
+    // Bar width matches the linkage point spread at rest (no angle)
+    const barHalfW = linkagePx;
+    const barLx = cx - barHalfW;
+    const barRx = cx + barHalfW;
+
+    // Single string from ceiling hook to bar center
+    ctx.beginPath(); ctx.arc(cx, ceilingY, 3, 0, Math.PI*2);
+    ctx.fillStyle='#5b6b8a'; ctx.fill();
+    ctx.beginPath(); ctx.moveTo(cx, ceilingY); ctx.lineTo(cx, barY);
+    ctx.strokeStyle='#8b7340'; ctx.lineWidth=1.5;
+    ctx.setLineDash([4,3]); ctx.stroke(); ctx.setLineDash([]);
+
+    // Horizontal spreader bar (wooden dowel)
+    ctx.save(); ctx.shadowColor='rgba(0,0,0,0.3)'; ctx.shadowBlur=4; ctx.shadowOffsetY=2;
+    ctx.beginPath(); ctx.moveTo(barLx, barY); ctx.lineTo(barRx, barY);
+    ctx.strokeStyle='#d4b87a'; ctx.lineWidth=5; ctx.setLineDash([]); ctx.stroke();
+    ctx.restore();
+    // End caps on bar
+    [barLx, barRx].forEach(bx => {
+      ctx.beginPath(); ctx.arc(bx, barY, 3, 0, Math.PI*2);
+      ctx.fillStyle='#c9a96e'; ctx.fill();
+    });
+    ctx.font='bold 9px Inter,system-ui,sans-serif'; ctx.fillStyle='#c9a96e';
+    ctx.textAlign='left'; ctx.fillText('SPREADER BAR', barRx + 6, barY + 3);
+
+    // ===== GHOST WINGS (at rest angle, not flat) =====
+    const ghostAngle=this._restInfo?this._restInfo.restAngle:0;
+    this._wing(ctx,cx,pivotY,wingLenPx,chordPx,ghostAngle,p.taper,true,false);
+    this._wing(ctx,cx,pivotY,wingLenPx,chordPx,ghostAngle,p.taper,true,true);
+
+    // ===== WING SHADOW (moves with flap angle) =====
+    ctx.save();
+    ctx.globalAlpha = 0.1;
+    ctx.filter = 'blur(6px)';
+    const shOff = 12 + Math.abs(angle) * 25;
+    this._wing(ctx,cx,pivotY+shOff,wingLenPx*0.95,chordPx*0.3,angle*0.3,p.taper,false,false);
+    this._wing(ctx,cx,pivotY+shOff,wingLenPx*0.95,chordPx*0.3,angle*0.3,p.taper,false,true);
+    ctx.restore();
+
+    // ===== ACTIVE WINGS at current angle =====
+    this._wing(ctx,cx,pivotY,wingLenPx,chordPx,angle,p.taper,false,false);
+    this._wing(ctx,cx,pivotY,wingLenPx,chordPx,angle,p.taper,false,true);
+
+    // ===== STRINGS FROM BAR DOWN TO WINGS =====
+    ctx.beginPath();
+    ctx.moveTo(barLx, barY); ctx.lineTo(lkLx, lkLy);
+    ctx.moveTo(barRx, barY); ctx.lineTo(lkRx, lkRy);
+    ctx.strokeStyle='#8b7340'; ctx.lineWidth=1.5;
+    ctx.setLineDash([4,3]); ctx.stroke(); ctx.setLineDash([]);
+    // Dots at wing attachment
+    ctx.fillStyle='#38bdf8';
+    ctx.beginPath(); ctx.arc(lkLx, lkLy, 3, 0, Math.PI*2); ctx.fill();
+    ctx.beginPath(); ctx.arc(lkRx, lkRy, 3, 0, Math.PI*2); ctx.fill();
+    // Label
+    ctx.font='9px Inter,system-ui,sans-serif'; ctx.fillStyle='#8b7340';
+    ctx.textAlign='left';
+    ctx.fillText('string to wing (' + p.linkagePct + '%)', lkRx + 6, (barY + lkRy) / 2);
+
+    // ===== WINGSPAN DIMENSION LINE =====
+    const dimY = pivotY - chordPx - 18;
+    ctx.beginPath(); ctx.moveTo(tipLx, dimY); ctx.lineTo(tipRx, dimY);
+    ctx.strokeStyle='#5b6b8a'; ctx.lineWidth=1; ctx.setLineDash([2,2]); ctx.stroke(); ctx.setLineDash([]);
+    [tipLx, tipRx].forEach(x => {
+      ctx.beginPath(); ctx.moveTo(x, dimY-5); ctx.lineTo(x, dimY+5);
+      ctx.strokeStyle='#5b6b8a'; ctx.lineWidth=1; ctx.stroke();
+    });
+    ctx.font='bold 11px Inter,system-ui,sans-serif'; ctx.fillStyle='#8892a8';
+    ctx.textAlign='center'; ctx.fillText(p.wingspanCm + ' cm wingspan', cx, dimY - 8);
+
+    // Wing weight labels
+    ctx.font='9px Inter,system-ui,sans-serif'; ctx.fillStyle='#b89d5e';
+    ctx.textAlign='center';
+    ctx.fillText(p.wingWeightG + 'g each wing', cx - wingLenPx * 0.5, pivotY + chordPx + 14);
+
+    // ===== TIP WEIGHTS =====
+    if (p.tipMass > 0.0005) {
+      const tr = Math.max(5, Math.min(12, Math.sqrt(p.tipMass * 1000) * 1.8));
+      [tipLx, tipRx].forEach(tx => {
+        ctx.beginPath(); ctx.arc(tx, tipLy, tr, 0, Math.PI * 2);
+        ctx.fillStyle='#ff9f43'; ctx.fill();
+        ctx.strokeStyle='#fff'; ctx.lineWidth=1.5; ctx.stroke();
+      });
+      ctx.font='bold 9px Inter,system-ui,sans-serif'; ctx.fillStyle='#ff9f43';
+      ctx.textAlign='right'; ctx.fillText(p.tipWeightG + 'g tip', tipLx - 8, tipLy + 3);
+    }
+
+    // ===== BUTTERFLY BODY =====
+    const bodyCx = cx;
+    const bodyTopY = bodyY;
+    const bodyBotY = bodyY + bodyH;
+    const bodyMidY = pivotY;
+
+    // Head (circle at top of body)
+    const headR = Math.max(5, bodyW * 0.6);
+    ctx.beginPath(); ctx.arc(bodyCx, bodyTopY + headR, headR, 0, Math.PI * 2);
+    const hg = ctx.createRadialGradient(bodyCx - 1, bodyTopY + headR - 2, 1, bodyCx, bodyTopY + headR, headR);
+    hg.addColorStop(0, '#e8d5a3'); hg.addColorStop(1, '#b89d5e');
+    ctx.fillStyle = hg; ctx.fill();
+    ctx.strokeStyle='#8b7340'; ctx.lineWidth=1.5; ctx.stroke();
+
+    // Antennae
+    const antLen = headR * 2.5;
+    ctx.beginPath();
+    ctx.moveTo(bodyCx - 2, bodyTopY + headR - headR * 0.7);
+    ctx.quadraticCurveTo(bodyCx - headR * 2, bodyTopY - antLen * 0.5, bodyCx - headR * 1.5, bodyTopY - antLen * 0.3);
+    ctx.moveTo(bodyCx + 2, bodyTopY + headR - headR * 0.7);
+    ctx.quadraticCurveTo(bodyCx + headR * 2, bodyTopY - antLen * 0.5, bodyCx + headR * 1.5, bodyTopY - antLen * 0.3);
+    ctx.strokeStyle='#b89d5e'; ctx.lineWidth=1.5; ctx.stroke();
+    // Antenna tips
+    [bodyCx - headR * 1.5, bodyCx + headR * 1.5].forEach(ax => {
+      ctx.beginPath(); ctx.arc(ax, bodyTopY - antLen * 0.3, 2, 0, Math.PI * 2);
+      ctx.fillStyle='#c9a96e'; ctx.fill();
+    });
+
+    // Thorax (where wings attach — slightly wider)
+    ctx.beginPath(); ctx.ellipse(bodyCx, bodyMidY, bodyW * 0.8, bodyH * 0.2, 0, 0, Math.PI * 2);
+    const thg = ctx.createRadialGradient(bodyCx - 1, bodyMidY - 2, 1, bodyCx, bodyMidY, bodyH * 0.2);
+    thg.addColorStop(0, '#d4b87a'); thg.addColorStop(1, '#8b7340');
+    ctx.fillStyle = thg; ctx.fill();
+    ctx.strokeStyle='#8b7340'; ctx.lineWidth=1; ctx.stroke();
+
+    // Abdomen (tapered below thorax)
+    ctx.beginPath();
+    ctx.moveTo(bodyCx - bodyW * 0.7, bodyMidY + bodyH * 0.1);
+    ctx.quadraticCurveTo(bodyCx - bodyW * 0.8, bodyBotY - bodyH * 0.1, bodyCx, bodyBotY);
+    ctx.quadraticCurveTo(bodyCx + bodyW * 0.8, bodyBotY - bodyH * 0.1, bodyCx + bodyW * 0.7, bodyMidY + bodyH * 0.1);
+    ctx.closePath();
+    const abg = ctx.createLinearGradient(bodyCx, bodyMidY, bodyCx, bodyBotY);
+    abg.addColorStop(0, '#c9a96e'); abg.addColorStop(1, '#6b5230');
+    ctx.fillStyle = abg; ctx.fill();
+    ctx.strokeStyle='#8b7340'; ctx.lineWidth=1; ctx.stroke();
+
+    // Body label
+    ctx.font='bold 10px Inter,system-ui,sans-serif'; ctx.fillStyle='#c9a96e';
+    ctx.textAlign='left'; ctx.fillText('BODY ' + p.bodyWeightG + 'g', bodyCx + bodyW + 12, bodyMidY + 3);
+
+    // ===== PIVOT (hinge where wings meet body) =====
+    ctx.save(); ctx.shadowColor='rgba(0,146,188,0.4)'; ctx.shadowBlur=8;
+    ctx.beginPath(); ctx.arc(cx, pivotY, 5, 0, Math.PI * 2);
+    ctx.fillStyle='#e8d5a3'; ctx.fill();
+    ctx.strokeStyle='#b89d5e'; ctx.lineWidth=1.5; ctx.stroke();
+    ctx.restore();
+    ctx.font='bold 9px Inter,system-ui,sans-serif'; ctx.fillStyle='#e8d5a3';
+    ctx.textAlign='right'; ctx.fillText('PIVOT', cx - bodyW - 6, pivotY + 3);
+
+    // ===== PULL STRING (body to weight) =====
+    ctx.beginPath(); ctx.moveTo(cx, bodyY + bodyH); ctx.lineTo(cx, weightY);
+    ctx.strokeStyle='#6a7a98'; ctx.lineWidth=2;
+    ctx.setLineDash([3,3]); ctx.stroke(); ctx.setLineDash([]);
+    ctx.font='9px Inter,system-ui,sans-serif'; ctx.fillStyle='#4a5a78';
+    ctx.textAlign='left'; ctx.fillText(p.stringLenCm + 'cm drop', cx + 8, (bodyY + bodyH + weightY) / 2);
+
+    // ===== PULL WEIGHT =====
+    ctx.save(); ctx.shadowColor='rgba(154,171,191,0.3)'; ctx.shadowBlur=10;
+    ctx.beginPath(); ctx.arc(cx, weightY, weightR, 0, Math.PI * 2);
+    const wg = ctx.createRadialGradient(cx - 2, weightY - 2, 1, cx, weightY, weightR);
+    wg.addColorStop(0, '#b0c0d4'); wg.addColorStop(1, '#5a6a82');
+    ctx.fillStyle = wg; ctx.fill();
+    ctx.strokeStyle='#c0cfdf'; ctx.lineWidth=2.5; ctx.stroke();
+    ctx.restore();
+    // Label pill background
+    const lblY = weightY + weightR + 12;
+    const lblW = 80, lblH = 28;
+    ctx.fillStyle='rgba(10,14,26,0.7)'; ctx.beginPath();
+    ctx.roundRect(cx - lblW/2, lblY - 10, lblW, lblH, 6); ctx.fill();
+    ctx.font='bold 10px Inter,system-ui,sans-serif'; ctx.fillStyle='#b0c0d4';
+    ctx.textAlign='center'; ctx.fillText('PULL WEIGHT', cx, lblY + 2);
+    ctx.fillText(p.pullWeightG + 'g', cx, lblY + 14);
+
+    // Store weight position for drag interaction
+    this._weightPos = {x: cx, y: weightY, r: weightR};
+
+    // ===== ANGLE ARC =====
+    if (Math.abs(angle) > 0.02) {
+      const ar = Math.min(30, wingLenPx * 0.25);
+      ctx.beginPath();
+      ctx.arc(cx, pivotY, ar, 0, -angle, angle > 0);
+      ctx.strokeStyle='#38bdf8'; ctx.lineWidth=1.5; ctx.stroke();
+      ctx.fillStyle='#38bdf8'; ctx.font='bold 10px Inter,system-ui,sans-serif';
+      ctx.textAlign='left';
+      ctx.fillText(Math.abs(angle * 180 / Math.PI).toFixed(0) + '\u00B0', cx + ar + 6, pivotY - 6);
+    }
+
+    // ===== BALANCE STATUS INDICATOR =====
+    const ri = this._restInfo;
+    if (ri && !this.animating) {
+      const br = ri.balanceRatio;
+      let sColor, sLabel;
+      if (br >= 1) { sColor = '#34d399'; sLabel = 'WINGS LEVEL'; }
+      else if (br >= 0.85) { sColor = '#fbbf24'; sLabel = 'SLIGHT DROOP'; }
+      else if (br >= 0.5) { sColor = '#fb923c'; sLabel = 'TIPS FALLING'; }
+      else { sColor = '#f87171'; sLabel = 'TIPS COLLAPSING'; }
+      ctx.font = 'bold 9px Inter,system-ui,sans-serif';
+      const tw_ = ctx.measureText(sLabel).width;
+      const bx = W - tw_ - 30, by = 32;
+      ctx.fillStyle = sColor + '18';
+      ctx.beginPath();
+      if (ctx.roundRect) ctx.roundRect(bx - 10, by - 11, tw_ + 28, 20, 10);
+      else { ctx.rect(bx - 10, by - 11, tw_ + 28, 20); }
+      ctx.fill();
+      ctx.strokeStyle = sColor + '50'; ctx.lineWidth = 1; ctx.stroke();
+      ctx.beginPath(); ctx.arc(bx, by, 3, 0, Math.PI * 2);
+      ctx.fillStyle = sColor; ctx.fill();
+      ctx.fillStyle = sColor; ctx.textAlign = 'left';
+      ctx.fillText(sLabel, bx + 8, by + 3);
+      // Show droop angle if drooping
+      if (br < 1) {
+        const droopDeg = Math.abs(ri.restAngle * 180 / Math.PI).toFixed(0);
+        ctx.font = '8px Inter,system-ui,sans-serif'; ctx.fillStyle = sColor + 'aa';
+        ctx.fillText(droopDeg + '\u00B0 droop', bx + 8, by + 15);
+      }
+    }
+
+    // ===== FLAP DURATION TIMER (always visible) =====
+    // Shows real physics-based estimate of visible flap duration.
+    // During animation: real-time countdown with phase indicator.
+    // At rest: static estimate badge.
+    {
+      const fi = this.flapInfo;
+      const tx2 = 14, ty2 = 52;
+      const isAnim = this.animating && this.simData;
+      const simElapsed = isAnim ? this.simIndex * this.simDt : 0;
+      const visTime = fi ? fi.visibleTime : 0;
+      const visFlaps = fi ? fi.visibleFlaps : 0;
+
+      // Determine display state and colors
+      let line1 = '', line2 = '', accentCol = '#0092BC', bgAlpha = 0.15, borderAlpha = 0.4;
+      let pct = 0;
+
+      if (!fi || visTime <= 0) {
+        // No flapping possible
+        line1 = '\u23F1 0s';
+        line2 = "Won't flap";
+        accentCol = '#f87171'; bgAlpha = 0.12; borderAlpha = 0.3;
+      } else if (!isAnim) {
+        // Static estimate (not animating)
+        line1 = '\u23F1 ~' + visTime.toFixed(1) + 's of flight';
+        line2 = visFlaps + ' visible flap' + (visFlaps !== 1 ? 's' : '') + ' \u00B7 ' + (fi.avgPeriod > 0 ? fi.avgPeriod.toFixed(1) + 's each' : '');
+        accentCol = visFlaps >= 5 ? '#34d399' : visFlaps >= 3 ? '#fbbf24' : '#f87171';
+      } else if (simElapsed <= visTime) {
+        // Animating: within visible flap window
+        const remaining = visTime - simElapsed;
+        pct = simElapsed / visTime;
+        line1 = '\u23F1 ' + simElapsed.toFixed(1) + 's / ' + visTime.toFixed(1) + 's';
+        // Count flaps so far from peaks data
+        let flapsSoFar = 0;
+        if (fi.peaks) {
+          const visiblePeaks = fi.peaks.filter(p => p.time <= simElapsed && p.tipCm >= fi.minVisibleCm);
+          flapsSoFar = Math.ceil(visiblePeaks.length / 2);
+        }
+        line2 = 'Flap ' + flapsSoFar + '/' + visFlaps + ' \u00B7 ' + remaining.toFixed(1) + 's left';
+        accentCol = '#0092BC';
+      } else if (simElapsed <= (fi.settleTime || visTime * 1.5)) {
+        // Animating: past visible but still settling
+        pct = 1;
+        line1 = '\u23F1 Settling\u2026';
+        line2 = 'Visible flapping ended at ' + visTime.toFixed(1) + 's';
+        accentCol = '#94a3b8'; bgAlpha = 0.1; borderAlpha = 0.25;
+      } else {
+        // Fully at rest
+        pct = 1;
+        line1 = '\u2714 At rest';
+        line2 = 'Flapped ' + visTime.toFixed(1) + 's (' + visFlaps + ' flaps)';
+        accentCol = '#34d399'; bgAlpha = 0.1; borderAlpha = 0.25;
+      }
+
+      // Draw badge background
+      ctx.font = 'bold 12px Inter,system-ui,sans-serif';
+      const w1 = ctx.measureText(line1).width;
+      ctx.font = '10px Inter,system-ui,sans-serif';
+      const w2 = ctx.measureText(line2).width;
+      const badgeW = Math.max(w1, w2) + 20;
+      const badgeH = line2 ? 38 : 22;
+
+      // Background pill (solid for readability on mobile)
+      ctx.fillStyle = 'rgba(9,13,24,0.95)'; // near-opaque for readability
+      ctx.beginPath();
+      if (ctx.roundRect) ctx.roundRect(tx2 - 6, ty2 - 14, badgeW, badgeH, 10);
+      else ctx.rect(tx2 - 6, ty2 - 14, badgeW, badgeH);
+      ctx.fill();
+      // Border
+      const r = parseInt(accentCol.slice(1,3)||'00',16), g = parseInt(accentCol.slice(3,5)||'92',16), b = parseInt(accentCol.slice(5,7)||'BC',16);
+      ctx.strokeStyle = 'rgba(' + r + ',' + g + ',' + b + ',' + borderAlpha + ')';
+      ctx.lineWidth = 1; ctx.stroke();
+
+      // Line 1 (main time)
+      ctx.font = 'bold 12px Inter,system-ui,sans-serif';
+      ctx.fillStyle = accentCol; ctx.textAlign = 'left';
+      ctx.fillText(line1, tx2 + 2, ty2 + 1);
+
+      // Line 2 (sub info)
+      if (line2) {
+        ctx.font = '10px Inter,system-ui,sans-serif';
+        ctx.fillStyle = 'rgba(' + r + ',' + g + ',' + b + ',0.7)';
+        ctx.fillText(line2, tx2 + 2, ty2 + 15);
+      }
+
+      // Progress bar (only during animation)
+      if (isAnim && visTime > 0) {
+        const barY2 = ty2 + (line2 ? 21 : 8);
+        const barW2 = badgeW - 4;
+        ctx.fillStyle = 'rgba(255,255,255,0.08)';
+        ctx.fillRect(tx2 - 4, barY2, barW2, 3);
+        ctx.fillStyle = accentCol;
+        ctx.fillRect(tx2 - 4, barY2, barW2 * Math.min(1, pct), 3);
+      }
+    }
+
+    // ===== WINGTIP SPARKLES (during animation) =====
+    if (this.animating) {
+      const sCols = ['#FFCD00','#FFD700','#e8c98e','#00843D','#0092BC','#fff'];
+      for (let s = 0; s < 2; s++) {
+        [{x:tipLx,y:tipLy},{x:tipRx,y:tipRy}].forEach(tp => {
+          this._sparkles.push({
+            x:tp.x+(Math.random()-0.5)*6, y:tp.y+(Math.random()-0.5)*6,
+            vx:(Math.random()-0.5)*1.5, vy:Math.random()*1.2+0.3,
+            life:1, decay:0.02+Math.random()*0.03,
+            size:1.5+Math.random()*2.5,
+            color:sCols[Math.floor(Math.random()*sCols.length)]
+          });
+        });
+      }
+    }
+    // Draw and age sparkles
+    for (let i = this._sparkles.length - 1; i >= 0; i--) {
+      const sp = this._sparkles[i];
+      sp.x += sp.vx; sp.y += sp.vy; sp.vy += 0.05; sp.life -= sp.decay;
+      if (sp.life <= 0) { this._sparkles.splice(i, 1); continue; }
+      ctx.save(); ctx.globalAlpha = sp.life * 0.8;
+      ctx.shadowColor = sp.color; ctx.shadowBlur = 4;
+      ctx.beginPath(); ctx.arc(sp.x, sp.y, sp.size * sp.life, 0, Math.PI * 2);
+      ctx.fillStyle = sp.color; ctx.fill(); ctx.restore();
+    }
+
+    // ===== INLINE WAVEFORM (bottom of canvas) =====
+    // Tall, transparent-background flap waveform with glowing tracer
+    // Pull weight and buttons are expected to overlap this — that's fine
+    if (this.simData && this.simData.length > 10) {
+      const sd = this.simData, sDt = this.simDt;
+      const fi = this.flapInfo;
+      const plotH = Math.min(320, H * 0.65); // HUGE — 65% of canvas, up near wings
+      const plotY = H - plotH;                // flush with bottom
+      const plotL = 30, plotR = W - 12;
+      const plotW = plotR - plotL;
+      const plotMid = plotY + plotH / 2;
+      const totalDur = sd.length * sDt;
+      const showDur = fi && fi.visibleTime > 0.5 ? Math.min(fi.visibleTime * 1.5, totalDur) : Math.min(totalDur, 15);
+
+      const showSamples = Math.min(sd.length, Math.ceil(showDur / sDt));
+      let maxAmp = 0;
+      for (let i = 0; i < showSamples; i++) maxAmp = Math.max(maxAmp, Math.abs(sd[i]));
+      maxAmp = Math.max(maxAmp, 0.02) * 1.15;
+
+      const toX2 = (t) => plotL + (t / showDur) * plotW;
+      const toY2 = (a) => plotMid - (a / maxAmp) * (plotH / 2 - 6);
+
+      // Zero line (faint)
+      ctx.beginPath();
+      ctx.moveTo(plotL, plotMid); ctx.lineTo(plotR, plotMid);
+      ctx.strokeStyle = 'rgba(255,255,255,0.08)'; ctx.lineWidth = 0.5; ctx.stroke();
+
+      // Time tick marks (very subtle)
+      ctx.font = '9px Inter,system-ui,sans-serif';
+      ctx.textAlign = 'center';
+      const tStep = showDur > 20 ? 5 : showDur > 8 ? 2 : 1;
+      for (let t = tStep; t < showDur; t += tStep) {
+        const xm = toX2(t);
+        ctx.beginPath(); ctx.moveTo(xm, plotMid - 4); ctx.lineTo(xm, plotMid + 4);
+        ctx.strokeStyle = 'rgba(255,255,255,0.1)'; ctx.lineWidth = 0.5; ctx.stroke();
+        ctx.fillStyle = 'rgba(255,255,255,0.18)';
+        ctx.fillText(t + 's', xm, plotY + plotH - 3);
+      }
+
+      // Decay envelope (gold dashed)
+      if (fi && fi.peaks && fi.peaks.length > 2) {
+        [1, -1].forEach(s => {
+          ctx.beginPath();
+          let started = false;
+          for (const pk of fi.peaks) {
+            if (pk.time > showDur) break;
+            const y = toY2(s * Math.abs(pk.angle));
+            if (!started) { ctx.moveTo(toX2(pk.time), y); started = true; }
+            else ctx.lineTo(toX2(pk.time), y);
+          }
+          ctx.strokeStyle = 'rgba(196,164,105,0.25)'; ctx.lineWidth = 1;
+          ctx.setLineDash([4, 4]); ctx.stroke(); ctx.setLineDash([]);
+        });
+      }
+
+      // Waveform gradient fill (blue glow fading to transparent)
+      ctx.beginPath(); ctx.moveTo(toX2(0), plotMid);
+      const step = Math.max(1, Math.floor(showSamples / (plotW * 1.5)));
+      for (let i = 0; i < showSamples; i += step) ctx.lineTo(toX2(i * sDt), toY2(sd[i]));
+      ctx.lineTo(toX2(Math.min(showSamples - 1, sd.length - 1) * sDt), plotMid);
+      ctx.closePath();
+      const fillGrad = ctx.createLinearGradient(0, plotY, 0, plotY + plotH);
+      fillGrad.addColorStop(0, 'rgba(56,189,248,0.12)');
+      fillGrad.addColorStop(0.5, 'rgba(56,189,248,0.04)');
+      fillGrad.addColorStop(1, 'rgba(56,189,248,0.10)');
+      ctx.fillStyle = fillGrad; ctx.fill();
+
+      // Waveform line (cyan, slightly thicker)
+      ctx.beginPath();
+      for (let i = 0; i < showSamples; i += step) {
+        const x = toX2(i * sDt), y = toY2(sd[i]);
+        if (i === 0) ctx.moveTo(x, y); else ctx.lineTo(x, y);
+      }
+      ctx.strokeStyle = 'rgba(56,189,248,0.6)'; ctx.lineWidth = 1.8; ctx.stroke();
+
+      // Visible duration end marker (green dashed vertical)
+      if (fi && fi.visibleTime > 0 && fi.visibleTime < showDur) {
+        const vx = toX2(fi.visibleTime);
+        ctx.beginPath(); ctx.moveTo(vx, plotY + 8); ctx.lineTo(vx, plotY + plotH - 8);
+        ctx.strokeStyle = 'rgba(52,211,153,0.4)'; ctx.lineWidth = 1;
+        ctx.setLineDash([3, 3]); ctx.stroke(); ctx.setLineDash([]);
+        // Label above
+        ctx.font = 'bold 9px Inter,system-ui,sans-serif';
+        ctx.fillStyle = 'rgba(52,211,153,0.6)'; ctx.textAlign = 'center';
+        ctx.fillText(fi.visibleTime.toFixed(1) + 's visible', vx, plotY + 6);
+      }
+
+      // ===== TRACER DOT (synced to wing animation) =====
+      if (this.animating && this.simIndex < sd.length) {
+        const elapsed = this.simIndex * sDt;
+        if (elapsed <= showDur) {
+          const dotX = toX2(elapsed);
+          const dotY = toY2(sd[this.simIndex]);
+
+          // Vertical scan line (subtle)
+          ctx.beginPath(); ctx.moveTo(dotX, plotY + 6); ctx.lineTo(dotX, plotY + plotH - 6);
+          ctx.strokeStyle = 'rgba(244,114,182,0.25)'; ctx.lineWidth = 1; ctx.stroke();
+
+          // Hot trail (recent 0.5s of waveform, highlighted pink)
+          const trailSamples = Math.round(0.5 / sDt);
+          const trailStart = Math.max(0, this.simIndex - trailSamples);
+          ctx.beginPath();
+          for (let i = trailStart; i <= this.simIndex; i += Math.max(1, step)) {
+            const tx3 = toX2(i * sDt), ty3 = toY2(sd[i]);
+            if (i === trailStart) ctx.moveTo(tx3, ty3); else ctx.lineTo(tx3, ty3);
+          }
+          ctx.strokeStyle = '#f472b6'; ctx.lineWidth = 3; ctx.stroke();
+
+          // Glow halo
+          const grd = ctx.createRadialGradient(dotX, dotY, 0, dotX, dotY, 16);
+          grd.addColorStop(0, 'rgba(244,114,182,0.6)');
+          grd.addColorStop(0.5, 'rgba(244,114,182,0.15)');
+          grd.addColorStop(1, 'rgba(244,114,182,0)');
+          ctx.fillStyle = grd;
+          ctx.fillRect(dotX - 16, dotY - 16, 32, 32);
+
+          // Dot with white ring
+          ctx.beginPath(); ctx.arc(dotX, dotY, 5, 0, Math.PI * 2);
+          ctx.fillStyle = '#f472b6'; ctx.fill();
+          ctx.strokeStyle = 'rgba(255,255,255,0.8)'; ctx.lineWidth = 2; ctx.stroke();
+        }
+      }
+
+      // Angle labels on left edge
+      ctx.font = '8px Inter,system-ui,sans-serif'; ctx.textAlign = 'right';
+      ctx.fillStyle = 'rgba(255,255,255,0.15)';
+      ctx.fillText('0°', plotL - 4, plotMid + 3);
+      const md = (maxAmp * 180 / Math.PI).toFixed(0);
+      ctx.fillText('+' + md + '°', plotL - 4, plotY + 12);
+      ctx.fillText('-' + md + '°', plotL - 4, plotY + plotH - 5);
+    }
+  },
+
+  // Draw one butterfly wing. angle=0 = flat horizontal. Positive angle = tips go UP.
+  _wing(ctx, cx, py, len, chord, angle, taper, ghost, mirror) {
+    const dir = mirror ? 1 : -1;
+    const cosA=Math.cos(angle), sinA=Math.sin(angle);
+    // Transform wing-local coords to canvas
+    const tx = (wx, wy) => [cx + dir * wx * cosA, py - wx * sinA + wy];
+
+    // Butterfly wing shape: rounded, wider at ~60%, tapers to root and tip
+    const maxW = chord * 1.2; // max width at widest point
+    const tipW = chord * taper * 0.5; // narrow at tip
+
+    // Key points along wing (wing-local: along-wing, perpendicular)
+    const p0 = tx(0, -chord*0.3);        // root top
+    const p1 = tx(len*0.15, -maxW*0.55); // early bulge top
+    const p2 = tx(len*0.5, -maxW*0.65);  // peak width top
+    const p3 = tx(len*0.8, -maxW*0.35);  // narrowing top
+    const p4 = tx(len, -tipW*0.3);       // tip top
+    const p5 = tx(len, tipW*0.3);        // tip bottom
+    const p6 = tx(len*0.8, maxW*0.45);   // narrowing bottom
+    const p7 = tx(len*0.5, maxW*0.7);    // peak width bottom (hindwing bulge)
+    const p8 = tx(len*0.15, maxW*0.55);  // early bulge bottom
+    const p9 = tx(0, chord*0.35);        // root bottom
+
+    ctx.beginPath();
+    ctx.moveTo(p0[0], p0[1]);
+    ctx.bezierCurveTo(p1[0],p1[1], p2[0],p2[1], p3[0],p3[1]);
+    ctx.quadraticCurveTo(p4[0],p4[1], p5[0],p5[1]);
+    ctx.bezierCurveTo(p6[0],p6[1], p7[0],p7[1], p8[0],p8[1]);
+    ctx.quadraticCurveTo(p9[0],p9[1], p0[0],p0[1]);
+    ctx.closePath();
+
+    if (ghost) {
+      ctx.fillStyle='rgba(220,200,149,0.05)'; ctx.fill();
+    } else {
+      // Gradient fill with butterfly colors
+      const g=ctx.createLinearGradient(p0[0],p0[1],p4[0],p4[1]);
+      g.addColorStop(0,'#e8c98e'); g.addColorStop(0.3,'#dca8b0');
+      g.addColorStop(0.6,'#c9a0c4'); g.addColorStop(0.85,'#a0c4b8');
+      g.addColorStop(1,'#8bb8a0');
+      ctx.fillStyle=g; ctx.fill();
+      ctx.strokeStyle='#8b7340'; ctx.lineWidth=1.5; ctx.stroke();
+
+      // Wing vein (spar)
+      const s1=tx(0,0), s2=tx(len*0.92,0);
+      ctx.beginPath(); ctx.moveTo(s1[0],s1[1]); ctx.lineTo(s2[0],s2[1]);
+      ctx.strokeStyle='rgba(139,115,64,0.5)'; ctx.lineWidth=1.5; ctx.stroke();
+
+      // Decorative eye spot
+      const eyePos = tx(len*0.55, maxW*0.05);
+      const eyeR = Math.max(4, Math.min(12, chord*0.25));
+      ctx.beginPath(); ctx.arc(eyePos[0],eyePos[1],eyeR,0,Math.PI*2);
+      ctx.fillStyle='rgba(100,180,200,0.4)'; ctx.fill();
+      ctx.strokeStyle='rgba(139,115,64,0.3)'; ctx.lineWidth=1; ctx.stroke();
+      ctx.beginPath(); ctx.arc(eyePos[0],eyePos[1],eyeR*0.5,0,Math.PI*2);
+      ctx.fillStyle='rgba(200,160,180,0.5)'; ctx.fill();
+    }
+  },
+
+  drawPlot(simData, dt, results) {
+    // Skip if plot section is hidden (waveform is now inline in wing canvas)
+    if(this.plotCanvas.offsetParent===null) return;
+    const ctx=this.plotCtx;
+    const W=this.plotW||this.plotCanvas.getBoundingClientRect().width;
+    const H=this.plotH||this.plotCanvas.getBoundingClientRect().height;
+    ctx.clearRect(0,0,W,H);
+    if(!simData||simData.length===0) return;
+    const pad={top:20,bottom:25,left:45,right:20};
+    const pW=W-pad.left-pad.right, pH=H-pad.top-pad.bottom;
+    let mx=0; for(let i=0;i<simData.length;i++) mx=Math.max(mx,Math.abs(simData[i]));
+    mx=Math.max(mx,0.05)*1.15;
+    const dur=simData.length*dt;
+    const toX=t=>pad.left+(t/dur)*pW;
+    const toY=a=>pad.top+pH/2-(a/mx)*(pH/2);
+
+    ctx.strokeStyle='rgba(255,255,255,0.06)'; ctx.lineWidth=0.5;
+    const ts=dur>20?5:dur>10?2:1;
+    for(let t=0;t<=dur;t+=ts){const x=toX(t);ctx.beginPath();ctx.moveTo(x,pad.top);ctx.lineTo(x,H-pad.bottom);ctx.stroke();
+      ctx.fillStyle='#8892a8';ctx.font='10px Inter,system-ui,sans-serif';ctx.textAlign='center';ctx.fillText(t+'s',x,H-8);}
+    ctx.beginPath();ctx.moveTo(pad.left,toY(0));ctx.lineTo(W-pad.right,toY(0));ctx.strokeStyle='rgba(255,255,255,0.15)';ctx.lineWidth=1;ctx.stroke();
+    ctx.fillStyle='#8892a8';ctx.font='10px Inter,system-ui,sans-serif';ctx.textAlign='right';
+    const md=(mx*180/Math.PI).toFixed(0);
+    ctx.fillText('+'+md+'\u00B0',pad.left-5,pad.top+8);
+    ctx.fillText('-'+md+'\u00B0',pad.left-5,H-pad.bottom-2);
+    ctx.fillText('0\u00B0',pad.left-5,toY(0)+4);
+
+    if(results&&results.zeta<1&&results.zeta>0){
+      [1,-1].forEach(s=>{ctx.beginPath();
+        for(let i=0;i<simData.length;i+=3){const t=i*dt;const e=s*results.params.initialPull*Math.exp(-results.zeta*results.omega_n*t);if(i===0)ctx.moveTo(toX(t),toY(e));else ctx.lineTo(toX(t),toY(e));}
+        ctx.strokeStyle='rgba(251,191,36,0.4)';ctx.lineWidth=1;ctx.setLineDash([4,4]);ctx.stroke();ctx.setLineDash([]);});
+    }
+    ctx.beginPath();ctx.moveTo(toX(0),toY(0));
+    for(let i=0;i<simData.length;i+=2)ctx.lineTo(toX(i*dt),toY(simData[i]));
+    ctx.lineTo(toX((simData.length-1)*dt),toY(0));ctx.closePath();ctx.fillStyle='rgba(56,189,248,0.1)';ctx.fill();
+    ctx.beginPath();for(let i=0;i<simData.length;i+=2){const x=toX(i*dt),y=toY(simData[i]);if(i===0)ctx.moveTo(x,y);else ctx.lineTo(x,y);}
+    ctx.strokeStyle='#38bdf8';ctx.lineWidth=2;ctx.stroke();
+    if(this.animating&&this.simIndex<simData.length){
+      const px=toX(this.simIndex*dt);ctx.beginPath();ctx.moveTo(px,pad.top);ctx.lineTo(px,H-pad.bottom);ctx.strokeStyle='#f472b6';ctx.lineWidth=2;ctx.stroke();
+      ctx.beginPath();ctx.arc(px,toY(simData[this.simIndex]),5,0,Math.PI*2);ctx.fillStyle='#f472b6';ctx.fill();}
+    ctx.save();ctx.translate(12,pad.top+pH/2);ctx.rotate(-Math.PI/2);ctx.fillStyle='#8892a8';ctx.font='10px Inter,system-ui,sans-serif';ctx.textAlign='center';ctx.fillText('Wing Angle',0,0);ctx.restore();
+  },
+
+  _startBreathing() {
+    if (this._breathId) return;
+    const breathe = () => {
+      if (this.animating || this._dragging) { this._breathId = null; return; }
+      // Read restAngle LIVE each frame — never stale after slider changes
+      const restA = this._restInfo ? this._restInfo.restAngle : 0;
+      const b = Math.sin(performance.now() / 2000) * 0.008;
+      this.draw(restA + b);
+      this._breathId = requestAnimationFrame(breathe);
+    };
+    this._breathId = requestAnimationFrame(breathe);
+  },
+  _stopBreathing() {
+    if (this._breathId) { cancelAnimationFrame(this._breathId); this._breathId = null; }
+  },
+  startAnimation(results) {
+    this._stopBreathing();
+    this.stopAnimation();
+    this._sparkles = [];
+    const dur=Math.min(Math.max(results.decayTime*4,10),60);
+    this.simDt=1/120; this.simData=Physics.simulate(results,dur,this.simDt);
+    this.flapInfo=Physics.analyzeFlaps(this.simData,this.simDt,results.params.halfSpan);
+    this.simIndex=0; this.animating=true; this._r=results;
+    this.animStartTime=performance.now();
+    const go=(now)=>{if(!this.animating)return;
+      const elapsed=(now-this.animStartTime)/1000;
+      this.simIndex=Math.min(Math.floor(elapsed/this.simDt),this.simData.length-1);
+      if(this.simIndex>=this.simData.length-1){this.stopAnimation();return;}
+      this.currentAngle=this.simData[this.simIndex];this.draw(this.currentAngle);
+      this.animId=requestAnimationFrame(go);};
+    this.animId=requestAnimationFrame(go);
+  },
+  stopAnimation() {
+    this.animating=false;if(this.animId){cancelAnimationFrame(this.animId);this.animId=null;}
+    this.currentAngle=this._restInfo?this._restInfo.restAngle:0;
+    this.draw(this.currentAngle);
+    // Start gentle breathing after animation ends
+    setTimeout(() => { if (!this.animating && !this._dragging) this._startBreathing(); }, 500);
+  }
+};
+
+// ============= APP =============
+document.addEventListener('DOMContentLoaded', () => {
+  // Dismiss loading overlay
+  const _loadOv = document.getElementById('loading-overlay');
+  if (_loadOv) { _loadOv.classList.add('fade-out'); setTimeout(() => _loadOv.remove(), 600); }
+
+  let _celebTriggered = false;
+  let _sliderColorTimer = 0;
+  R.init();
+
+  // ===== SPEEDOMETER GAUGE (Canvas-drawn half-circle) =====
+  const speedoCanvas = document.getElementById('speedo-canvas');
+  let speedoDpr = window.devicePixelRatio || 1;
+  let speedoCtx = speedoCanvas.getContext('2d');
+  let _lastSpeedoScore = -1;
+
+  function resizeSpeedo() {
+    speedoDpr = window.devicePixelRatio || 1;
+    speedoCanvas.width = speedoCanvas.offsetWidth * speedoDpr;
+    speedoCanvas.height = speedoCanvas.offsetHeight * speedoDpr;
+    speedoCtx.setTransform(speedoDpr, 0, 0, speedoDpr, 0, 0);
+    _lastSpeedoScore = -1; // force redraw
+  }
+  resizeSpeedo();
+  window.addEventListener('resize', () => { resizeSpeedo(); if (_lastSpeedoScore >= 0) drawSpeedo(_lastSpeedoScore); });
+
+  function drawSpeedo(score) {
+    // Gauge: 50% on left, 100% at top (straight up), 150% on right
+    // Score 0-100 maps directly to percentage. Pegged at 50/150 edges.
+    score = Math.max(0, Math.min(100, score));
+    if (Math.round(score) === _lastSpeedoScore) return;
+    _lastSpeedoScore = Math.round(score);
+    const W = speedoCanvas.offsetWidth, H = speedoCanvas.offsetHeight;
+    const ctx = speedoCtx;
+    ctx.clearRect(0, 0, W, H);
+    const cx = W / 2, cy = H - 16;
+    const outerR = Math.min(cx - 10, cy - 8);
+    const innerR = outerR - 18;
+    const startAngle = Math.PI;  // left (180°)
+    const endAngle = 0;          // right (0°)
+    const totalArc = Math.PI;    // 180° sweep
+    // Map: gauge 50% = far left (180°), 100% = top (90°), 150% = far right (0°)
+    const gaugeMin = 50, gaugeMax = 150, gaugeRange = gaugeMax - gaugeMin;
+    const scorePct = score; // perfectionScore 0-100 = displayed as 0%-100%
+    const clampedPct = Math.max(gaugeMin, Math.min(gaugeMax, scorePct));
+    const needleFrac = (clampedPct - gaugeMin) / gaugeRange; // 0-1 position on arc
+
+    // --- Background arc track ---
+    ctx.beginPath();
+    ctx.arc(cx, cy, outerR, startAngle, endAngle, false);
+    ctx.arc(cx, cy, innerR, endAngle, startAngle, true);
+    ctx.closePath();
+    ctx.fillStyle = 'rgba(255,255,255,0.04)';
+    ctx.fill();
+
+    // --- Gradient arc: red edges → yellow → green center → yellow → red ---
+    // Symmetric: both edges red, center (100%) green
+    const segments = 120;
+    for (let i = 0; i < segments; i++) {
+      const frac = i / segments; // 0=left(50%), 1=right(150%)
+      const a1 = startAngle + frac * totalArc;
+      const a2 = startAngle + ((i + 1) / segments) * totalArc;
+      // Distance from center (0.5 = 100%): 0=center, 0.5=edge
+      const distFromCenter = Math.abs(frac - 0.5) * 2; // 0 at center, 1 at edges
+      // Hue: 120(green) at center → 60(yellow) → 30(orange) → 0(red) at edges
+      const hue = 120 * (1 - distFromCenter * distFromCenter);
+      const sat = 75;
+      const lum = 50 - distFromCenter * 8;
+      // Light up segments between needle and center, or just the filled portion
+      const segGaugePct = gaugeMin + frac * gaugeRange;
+      const filled = (scorePct >= 100)
+        ? (segGaugePct <= scorePct && segGaugePct >= 100) || segGaugePct <= 100
+        : segGaugePct >= scorePct && segGaugePct <= 100 ? false : segGaugePct <= scorePct;
+      // Simpler: light up everything from 50% up to the score position
+      const lit = segGaugePct <= clampedPct;
+      const alpha = lit ? 0.9 : 0.06;
+      ctx.beginPath();
+      ctx.arc(cx, cy, outerR, a1, a2, false);
+      ctx.arc(cx, cy, innerR, a2, a1, true);
+      ctx.closePath();
+      ctx.fillStyle = 'hsla(' + hue + ',' + sat + '%,' + lum + '%,' + alpha + ')';
+      ctx.fill();
+    }
+
+    // --- Green zone (97-103%) ---
+    const gz97 = (97 - gaugeMin) / gaugeRange;
+    const gz103 = Math.min(1, (103 - gaugeMin) / gaugeRange);
+    const greenA1 = startAngle + gz97 * totalArc;
+    const greenA2 = startAngle + gz103 * totalArc;
+    const inGreen = scorePct >= 97 && scorePct <= 103;
+
+    // Glow when in green zone
+    if (inGreen) {
+      ctx.save();
+      ctx.shadowBlur = 30;
+      ctx.shadowColor = 'rgba(52,211,153,0.8)';
+      ctx.beginPath();
+      ctx.arc(cx, cy, outerR + 3, greenA1, greenA2, false);
+      ctx.arc(cx, cy, innerR - 3, greenA2, greenA1, true);
+      ctx.closePath();
+      ctx.fillStyle = 'rgba(52,211,153,0.5)';
+      ctx.fill();
+      ctx.restore();
+    }
+    // Green zone tick marks
+    [97, 103].forEach(v => {
+      const f = (v - gaugeMin) / gaugeRange;
+      if (f < 0 || f > 1) return;
+      const a = startAngle + f * totalArc;
+      ctx.beginPath();
+      ctx.moveTo(cx + Math.cos(a) * (outerR + 4), cy + Math.sin(a) * (outerR + 4));
+      ctx.lineTo(cx + Math.cos(a) * (innerR - 4), cy + Math.sin(a) * (innerR - 4));
+      ctx.strokeStyle = inGreen ? '#34d399' : 'rgba(52,211,153,0.35)';
+      ctx.lineWidth = 2; ctx.stroke();
+    });
+
+    // --- Pegged edge glow (red) if below 50 or above 150 ---
+    if (scorePct < gaugeMin) {
+      ctx.save(); ctx.shadowBlur = 20; ctx.shadowColor = 'rgba(248,113,113,0.8)';
+      ctx.beginPath(); ctx.arc(cx, cy, outerR + 2, startAngle, startAngle + 0.15, false);
+      ctx.arc(cx, cy, innerR - 2, startAngle + 0.15, startAngle, true); ctx.closePath();
+      ctx.fillStyle = 'rgba(248,113,113,0.5)'; ctx.fill(); ctx.restore();
+    }
+
+    // --- Needle ---
+    const needleAngle = startAngle + needleFrac * totalArc;
+    const needleLen = outerR + 6;
+    const nx = cx + Math.cos(needleAngle) * needleLen;
+    const ny = cy + Math.sin(needleAngle) * needleLen;
+    ctx.beginPath(); ctx.moveTo(cx, cy); ctx.lineTo(nx, ny);
+    ctx.strokeStyle = 'rgba(0,0,0,0.3)'; ctx.lineWidth = 4; ctx.stroke();
+    ctx.beginPath(); ctx.moveTo(cx, cy); ctx.lineTo(nx, ny);
+    const needleColor = inGreen ? '#34d399' : scorePct >= 80 ? '#fbbf24' : '#f87171';
+    ctx.strokeStyle = needleColor; ctx.lineWidth = 2.5; ctx.stroke();
+    ctx.beginPath(); ctx.arc(cx, cy, 5, 0, Math.PI * 2);
+    ctx.fillStyle = needleColor; ctx.fill();
+    ctx.strokeStyle = 'rgba(255,255,255,0.3)'; ctx.lineWidth = 1; ctx.stroke();
+
+    // --- Scale labels: 50, 75, 100, 125, 150 ---
+    ctx.font = 'bold 9px Inter,system-ui,sans-serif';
+    ctx.textAlign = 'center';
+    [50, 75, 100, 125, 150].forEach(v => {
+      const f = (v - gaugeMin) / gaugeRange;
+      const a = startAngle + f * totalArc;
+      const lx = cx + Math.cos(a) * (outerR + 14);
+      const ly = cy + Math.sin(a) * (outerR + 14);
+      const isGreenLabel = v >= 97 && v <= 103;
+      ctx.fillStyle = isGreenLabel ? '#34d399' : v === 100 ? '#e2e8f0' : 'rgba(255,255,255,0.3)';
+      ctx.fillText(v + '%', lx, ly + 3);
+    });
+
+    // Update number + message
+    const numEl = document.getElementById('speedo-num');
+    const msgEl = document.getElementById('speedo-msg');
+    numEl.textContent = Math.round(scorePct) + '%';
+    numEl.style.color = needleColor;
+    if (inGreen) {
+      numEl.style.textShadow = '0 0 20px rgba(52,211,153,0.5)';
+      msgEl.textContent = '\uD83C\uDF89 PERFECT! Your butterfly will be stunning!';
+      msgEl.style.color = '#34d399';
+    } else if (scorePct >= 80) {
+      numEl.style.textShadow = 'none';
+      msgEl.textContent = 'Almost there! Fine-tune for perfection';
+      msgEl.style.color = '#fbbf24';
+    } else if (scorePct >= 50) {
+      numEl.style.textShadow = 'none';
+      msgEl.textContent = 'Getting better \u2014 follow the arrow hints';
+      msgEl.style.color = '#fb923c';
+    } else {
+      numEl.style.textShadow = 'none';
+      msgEl.textContent = 'Keep adjusting \u2014 follow the colored arrows';
+      msgEl.style.color = '#f87171';
+    }
+  }
+
+  const sliders=['wingspan','chord','wingWeight','taper','bodyWeight','pullWeight','tipWeight',
+    'stringLength','friction','springK','initialPull','linkagePoint'];
+  const fmt={
+    wingspan:v=>parseFloat(v).toFixed(0)+' cm', chord:v=>parseFloat(v).toFixed(1)+' cm',
+    wingWeight:v=>parseFloat(v).toFixed(0)+' g', taper:v=>parseFloat(v).toFixed(0)+'%',
+    bodyWeight:v=>parseFloat(v).toFixed(0)+' g', pullWeight:v=>parseFloat(v).toFixed(0)+' g',
+    tipWeight:v=>parseFloat(v).toFixed(1)+' g', stringLength:v=>parseFloat(v).toFixed(0)+' cm',
+    friction:v=>{const n=+v;return n<20?'Very Low':n<40?'Low':n<60?'Medium':n<80?'High':'Very High';},
+    springK:v=>{const n=+v;return n===0?'None':n<20?'Slight':n<50?'Moderate':n<80?'Strong':'Very Strong';},
+    initialPull:v=>parseFloat(v).toFixed(0)+'\u00B0', linkagePoint:v=>parseFloat(v).toFixed(0)+'%',
+  };
+  // Throttled recalc: coalesce rapid slider inputs into one recalc per frame
+  let _recalcRaf=0;
+  function scheduleRecalc(){if(!_recalcRaf)_recalcRaf=requestAnimationFrame(()=>{_recalcRaf=0;recalc();});}
+  // Add lock buttons to each slider row
+  const lockedSliders = new Set();
+  sliders.forEach(id=>{const el=document.getElementById(id),out=document.getElementById(id+'-val');
+    const row = el.closest('.slider-row');
+    if (row) {
+      const lockBtn = document.createElement('button');
+      lockBtn.className = 'slider-lock';
+      lockBtn.title = 'Lock this value (fixed after cutting/building)';
+      lockBtn.innerHTML = '\uD83D\uDD13'; // unlocked
+      lockBtn.addEventListener('click', () => {
+        if (lockedSliders.has(id)) {
+          lockedSliders.delete(id);
+          lockBtn.innerHTML = '\uD83D\uDD13'; lockBtn.classList.remove('locked');
+          row.classList.remove('locked');
+        } else {
+          lockedSliders.add(id);
+          lockBtn.innerHTML = '\uD83D\uDD12'; lockBtn.classList.add('locked');
+          row.classList.add('locked');
+        }
+      });
+      row.insertBefore(lockBtn, row.firstChild);
+    }
+    const up=()=>{if(out&&fmt[id])out.textContent=fmt[id](el.value);scheduleRecalc();};el.addEventListener('input',up);up();});
+
+  // Optimize unlocked sliders for max perfection score
+  document.getElementById('optimize-btn').addEventListener('click', () => {
+    const btn = document.getElementById('optimize-btn');
+    btn.textContent = '\u23F3 Optimizing...'; btn.disabled = true;
+    setTimeout(() => {
+      const unlocked = sliders.filter(id => !lockedSliders.has(id));
+      if (unlocked.length === 0) { btn.textContent = '\u26A0\uFE0F Lock some sliders first, then optimize the rest'; btn.disabled = false; setTimeout(() => { btn.innerHTML = '&#9889; Optimize Unlocked Sliders for Best Flapping'; }, 2000); return; }
+      // Save all current values
+      const saved = {};
+      sliders.forEach(id => saved[id] = document.getElementById(id).value);
+      // Grid search on unlocked sliders: try ~5 values each, pick combo with highest perfectionScore
+      // For speed: if >4 unlocked, use iterative hill-climbing instead of grid
+      let bestScore = -Infinity, bestVals = {...saved};
+      if (unlocked.length <= 4) {
+        // Small grid search
+        const vals = {};
+        unlocked.forEach(id => {
+          const el = document.getElementById(id);
+          const mn = parseFloat(el.min), mx = parseFloat(el.max), st = parseFloat(el.step) || 1;
+          vals[id] = [];
+          for (let v = mn; v <= mx; v += Math.max(st, (mx - mn) / 6)) vals[id].push(v);
+          vals[id].push(mx); // ensure max is included
+        });
+        const tryCombo = (idx, cur) => {
+          if (idx >= unlocked.length) {
+            // Apply values and score
+            Object.entries(cur).forEach(([k,v]) => document.getElementById(k).value = v);
+            const r = Physics.computeAll(Physics.readParams());
+            const s = perfectionScore(r);
+            if (s > bestScore) { bestScore = s; bestVals = {...saved, ...cur}; }
+            return;
+          }
+          const id = unlocked[idx];
+          for (const v of vals[id]) { cur[id] = v; tryCombo(idx + 1, cur); }
+        };
+        tryCombo(0, {});
+      } else {
+        // Hill-climbing: iterate each unlocked slider, find best value, repeat 3 passes
+        for (let pass = 0; pass < 3; pass++) {
+          unlocked.forEach(id => {
+            const el = document.getElementById(id);
+            const mn = parseFloat(el.min), mx = parseFloat(el.max), st = parseFloat(el.step) || 1;
+            let localBest = parseFloat(el.value), localBestScore = -Infinity;
+            for (let v = mn; v <= mx; v += Math.max(st, (mx - mn) / 15)) {
+              el.value = v;
+              const r = Physics.computeAll(Physics.readParams());
+              const s = perfectionScore(r);
+              if (s > localBestScore) { localBestScore = s; localBest = v; }
+            }
+            el.value = localBest;
+            bestVals[id] = localBest;
+          });
+        }
+        bestScore = perfectionScore(Physics.computeAll(Physics.readParams()));
+      }
+      // Apply best values
+      Object.entries(bestVals).forEach(([k,v]) => {
+        const el = document.getElementById(k);
+        el.value = v;
+        const out = document.getElementById(k + '-val');
+        if (out && fmt[k]) out.textContent = fmt[k](v);
+      });
+      recalc();
+      btn.innerHTML = '&#9889; Optimize Unlocked Sliders for Best Flapping';
+      btn.disabled = false;
+    }, 50); // small delay for UI update
+  });
+
+  document.getElementById('pivotType').addEventListener('change',recalc);
+  document.getElementById('upperAttach').addEventListener('change',()=>{
+    const isElastic=document.getElementById('upperAttach').value==='elastic';
+    document.getElementById('elasticRow').style.display=isElastic?'':'none';
+    recalc();
+  });
+  document.getElementById('elasticK').addEventListener('input',()=>{
+    const v=+document.getElementById('elasticK').value;
+    document.getElementById('elasticK-val').textContent=v<20?'Very Soft':v<40?'Soft':v<60?'Moderate':v<80?'Firm':'Very Firm';
+    recalc();
+  });
+
+  // ===== PRESET BUTTONS =====
+  // Preset linkagePoint values calculated for LEVEL wings (restAngle ≈ 0):
+  //   linkage% = 200 × (m_wing × r_cg/halfSpan + m_tip) / (m_body + m_pull)
+  //   With taper=50%: r_cg/halfSpan = (1+2×0.5)/(3×(1+0.5)) = 0.4444
+  //   Small:  200×(0.020×0.4444+0.002)/0.070 = 31.1%
+  //   Medium: 200×(0.060×0.4444+0.005)/0.200 = 31.7%
+  //   Large:  200×(0.120×0.4444+0.010)/0.410 = 30.9%
+  const presetData = {
+    small:  { wingspan:91,  chord:15, wingWeight:20,  taper:50, bodyWeight:40,  pullWeight:30,  tipWeight:2,  stringLength:25, friction:12, springK:10, initialPull:25, linkagePoint:31 },
+    medium: { wingspan:183, chord:25, wingWeight:60,  taper:50, bodyWeight:120, pullWeight:80,  tipWeight:5,  stringLength:45, friction:10, springK:8,  initialPull:20, linkagePoint:32 },
+    large:  { wingspan:244, chord:35, wingWeight:120, taper:50, bodyWeight:250, pullWeight:160, tipWeight:10, stringLength:70, friction:8,  springK:5,  initialPull:20, linkagePoint:31 },
+  };
+  document.querySelectorAll('.preset-btn').forEach(btn => {
+    btn.addEventListener('click', () => {
+      const name = btn.dataset.preset;
+      const vals = presetData[name];
+      if (!vals) return;
+      // Set all sliders
+      Object.entries(vals).forEach(([id, v]) => {
+        const el = document.getElementById(id);
+        if (!el) return;
+        el.value = v;
+        const out = document.getElementById(id + '-val');
+        if (out && fmt[id]) out.textContent = fmt[id](String(v));
+      });
+      // Highlight active preset
+      document.querySelectorAll('.preset-btn').forEach(b => b.classList.remove('active'));
+      btn.classList.add('active');
+      // Haptic feedback
+      navigator.vibrate?.(10);
+      // Recalc + flash speedo
+      recalc();
+      _lastSpeedoScore = -1; // force speedo redraw
+      // Auto-scroll to canvas
+      document.getElementById('wingCanvas').scrollIntoView({ behavior: 'smooth', block: 'center' });
+    });
+  });
+
+  // Tap on canvas: stop animation if running, otherwise do nothing (drag to flap!)
+  document.getElementById('wingCanvas').addEventListener('click',(e)=>{
+    // Don't trigger if dragging or just finished dragging (click fires after mouseup!)
+    if(R._dragging) return;
+    if(performance.now()-R._dragEndTime<300) return;
+    // Only stop — never start. User must DRAG the weight to flap.
+    if(R.animating){R.stopAnimation();recalc();}
+  });
+  // Hide hint after first interaction (permanently)
+  const _dragHint=document.getElementById('drag-hint');
+  let _hintDismissed=false;
+  const _origStop=R.stopAnimation.bind(R);
+  const _origStart=R.startAnimation.bind(R);
+  R.startAnimation=function(r){_origStart(r);if(_dragHint){_dragHint.style.opacity='0';_hintDismissed=true;}};
+  R.stopAnimation=function(){_origStop();if(_dragHint&&!_hintDismissed)_dragHint.style.opacity='1';};
+
+  // ===== AUTO-CALCULATE (Grid Search Optimizer) =====
+  const WING_SHAPES = {
+    monarch: { taper: 35, label: 'Monarch' },
+    swallowtail: { taper: 45, label: 'Swallowtail' },
+    luna: { taper: 30, label: 'Luna Moth' },
+    rounded: { taper: 70, label: 'Rounded' },
+  };
+  const GOALS = {
+    long: { targetFreq: 0.35, friction: 8, flapW: 15, freqW: 25, weightW: 0.8, label: 'slow elegant' },
+    moderate: { targetFreq: 0.6, friction: 15, flapW: 10, freqW: 20, weightW: 0.3, label: 'moderate' },
+    lively: { targetFreq: 1.5, friction: 25, flapW: 5, freqW: 20, weightW: 0.2, label: 'quick lively' },
+  };
+
+  document.getElementById('autoCalcBtn').addEventListener('click', () => {
+    navigator.vibrate?.([10, 50, 10]);
+    const wsVal = document.getElementById('ac-wingspan').value;
+    const wwVal = document.getElementById('ac-wingWeight').value;
+    const bwVal = document.getElementById('ac-bodyWeight').value;
+    const shape = document.getElementById('ac-shape').value;
+    const goal = document.getElementById('ac-goal').value;
+    const maxWStr = document.getElementById('ac-maxWeight').value;
+
+    const ws = wsVal ? parseFloat(wsVal) : parseFloat(document.getElementById('wingspan').value);
+    const ww = wwVal ? parseFloat(wwVal) : parseFloat(document.getElementById('wingWeight').value);
+    const bw = bwVal ? parseFloat(bwVal) : parseFloat(document.getElementById('bodyWeight').value);
+    const maxAdded = maxWStr ? parseFloat(maxWStr) : Infinity;
+
+    const shapeConf = WING_SHAPES[shape] || WING_SHAPES.rounded;
+    const goalConf = GOALS[goal] || GOALS.long;
+    const taper = shapeConf.taper / 100;
+    const halfSpan = ws / 200;
+    const wingMass = ww / 1000;
+    const bodyMass = bw / 1000;
+    const tf = (1 + 3*taper) / (6*(1+taper));
+    const wcg = halfSpan * (1 + 2*taper) / (3*(1+taper));
+    const kwg = 2 * wingMass * G * wcg * 0.3;
+    const targetOmega = 2 * Math.PI * goalConf.targetFreq;
+    const zeta0 = 0.02 + (goalConf.friction / 100) * 1.98;
+
+    // Grid search: find best (linkage%, tipWeight) combo
+    let bestScore = -Infinity, best = null;
+    for (let lp = 15; lp <= 75; lp += 5) {
+      for (let tipG = 0; tipG <= Math.min(20, ww * 0.5); tipG += 0.5) {
+        const linkR = (lp / 100) * halfSpan;
+        const tipM = tipG / 1000;
+        const I = 2 * (wingMass * halfSpan * halfSpan * tf + tipM * halfSpan * halfSpan);
+        // Required pull weight for target frequency
+        const kNeed = I * targetOmega * targetOmega;
+        const kFromPull = Math.max(0, kNeed - kwg - 0.005);
+        const pullM = kFromPull / (G * linkR);
+        const pullG = Math.max(2, Math.round(pullM * 1000));
+        const addedW = pullG + 2 * tipG;
+        if (addedW > maxAdded) continue;
+        // Balance check
+        const totalM = bodyMass + 2*wingMass + 2*tipM + pullG/1000;
+        const grav1 = wingMass * G * wcg + tipM * G * halfSpan;
+        const sup1 = (totalM * G / 2) * linkR;
+        const bal = grav1 > 0.00001 ? sup1 / grav1 : 10;
+        // Compute flap count
+        const k = (pullG/1000) * G * linkR + kwg + 0.005;
+        const omN = Math.sqrt(k / I);
+        const omD = omN * Math.sqrt(Math.max(0, 1 - zeta0*zeta0));
+        const fD = omD / (2 * Math.PI);
+        const dr = zeta0 * omN;
+        const nFlaps = fD > 0 && dr > 0.001 ? (3 / dr) * fD : 0;
+        // Score
+        let sc = nFlaps * goalConf.flapW;
+        sc -= Math.abs(fD - goalConf.targetFreq) * goalConf.freqW;
+        sc -= addedW * goalConf.weightW;
+        if (bal < 0.95) sc -= (1 - bal) * 200;
+        if (bal < 0.5) sc -= 500;
+        if (fD < 0.1) sc -= 100;
+        if (sc > bestScore) { bestScore = sc; best = { lp, tipG, pullG, bal, nFlaps, fD, addedW }; }
+      }
+    }
+    if (!best) best = { lp: 30, tipG: 1, pullG: 20, bal: 1, nFlaps: 8, fD: 0.5, addedW: 22 };
+
+    const stringLen = Math.max(10, Math.min(50, Math.round(ws * 0.4)));
+    const initPull = goal === 'long' ? 20 : goal === 'lively' ? 30 : 25;
+
+    // Apply to sliders
+    const setSlider = (id, val) => {
+      const el = document.getElementById(id);
+      el.value = val;
+      const out = document.getElementById(id+'-val');
+      if (out && fmt[id]) out.textContent = fmt[id](val);
+    };
+    setSlider('wingspan', ws); setSlider('wingWeight', ww); setSlider('bodyWeight', bw);
+    setSlider('taper', shapeConf.taper); setSlider('pullWeight', best.pullG);
+    setSlider('tipWeight', best.tipG); setSlider('stringLength', stringLen);
+    setSlider('friction', goalConf.friction); setSlider('springK', 5);
+    setSlider('initialPull', initPull); setSlider('linkagePoint', best.lp);
+    recalc();
+
+    // Build sheet results
+    const grid = document.getElementById('auto-result-grid');
+    const items = [
+      {l:'Pull Weight', v:best.pullG+'g', d:'Hang below body on string', hi:true},
+      {l:'Tip Weights', v:best.tipG+'g each', d:'Glue/tape at each wingtip', hi:true},
+      {l:'String Attach', v:best.lp+'% out from center', d:(best.lp/100*ws/2).toFixed(1)+'cm from pivot', hi:true},
+      {l:'String Drop', v:stringLen+'cm', d:'Body to pull-weight', hi:true},
+      {l:'Wing Balance', v:best.bal>=0.95?'Level':'Drooping', d:best.bal>=0.95?'Wings sit flat at rest':'Move linkage out or add body weight', hi:false},
+      {l:'Total Added', v:best.addedW.toFixed(0)+'g', d:'Pull + tips (beyond your wing+body)', hi:false},
+    ];
+    grid.innerHTML = items.map(c =>
+      '<div class="ari'+(c.hi?' highlight':'')+'"><div class="ari-label">'+c.l+'</div><div class="ari-value">'+c.v+'</div><div class="ari-detail">'+c.d+'</div></div>'
+    ).join('');
+
+    const r = Physics.computeAll(Physics.readParams());
+    const gl = goalConf.label;
+    const fi = R.flapInfo;
+    const flapDesc = fi && fi.visibleTime > 0
+      ? '~'+fi.visibleTime.toFixed(1)+'s of visible flight ('+fi.visibleFlaps+' flaps, '+r.period_d.toFixed(1)+'s each)'
+      : '~'+r.freq_d.toFixed(1)+' Hz ('+r.period_d.toFixed(1)+'s per flap), ~'+Math.round(r.numFlaps)+' flaps';
+    document.getElementById('auto-result-note').textContent =
+      'Optimized for '+gl+' flapping ('+shapeConf.label+' wing shape): '+flapDesc+'. '+
+      (r.balanceRatio>=0.95?'Wings will sit level at rest.':'Wings may droop slightly \u2014 try moving linkage point outward.')+
+      ' Gold values = what to add. Tug '+initPull+'\u00B0 and release!';
+    document.getElementById('auto-result').classList.add('visible');
+  });
+
+  // Per-slider quality score: evaluates overall butterfly quality
+  function qScore(r) {
+    let s=0;
+    s+=Math.min(r.balanceRatio,1.5)*16; // balance (0-24)
+    if(r.zeta<1){s+=Math.max(0,20-Math.abs(r.freq_d-0.5)*25);} // freq sweet spot 0.3-0.7
+    if(r.zeta>=1)s-=15; else s+=Math.max(0,15-Math.abs(r.zeta-0.35)*20); // damping
+    s+=Math.min(r.numFlaps,15); // more flaps better
+    if(r.sweepDeg>=15&&r.sweepDeg<=35)s+=10; else s+=Math.max(0,10-Math.abs(r.sweepDeg-25)*0.3);
+    s-=r.totalMass*3; // lighter is better
+    return s;
+  }
+
+  // Compute per-slider colors + direction arrows
+  function updateSliderColors() {
+    const ids=['wingspan','chord','wingWeight','taper','bodyWeight','pullWeight','tipWeight',
+      'stringLength','friction','springK','initialPull','linkagePoint'];
+    const saved={};
+    ids.forEach(id=>saved[id]=document.getElementById(id).value);
+    ids.forEach(id=>{
+      const el=document.getElementById(id);
+      const val=parseFloat(saved[id]);
+      const mn=parseFloat(el.min),mx=parseFloat(el.max);
+      const step=(mx-mn)*0.05;
+      // Score at +step
+      el.value=Math.min(mx,val+step);
+      const upScore=qScore(Physics.computeAll(Physics.readParams()));
+      // Score at -step
+      el.value=Math.max(mn,val-step);
+      const downScore=qScore(Physics.computeAll(Physics.readParams()));
+      el.value=saved[id]; // restore
+      // Gradient: positive diff = increasing helps = too little = yellow
+      const diff=upScore-downScore;
+      const norm=Math.max(-1,Math.min(1,diff/4));
+      let hue;
+      if(norm>0.08)hue=120-norm*70; // green(120)→yellow(50)
+      else if(norm<-0.08)hue=120+norm*120; // green(120)→red(0)
+      else hue=120;
+      const col='hsl('+hue+',70%,50%)';
+      el.style.setProperty('--thumb-color',col);
+      el.style.setProperty('--thumb-glow','hsla('+hue+',70%,50%,0.3)');
+      // Arrow hint: show direction to improve
+      const row=el.closest('.slider-row');
+      if(!row)return;
+      let hint=row.querySelector('.slider-hint');
+      if(!hint){hint=document.createElement('span');hint.className='slider-hint';row.appendChild(hint);}
+      if(norm>0.12){hint.textContent='\u25B6';hint.style.color=col;hint.title='Increase for better flap';}
+      else if(norm<-0.12){hint.textContent='\u25C0';hint.style.color=col;hint.title='Decrease for better flap';}
+      else{hint.textContent='\u2713';hint.style.color='#34d399';hint.title='Sweet spot!';}
+    });
+  }
+
+  // ===== CELEBRATION SYSTEM =====
+  function perfectionScore(r) {
+    let s = 0;
+    // Balance: wings must sit level (20 pts) — tighter range, no V-shape
+    if (r.balanceRatio >= 0.95 && r.balanceRatio <= 1.15) s += 20;
+    else if (r.balanceRatio >= 0.8 && r.balanceRatio <= 1.3) s += 20 * Math.max(0, 1 - Math.abs(r.balanceRatio - 1.05) / 0.25);
+    // Flap count: THE dominant factor (30 pts) — more flaps = better
+    const fc = Math.min(r.numFlaps, 25);
+    if (fc >= 10) s += Math.min(30, fc * 2);
+    else if (fc >= 5) s += fc * 2;
+    // Damping: lower zeta = more flaps (20 pts) — favor 0.1-0.3
+    if (r.zeta >= 0.1 && r.zeta <= 0.35 && r.zeta < 1) s += 20;
+    else if (r.zeta < 1 && r.zeta > 0.05) s += Math.max(0, 20 - Math.abs(r.zeta - 0.2) * 50);
+    // Frequency: nice visible flap speed (15 pts)
+    if (r.freq_d >= 0.3 && r.freq_d <= 0.8 && r.zeta < 1) s += 15;
+    else if (r.zeta < 1) s += Math.max(0, 15 - Math.abs(r.freq_d - 0.55) * 25);
+    // Sweep: good visible swing range (15 pts)
+    if (r.sweepDeg >= 20 && r.sweepDeg <= 40) s += 15;
+    else s += Math.max(0, 15 - Math.abs(r.sweepDeg - 30) * 0.7);
+    return Math.min(100, Math.max(0, s));
+  }
+
+  function triggerCelebration() {
+    navigator.vibrate?.([50, 30, 50, 30, 100]);
+    // Confetti canvas overlay
+    const cvs = document.createElement('canvas');
+    cvs.style.cssText = 'position:fixed;top:0;left:0;width:100vw;height:100vh;pointer-events:none;z-index:9999';
+    document.body.appendChild(cvs);
+    const cx = cvs.getContext('2d');
+    cvs.width = window.innerWidth; cvs.height = window.innerHeight;
+    const cols = ['#00843D','#0057B8','#FFCD00','#FFD700','#c4a469','#34D399','#0092BC','#e8c98e'];
+    const pts = [];
+    for (let i = 0; i < 120; i++) pts.push({
+      x: cvs.width * Math.random(), y: -20 - Math.random() * cvs.height * 0.5,
+      vx: (Math.random() - 0.5) * 6, vy: Math.random() * 3 + 2,
+      sz: Math.random() * 8 + 3, col: cols[Math.floor(Math.random() * cols.length)],
+      rot: Math.random() * Math.PI * 2, rv: (Math.random() - 0.5) * 0.2,
+      life: 1, decay: 0.003 + Math.random() * 0.004,
+      circ: Math.random() > 0.5,
+    });
+    function drawC() {
+      cx.clearRect(0, 0, cvs.width, cvs.height);
+      let alive = false;
+      pts.forEach(p => {
+        if (p.life <= 0) return; alive = true;
+        p.x += p.vx; p.y += p.vy; p.vy += 0.05; p.vx *= 0.99;
+        p.rot += p.rv; p.life -= p.decay;
+        cx.save(); cx.translate(p.x, p.y); cx.rotate(p.rot);
+        cx.globalAlpha = Math.max(0, p.life); cx.fillStyle = p.col;
+        if (p.circ) { cx.beginPath(); cx.arc(0, 0, p.sz / 2, 0, Math.PI * 2); cx.fill(); }
+        else cx.fillRect(-p.sz / 2, -p.sz / 4, p.sz, p.sz / 2);
+        cx.restore();
+      });
+      if (alive) requestAnimationFrame(drawC); else cvs.remove();
+    }
+    requestAnimationFrame(drawC);
+
+    // Floating butterflies
+    if (!document.getElementById('celeb-style')) {
+      const s = document.createElement('style'); s.id = 'celeb-style';
+      s.textContent = '@keyframes bfRise{0%{transform:translateY(0) translateX(0);opacity:0}10%{opacity:1}100%{transform:translateY(-110vh) translateX(var(--drift,0));opacity:0}}@keyframes celebPulse{0%,100%{transform:translate(-50%,-50%) scale(1)}50%{transform:translate(-50%,-50%) scale(1.05)}}';
+      document.head.appendChild(s);
+    }
+    for (let i = 0; i < 8; i++) {
+      const bf = document.createElement('div');
+      bf.textContent = '\uD83E\uDD8B';
+      bf.style.cssText = 'position:fixed;bottom:-40px;left:' + (10 + Math.random() * 80) + '%;font-size:' +
+        (1.5 + Math.random() * 1.5) + 'rem;z-index:10000;pointer-events:none;opacity:0;animation:bfRise ' +
+        (3 + Math.random() * 3) + 's ease-out forwards;animation-delay:' + (i * 0.2) + 's;--drift:' +
+        ((Math.random() - 0.5) * 30) + 'vw';
+      document.body.appendChild(bf);
+      setTimeout(() => bf.remove(), 8000);
+    }
+
+    // Pleasant chime — major chord (C5-E5-G5) with shimmer
+    try {
+      const ac = new (window.AudioContext || window.webkitAudioContext)();
+      const freqs = [523.25, 659.25, 783.99, 1046.5]; // C5, E5, G5, C6
+      freqs.forEach((f, i) => {
+        const osc = ac.createOscillator();
+        const gain = ac.createGain();
+        osc.type = 'sine';
+        osc.frequency.value = f;
+        const t0 = ac.currentTime + i * 0.08;
+        gain.gain.setValueAtTime(0, t0);
+        gain.gain.linearRampToValueAtTime(0.12, t0 + 0.05);
+        gain.gain.exponentialRampToValueAtTime(0.001, t0 + 2.0);
+        osc.connect(gain); gain.connect(ac.destination);
+        osc.start(t0); osc.stop(t0 + 2.2);
+      });
+      setTimeout(() => ac.close(), 3000);
+    } catch (e) {}
+
+    // Golden banner
+    const bn = document.createElement('div');
+    bn.innerHTML = '<div style="font-size:2.5rem;margin-bottom:4px">\uD83E\uDD8B\u2728\uD83E\uDD8B</div>' +
+      '<div style="font-size:1.3rem;font-weight:800;letter-spacing:1px">PERFECT WING DESIGN!</div>' +
+      '<div style="font-size:.85rem;margin-top:4px;opacity:0.8">This butterfly will be absolutely stunning at the gala</div>';
+    bn.style.cssText = 'position:fixed;top:50%;left:50%;transform:translate(-50%,-50%);z-index:10001;text-align:center;padding:24px 40px;background:linear-gradient(135deg,rgba(15,23,42,0.95),rgba(30,41,59,0.95));border:2px solid rgba(196,164,105,0.6);border-radius:16px;color:#FFD700;box-shadow:0 0 40px rgba(196,164,105,0.3);animation:celebPulse 1s ease-in-out 3';
+    document.body.appendChild(bn);
+    setTimeout(() => { bn.style.transition = 'opacity .5s'; bn.style.opacity = '0'; setTimeout(() => bn.remove(), 600); }, 4500);
+  }
+
+  // Smooth number counter animation
+  function animateValue(el, newText) {
+    // If it's a pure number transition, animate
+    const oldNum = parseFloat(el.textContent);
+    const newNum = parseFloat(newText);
+    if (isNaN(oldNum) || isNaN(newNum) || oldNum === newNum || !newText.match(/^[\d.]+/)) {
+      el.textContent = newText; return;
+    }
+    const suffix = newText.replace(/^[\d.]+/, '');
+    const start = performance.now();
+    const dur = 300;
+    const dec = newText.includes('.') ? (newText.split('.')[1]||'').replace(/[^\d]/g,'').length : 0;
+    const tick = (now) => {
+      const p = Math.min((now - start) / dur, 1);
+      const ease = p < 0.5 ? 2 * p * p : 1 - Math.pow(-2 * p + 2, 2) / 2;
+      el.textContent = (oldNum + (newNum - oldNum) * ease).toFixed(dec) + suffix;
+      if (p < 1) requestAnimationFrame(tick);
+    };
+    requestAnimationFrame(tick);
+  }
+
+  function recalc() {
+    const p=Physics.readParams(), r=Physics.computeAll(p);
+    R._stopBreathing(); // stop breathing so draw uses fresh restAngle
+    R._restInfo=r;
+    R.draw(r.restAngle,p);
+    // Simulate long enough to capture full visible motion + settling tail
+    // Use 4× decay time (was 2.5×), min 10s, max 60s — need full data for accurate analysis
+    const dur=Math.min(Math.max(r.decayTime*4,10),60), sdt=1/120;
+    const sd=Physics.simulate(r,dur,sdt);
+    R.simData=sd; R.simDt=sdt; R.drawPlot(sd,sdt,r);
+    // Perceptibility-based flap analysis using full simulation data
+    const flapInfo=Physics.analyzeFlaps(sd,sdt,p.halfSpan);
+    R.flapInfo=flapInfo;
+    updateDash(r,flapInfo); updateVerdict(r);
+    // Debounce slider colors: they run 24 physics calcs, too expensive for every frame
+    clearTimeout(_sliderColorTimer);
+    _sliderColorTimer = setTimeout(updateSliderColors, 120);
+    const pScore = perfectionScore(r);
+    // Update speedometer gauge
+    drawSpeedo(pScore);
+    // Also update old inline gauge for the controls bar
+    const perfArc = document.getElementById('perfArc');
+    const perfNum = document.getElementById('perfNum');
+    if (perfArc && perfNum) {
+      const arcLen = (pScore / 100) * 70.7;
+      perfArc.setAttribute('stroke-dasharray', arcLen + ' ' + (94.2 - arcLen));
+      const col = pScore >= 97 ? '#34d399' : pScore >= 60 ? '#fbbf24' : '#f87171';
+      perfArc.setAttribute('stroke', col);
+      perfNum.textContent = Math.round(pScore);
+      perfNum.style.color = col;
+    }
+    // Celebrate when entering green zone (97-100)
+    if (pScore >= 97 && !_celebTriggered) { _celebTriggered = true; setTimeout(() => triggerCelebration(), 300); }
+    else if (pScore < 95) { _celebTriggered = false; }
+    // Restart breathing with fresh restAngle after recalc settles
+    setTimeout(() => { if (!R.animating && !R._dragging) R._startBreathing(); }, 200);
+  }
+
+  function setBar(b,pct,cv){b.style.width=Math.max(pct,2)+'%';b.style.background='var('+cv+')';}
+  function setSt(c,s){c.className='metric-card status-'+s;}
+
+  function updateDash(r,flapInfo) {
+    // FLAP SPEED
+    const fv=document.getElementById('freq-val'),fs=document.getElementById('freq-sub'),fb=document.getElementById('freq-bar'),fe=document.getElementById('freq-explain'),fm=document.getElementById('freq-math'),fc=document.getElementById('card-freq');
+    if(r.zeta>=1){animateValue(fv,'No flap');fs.textContent='Too much friction';setBar(fb,0,'--red');setSt(fc,'bad');fe.textContent="Hinge too sticky. Wings won't oscillate.";}
+    else{animateValue(fv,r.freq_d.toFixed(2)+' Hz');fs.textContent=(r.freq_d*60).toFixed(0)+' flaps/min \u00B7 '+r.period_d.toFixed(1)+'s per flap';
+      let p,s;if(r.freq_d<0.1){p=10;s='bad';}else if(r.freq_d<0.3){p=30;s='warn';}else if(r.freq_d<=1.5){p=50+(r.freq_d-0.3)/1.2*30;s='great';}else if(r.freq_d<=3){p=70;s='ok';}else{p=90;s='warn';}
+      setBar(fb,p,'--'+(s==='great'?'green':s==='ok'?'yellow':s==='warn'?'orange':'red'));setSt(fc,s);
+      fe.textContent=r.freq_d<0.3?"Very slow \u2014 barely perceptible.":r.freq_d<=0.8?"Beautiful! Slow, graceful flapping.":r.freq_d<=1.5?"Nice gentle flapping.":r.freq_d<=3?"Fairly quick. Lively.":"Too fast \u2014 add tip weight to slow down.";}
+    fm.textContent='\u03C9_n = \u221A(k/I) = '+r.omega_n.toFixed(3)+' rad/s\n\u03C9_d = \u03C9_n\u00B7\u221A(1-\u03B6\u00B2) = '+r.omega_d.toFixed(3)+' rad/s\nf = '+r.freq_d.toFixed(3)+' Hz, T = '+r.period_d.toFixed(2)+' s';
+
+    // DAMPING
+    const dv=document.getElementById('damping-val'),ds=document.getElementById('damping-sub'),db=document.getElementById('damping-bar'),de=document.getElementById('damping-explain'),dm=document.getElementById('damping-math'),dc=document.getElementById('card-damping');
+    const z=r.zeta;let dl,dst;
+    if(z<0.1){dl='Bouncy';dst='warn';}else if(z<0.3){dl='Lively';dst='ok';}else if(z<0.7){dl='Graceful';dst='great';}else if(z<1){dl='Gentle';dst='ok';}else{dl='Overdamped';dst='bad';}
+    dv.textContent=dl;ds.textContent='\u03B6 = '+z.toFixed(3);setBar(db,Math.min(z/2,1)*100,'--'+(dst==='great'?'green':dst==='ok'?'yellow':dst==='warn'?'orange':'red'));setSt(dc,dst);
+    de.textContent=z<0.1?"Almost no friction \u2014 twitchy.":z<0.3?"Low damping \u2014 lively oscillation.":z<0.7?"Sweet spot! Elegant and natural.":z<1?"Gentle \u2014 few flaps.":"Won't flap. Loosen the hinge!";
+    dm.textContent='\u03B6 = c/(2\u221A(I\u00B7k)) = '+z.toFixed(4)+'\n\u03B6<1: flaps! \u03B6=1: no oscillation \u03B6>1: overdamped';
+
+    // INERTIA
+    const iv=document.getElementById('inertia-val'),is_=document.getElementById('inertia-sub'),ib=document.getElementById('inertia-bar'),ie=document.getElementById('inertia-explain'),im=document.getElementById('inertia-math'),ic=document.getElementById('card-inertia');
+    const Ig=r.I*1e7;let il,ist;
+    if(Ig<50){il='Very Light';ist='warn';}else if(Ig<500){il='Light';ist='ok';}else if(Ig<5000){il='Medium';ist='great';}else if(Ig<20000){il='Heavy';ist='ok';}else{il='Very Heavy';ist='warn';}
+    iv.textContent=il;is_.textContent=Ig.toFixed(0)+' g\u00B7cm\u00B2';setBar(ib,Math.min(Math.log10(Math.max(Ig,1))/5*100,100),'--'+(ist==='great'?'green':ist==='ok'?'yellow':'orange'));setSt(ic,ist);
+    ie.textContent=Ig<500?"Light wings \u2014 fast response.":Ig<5000?"Nice balance \u2014 satisfying momentum.":"Heavy \u2014 slow dramatic swings.";
+    im.textContent='I = 2\u00D7(m\u00B7L\u00B2\u00B7taperFactor + m_tip\u00B7L\u00B2)\n= '+Ig.toFixed(1)+' g\u00B7cm\u00B2\n\nKEY: 2\u00D7 farther out = 4\u00D7 more inertia!';
+
+    // DURATION — uses real simulation-derived perceptibility analysis
+    const hv=document.getElementById('duration-val'),hs=document.getElementById('duration-sub'),hb=document.getElementById('duration-bar'),he=document.getElementById('duration-explain'),hm=document.getElementById('duration-math'),hc=document.getElementById('card-duration');
+    if(r.zeta>=1){animateValue(hv,'0');hs.textContent='No oscillation';setBar(hb,0,'--red');setSt(hc,'bad');he.textContent="Too much friction.";}
+    else if(flapInfo){
+      const vt=flapInfo.visibleTime, vf=flapInfo.visibleFlaps;
+      if(vt>100){animateValue(hv,vf+'+');hs.textContent='Visible '+vt.toFixed(0)+'+ sec';}
+      else{animateValue(hv,vt.toFixed(1)+'s');hs.textContent=vf+' visible flap'+(vf!==1?'s':'')+' · settles at '+flapInfo.settleTime.toFixed(1)+'s';}
+      let hst=vf<3?'warn':vf<=15?'great':vf<=40?'ok':'warn';
+      setBar(hb,Math.min(vt/20*100,100),'--'+(hst==='great'?'green':hst==='ok'?'yellow':'orange'));setSt(hc,hst);
+      he.textContent=vf<2?"Barely visible. Less friction or more pull."
+        :vf<=4?"Brief flutter — "+vt.toFixed(1)+"s of visible motion."
+        :vf<=10?"Beautiful "+vt.toFixed(1)+"s of graceful flapping!"
+        :vf<=20?"Stunning "+vt.toFixed(1)+"s — mesmerizing to watch."
+        :"Incredible "+vt.toFixed(1)+"s of continuous flight!";
+    }
+    // Math breakdown: show both the theory AND real simulation values
+    const thMath='THEORY (simplified):\nA(t) = A\u2080\u00B7e^(-\u03B6\u03C9_n t)\nDecay to 5%: t = 3/(\u03B6\u03C9_n) = '+r.decayTime.toFixed(2)+'s';
+    const simMath=flapInfo?'\n\nSIMULATION (actual):\nVisible flap time: '+flapInfo.visibleTime.toFixed(1)+'s ('+flapInfo.visibleFlaps+' flaps)'
+      +'\nSettle time: '+flapInfo.settleTime.toFixed(1)+'s ('+flapInfo.totalFlaps+' total flaps)'
+      +'\nMin visible tip: '+flapInfo.minVisibleCm+'cm + '+flapInfo.minVelCmS+'cm/s velocity'
+      +'\nInitial tip travel: '+flapInfo.initialTipCm+'cm'
+      +'\nEffective decay: \u03BB='+flapInfo.effectiveDecayRate+'/s'
+      +(flapInfo.avgPeriod>0?'\nAvg period: '+flapInfo.avgPeriod+'s':'')
+      +'\nElegance ratio: '+(flapInfo.eleganceRatio*100).toFixed(0)+'% of motion is visible':'';
+    hm.textContent=thMath+simMath;
+
+    // TORQUE
+    const tv=document.getElementById('torque-val'),ts_=document.getElementById('torque-sub'),tb=document.getElementById('torque-bar'),te=document.getElementById('torque-explain'),tmm=document.getElementById('torque-math'),tc=document.getElementById('card-torque');
+    const tau=r.maxTorque*1000,fg=(r.maxTorque/r.params.linkageR)*1000/G;
+    tv.textContent=tau.toFixed(1)+' mN\u00B7m';ts_.textContent='~'+fg.toFixed(0)+'g force';
+    let tst=tau<0.5?'bad':tau<5?'ok':tau<50?'great':'ok';setBar(tb,Math.min(Math.log10(Math.max(tau,0.01)+1)/3*100,100),'--'+(tst==='great'?'green':tst==='ok'?'yellow':'red'));setSt(tc,tst);
+    te.textContent=tau<0.5?"Very little force.":tau<5?"Light pull \u2014 small butterflies.":tau<50?"Good force.":"Strong \u2014 check mechanism.";
+    tmm.textContent='\u03C4 = m\u00B7g\u00B7r\u00B7sin(\u03B8\u2080) = '+tau.toFixed(3)+' mN\u00B7m\nForce at linkage: '+fg.toFixed(1)+' gf';
+
+    // SWEEP
+    const av=document.getElementById('amplitude-val'),as_=document.getElementById('amplitude-sub'),ab=document.getElementById('amplitude-bar'),ae=document.getElementById('amplitude-explain'),am=document.getElementById('amplitude-math'),ac=document.getElementById('card-amplitude');
+    const sw=r.sweepDeg,tt=2*r.params.halfSpan*Math.sin(r.params.initialPull)*100;
+    av.textContent='\u00B1'+sw+'\u00B0';as_.textContent='Tips travel '+tt.toFixed(1)+' cm';
+    let ast=sw<10?'warn':sw<=35?'great':sw<=50?'ok':'warn';setBar(ab,Math.min(sw/60*100,100),'--'+(ast==='great'?'green':ast==='ok'?'yellow':'orange'));setSt(ac,ast);
+    ae.textContent=sw<10?"Barely visible.":sw<=35?"Beautiful range.":sw<=50?"Big dramatic sweeps.":"Huge \u2014 check for binding.";
+    am.textContent='\u03B8\u2080 = '+sw+'\u00B0\nTip travel = '+tt.toFixed(1)+' cm total';
+  }
+
+  function updateVerdict(r) {
+    const box=document.getElementById('verdict-box'),icon=document.getElementById('verdict-icon'),text=document.getElementById('verdict-text'),tips=document.getElementById('verdict-tips');
+    box.className='';
+    const issues=[],goods=[];
+    if(r.zeta>=1)issues.push("Too much friction \u2014 won't flap. Loosen the hinge.");
+    if(r.zeta>=0.8&&r.zeta<1)issues.push("Very heavy damping \u2014 only 1-2 tiny flaps.");
+    if(r.zeta<0.05)issues.push("Almost zero friction \u2014 bounces forever. Add a felt washer.");
+    if(r.freq_d>3&&r.zeta<1)issues.push("Too fast \u2014 add tip weight (weight far out = much slower).");
+    if(r.freq_d<0.2&&r.zeta<1)issues.push("Too slow \u2014 increase spring or reduce wing weight.");
+    if(r.maxTorque<0.0005)issues.push("No driving force \u2014 increase pull-weight or move linkage out.");
+    if(r.sweepDeg<10)issues.push("Very small sweep \u2014 hard to see.");
+    if(r.sweepDeg>50)issues.push("Huge sweep \u2014 may bind at extremes.");
+    if(r.balanceRatio<0.5)issues.push("Wings will collapse \u2014 tips far too heavy for string support. Add body/pull weight or move linkage outward.");
+    else if(r.balanceRatio<0.85)issues.push("Wings will droop at rest \u2014 increase body weight, pull weight, or move linkage point outward.");
+    if(r.balanceRatio>=0.95&&r.balanceRatio<=2)goods.push("Wings nicely balanced \u2014 will sit level at rest.");
+    if(r.zeta>=0.3&&r.zeta<=0.7&&r.zeta<1)goods.push("Graceful damping \u2014 beautiful settling.");
+    if(r.freq_d>=0.3&&r.freq_d<=1.5&&r.zeta<1)goods.push("Perfect flap speed for an elegant butterfly.");
+    if(r.numFlaps>=5&&r.numFlaps<=15)goods.push("Great number of flaps.");
+    if(r.sweepDeg>=15&&r.sweepDeg<=40)goods.push("Wing sweep in the sweet spot.");
+
+    if(issues.length===0&&goods.length>=2){box.classList.add('verdict-great');icon.textContent='\uD83E\uDD8B';text.textContent='Beautiful! This Butterfly Will Look Stunning';tips.innerHTML=goods.map(g=>'<div>\u2713 '+g+'</div>').join('');}
+    else if(issues.length===0){box.classList.add('verdict-good');icon.textContent='\uD83E\uDD8B';text.textContent='Looking Good \u2014 Fine-Tune for Perfection';tips.innerHTML=goods.map(g=>'<div>\u2713 '+g+'</div>').join('');}
+    else if(issues.length<=2&&goods.length>0){box.classList.add('verdict-meh');icon.textContent='\uD83D\uDD27';text.textContent='Almost There \u2014 A Few Tweaks Needed';tips.innerHTML=issues.map(i=>'<div><strong>\u2192</strong> '+i+'</div>').join('')+goods.map(g=>'<div>\u2713 '+g+'</div>').join('');}
+    else{box.classList.add('verdict-bad');icon.textContent='\u26A0\uFE0F';text.textContent='Needs Work \u2014 See Suggestions Below';tips.innerHTML=issues.map(i=>'<div><strong>\u2192</strong> '+i+'</div>').join('');}
+  }
+
+  recalc();
+
+  // ===== PHOTO UPLOAD + CLAUDE VISION =====
+  (function initPhotoUpload() {
+    const toggle = document.getElementById('photo-toggle');
+    const arrow = document.getElementById('photo-arrow');
+    const inner = document.getElementById('photo-inner');
+    const dropzone = document.getElementById('photo-dropzone');
+    const fileInput = document.getElementById('wingPhotoInput');
+    const cameraInput = document.getElementById('wingCameraInput');
+    const selectBtn = document.getElementById('photoSelectBtn');
+    const cameraBtn = document.getElementById('photoCameraBtn');
+    const preview = document.getElementById('photo-preview');
+    const placeholder = document.getElementById('photo-placeholder');
+    const retakeBtn = document.getElementById('photo-retake');
+    const apiKeyInput = document.getElementById('apiKeyInput');
+    const analyzeBtn = document.getElementById('analyzeBtn');
+    const statusDiv = document.getElementById('photo-status');
+    let photoData = null;
+    let panelOpen = false;
+
+    // Toggle expand/collapse
+    toggle.addEventListener('click', () => {
+      panelOpen = !panelOpen;
+      inner.style.display = panelOpen ? 'block' : 'none';
+      arrow.style.transform = panelOpen ? 'rotate(180deg)' : '';
+    });
+
+    // Load API key from localStorage
+    const savedKey = localStorage.getItem('claude-wing-api-key');
+    if (savedKey) apiKeyInput.value = savedKey;
+    apiKeyInput.addEventListener('input', () => {
+      localStorage.setItem('claude-wing-api-key', apiKeyInput.value);
+      updateAnalyzeBtn();
+    });
+
+    // File selection — camera for mobile, gallery for all
+    selectBtn.addEventListener('click', e => { e.stopPropagation(); fileInput.click(); });
+    cameraBtn.addEventListener('click', e => { e.stopPropagation(); cameraInput.click(); });
+    dropzone.addEventListener('click', e => {
+      if (e.target === retakeBtn || e.target === selectBtn || e.target === cameraBtn || e.target.closest('#photo-retake')) return;
+      if (!photoData) fileInput.click();
+    });
+    fileInput.addEventListener('change', e => { if (e.target.files?.[0]) handleFile(e.target.files[0]); });
+    cameraInput.addEventListener('change', e => { if (e.target.files?.[0]) handleFile(e.target.files[0]); });
+
+    // Drag and drop
+    dropzone.addEventListener('dragover', e => { e.preventDefault(); dropzone.style.borderColor = 'var(--accent)'; dropzone.style.background = 'rgba(56,189,248,0.05)'; });
+    dropzone.addEventListener('dragleave', e => { e.preventDefault(); dropzone.style.borderColor = 'var(--border)'; dropzone.style.background = ''; });
+    dropzone.addEventListener('drop', e => {
+      e.preventDefault(); dropzone.style.borderColor = 'var(--border)'; dropzone.style.background = '';
+      if (e.dataTransfer.files?.[0]) handleFile(e.dataTransfer.files[0]);
+    });
+
+    // Client-side image compression: resize to max 1600px, convert to JPEG
+    function compressImage(file) {
+      return new Promise((resolve, reject) => {
+        const img = new Image();
+        img.onload = () => {
+          const MAX = 1600;
+          let w = img.width, h = img.height;
+          if (w > MAX || h > MAX) {
+            const scale = MAX / Math.max(w, h);
+            w = Math.round(w * scale); h = Math.round(h * scale);
+          }
+          const cvs = document.createElement('canvas');
+          cvs.width = w; cvs.height = h;
+          cvs.getContext('2d').drawImage(img, 0, 0, w, h);
+          URL.revokeObjectURL(img.src);
+          const dataUrl = cvs.toDataURL('image/jpeg', 0.85);
+          const [header, base64] = dataUrl.split(',');
+          const mediaType = header.match(/data:(.*?);/)[1];
+          resolve({ base64, mediaType, dataUrl });
+        };
+        img.onerror = () => reject(new Error('Could not load image'));
+        img.src = URL.createObjectURL(file);
+      });
+    }
+
+    async function handleFile(file) {
+      if (!file.type.startsWith('image/')) { showStatus('Please select an image file (JPEG, PNG, etc.)', 'error'); return; }
+      try {
+        showStatus('<div style="display:flex;align-items:center;gap:8px"><div style="width:14px;height:14px;border:2px solid var(--border);border-top:2px solid var(--accent);border-radius:50%;animation:spin .8s linear infinite"></div>Processing image\u2026</div>', 'info');
+        const result = await compressImage(file);
+        // Check compressed size (base64 is ~1.33x raw)
+        if (result.base64.length > 4 * 1024 * 1024) { showStatus('Image still too large after compression. Try a smaller photo.', 'error'); return; }
+        photoData = { base64: result.base64, mediaType: result.mediaType };
+        preview.src = result.dataUrl;
+        preview.style.display = 'block';
+        placeholder.style.display = 'none';
+        retakeBtn.style.display = 'inline-block';
+        statusDiv.style.display = 'none';
+        updateAnalyzeBtn();
+      } catch (err) {
+        showStatus('Could not process image: ' + err.message, 'error');
+      }
+    }
+
+    retakeBtn.addEventListener('click', e => { e.stopPropagation(); clearPhoto(); });
+    function clearPhoto() {
+      photoData = null; preview.src = ''; preview.style.display = 'none';
+      placeholder.style.display = ''; retakeBtn.style.display = 'none';
+      fileInput.value = ''; cameraInput.value = ''; statusDiv.style.display = 'none'; updateAnalyzeBtn();
+    }
+
+    function updateAnalyzeBtn() {
+      const ready = photoData && apiKeyInput.value.startsWith('sk-ant-');
+      analyzeBtn.disabled = !ready;
+      analyzeBtn.style.opacity = ready ? '1' : '0.5';
+      const hint = document.getElementById('analyzeHint');
+      if (hint) {
+        if (!photoData && !apiKeyInput.value) { hint.style.display = 'block'; hint.textContent = 'Upload a photo and enter your API key to analyze'; }
+        else if (!photoData) { hint.style.display = 'block'; hint.textContent = 'Upload a wing photo above to enable analysis'; }
+        else if (!apiKeyInput.value.startsWith('sk-ant-')) { hint.style.display = 'block'; hint.textContent = 'Enter your Claude API key above to enable analysis'; }
+        else { hint.style.display = 'none'; }
+      }
+    }
+
+    function showStatus(msg, type) {
+      statusDiv.style.display = 'block';
+      statusDiv.style.color = type === 'error' ? '#f87171' : type === 'success' ? '#34d399' : 'var(--text-dim)';
+      statusDiv.innerHTML = msg;
+    }
+
+    // Spinner keyframe
+    if (!document.getElementById('spinner-style')) {
+      const s = document.createElement('style'); s.id = 'spinner-style';
+      s.textContent = '@keyframes spin{to{transform:rotate(360deg)}}';
+      document.head.appendChild(s);
+    }
+
+    // XSS-safe text escaper
+    function esc(s) { const d = document.createElement('div'); d.textContent = s; return d.innerHTML; }
+
+    analyzeBtn.addEventListener('click', async () => {
+      if (!photoData || analyzeBtn.disabled) return;
+      analyzeBtn.disabled = true;
+      analyzeBtn.textContent = '\u2026 Analyzing';
+      showStatus('<div style="display:flex;align-items:center;gap:8px"><div style="width:16px;height:16px;border:2px solid var(--border);border-top:2px solid var(--accent);border-radius:50%;animation:spin .8s linear infinite"></div>Sending photo to Claude Vision\u2026 (5\u201315 seconds)</div>', 'info');
+
+      // 30-second timeout
+      const controller = new AbortController();
+      const timeout = setTimeout(() => controller.abort(), 30000);
+
+      try {
+        const res = await fetch('/.netlify/functions/analyze-wing', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json', 'Authorization': 'Bearer ' + apiKeyInput.value },
+          body: JSON.stringify({ image: photoData.base64, mediaType: photoData.mediaType }),
+          signal: controller.signal,
+        });
+        clearTimeout(timeout);
+        if (!res.ok) {
+          const err = await res.json().catch(() => ({}));
+          throw new Error(err.detail || err.error || 'HTTP ' + res.status);
+        }
+        const data = await res.json();
+
+        // Populate auto-calc fields
+        if (data.wingspan_cm) document.getElementById('ac-wingspan').value = Math.round(data.wingspan_cm);
+        if (data.estimated_weight_g) document.getElementById('ac-wingWeight').value = Math.round(data.estimated_weight_g / 2);
+        if (data.body_weight_estimate_g) document.getElementById('ac-bodyWeight').value = Math.round(data.body_weight_estimate_g);
+        if (data.shape) {
+          const sel = document.getElementById('ac-shape');
+          if (['monarch','swallowtail','luna','rounded'].includes(data.shape)) sel.value = data.shape;
+        }
+        // Also populate fine-tune sliders with chord + taper
+        if (data.chord_cm) {
+          const chordEl = document.getElementById('chord');
+          chordEl.value = Math.min(parseFloat(chordEl.max), Math.max(parseFloat(chordEl.min), data.chord_cm));
+          document.getElementById('chord-val').textContent = data.chord_cm.toFixed(1) + ' cm';
+        }
+        if (data.taper_pct) {
+          const taperEl = document.getElementById('taper');
+          taperEl.value = Math.min(100, Math.max(20, Math.round(data.taper_pct)));
+          document.getElementById('taper-val').textContent = Math.round(data.taper_pct) + '%';
+        }
+
+        // Build result display (XSS-safe)
+        let html = '<div style="font-weight:700;color:#34d399;margin-bottom:8px">\u2713 Wing analyzed successfully!</div>';
+        // Low-confidence warning
+        if (data.confidence === 'low') {
+          html += '<div style="padding:8px 12px;margin-bottom:8px;background:rgba(251,191,36,0.1);border:1px solid rgba(251,191,36,0.3);border-radius:8px;font-size:.78rem;color:#fbbf24">\u26A0 Low confidence &mdash; no clear reference object detected. Measurements are rough estimates. Add a ruler or coin and retake for better accuracy.</div>';
+        }
+        html += '<div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(110px,1fr));gap:8px">';
+        const fields = [
+          { label: 'Wingspan', value: data.wingspan_cm ? data.wingspan_cm.toFixed(1) + ' cm' : '?' },
+          { label: 'Chord', value: data.chord_cm ? data.chord_cm.toFixed(1) + ' cm' : '?' },
+          { label: 'Shape', value: data.shape ? esc(data.shape) : '?' },
+          { label: 'Taper', value: data.taper_pct ? data.taper_pct + '%' : '?' },
+          { label: 'Wing Weight', value: data.estimated_weight_g ? data.estimated_weight_g.toFixed(1) + ' g' : '?' },
+          { label: 'Confidence', value: data.confidence ? esc(data.confidence) : '?' },
+        ];
+        fields.forEach(f => {
+          html += '<div style="text-align:center;padding:8px;background:var(--bg-surface);border-radius:8px">';
+          html += '<div style="font-size:.65rem;color:var(--text-dim);text-transform:uppercase;letter-spacing:.5px">' + f.label + '</div>';
+          html += '<div style="font-size:1.05rem;font-weight:700;color:var(--gold-light)">' + f.value + '</div></div>';
+        });
+        html += '</div>';
+        if (data.reference_object) html += '<div style="margin-top:8px;font-size:.72rem;color:var(--text-dim)">Reference detected: <strong>' + esc(data.reference_object) + '</strong></div>';
+        if (data.notes) html += '<div style="margin-top:4px;font-size:.78rem;color:var(--text-dim);line-height:1.4"><strong style="color:var(--text)">Notes:</strong> ' + esc(data.notes) + '</div>';
+        html += '<div style="margin-top:10px;font-size:.78rem;color:var(--accent)">Fields auto-filled above \u2191 \u2014 click <strong>Calculate Optimal Settings</strong> to optimize!</div>';
+        showStatus(html, 'success');
+
+        // Flash auto-calc + slider fields
+        ['ac-wingspan','ac-wingWeight','ac-bodyWeight','ac-shape','chord','taper'].forEach(id => {
+          const el = document.getElementById(id);
+          if (!el) return;
+          el.style.transition = 'box-shadow .3s';
+          el.style.boxShadow = '0 0 14px rgba(196,164,105,0.6)';
+          setTimeout(() => { el.style.boxShadow = ''; }, 2500);
+        });
+        recalc();
+      } catch (err) {
+        clearTimeout(timeout);
+        const msg = err.name === 'AbortError' ? 'Request timed out (30s). Try again or check your connection.' : err.message;
+        showStatus('Analysis failed: ' + esc(msg) + '<br><span style="font-size:.72rem;opacity:0.7">Check your API key and try again.</span>', 'error');
+      } finally {
+        analyzeBtn.disabled = false;
+        analyzeBtn.innerHTML = '&#128269; Analyze Wing';
+        updateAnalyzeBtn();
+      }
+    });
+
+    updateAnalyzeBtn();
+  })();
+
+  // ===== WING SHAPE MODAL =====
+  (function initShapeModal() {
+    const modal = document.getElementById('shape-modal');
+    const openBtn = document.getElementById('openShapeModal');
+    const closeBtn = document.getElementById('shape-modal-close');
+    const taperSlider = document.getElementById('taper');
+    const taperVal = document.getElementById('taper-val');
+
+    openBtn.addEventListener('click', e => { e.preventDefault(); e.stopPropagation(); modal.style.display = 'flex'; });
+    closeBtn.addEventListener('click', () => { modal.style.display = 'none'; });
+    modal.addEventListener('click', e => { if (e.target === modal) modal.style.display = 'none'; });
+
+    // Preset shape buttons
+    document.querySelectorAll('.shape-btn').forEach(btn => {
+      btn.addEventListener('click', () => {
+        const taper = parseInt(btn.dataset.taper);
+        taperSlider.value = taper;
+        taperVal.textContent = taper + '%';
+        // Also set auto-calc shape dropdown
+        const acShape = document.getElementById('ac-shape');
+        if (acShape && btn.dataset.shape) acShape.value = btn.dataset.shape;
+        // Highlight selected
+        document.querySelectorAll('.shape-btn').forEach(b => { b.style.borderColor = 'var(--border)'; b.style.background = 'var(--bg-surface)'; });
+        btn.style.borderColor = 'var(--sd-green)';
+        btn.style.background = 'rgba(0,132,61,0.1)';
+        recalc();
+        setTimeout(() => { modal.style.display = 'none'; }, 400);
+      });
+      btn.addEventListener('mouseenter', () => { btn.style.borderColor = 'var(--accent)'; });
+      btn.addEventListener('mouseleave', () => { if (btn.style.background !== 'rgba(0,132,61,0.1)') btn.style.borderColor = 'var(--border)'; });
+    });
+
+    // Custom shape from description
+    document.getElementById('shape-apply-custom').addEventListener('click', () => {
+      const base = document.getElementById('shape-base').value;
+      const tip = document.getElementById('shape-tip').value;
+      // Map descriptions to taper values
+      let taper = 50;
+      if (base === 'wide' && tip === 'pointed') taper = 30;
+      else if (base === 'wide' && tip === 'rounded') taper = 45;
+      else if (base === 'wide' && tip === 'broad') taper = 65;
+      else if (base === 'medium' && tip === 'pointed') taper = 35;
+      else if (base === 'medium' && tip === 'rounded') taper = 50;
+      else if (base === 'medium' && tip === 'broad') taper = 70;
+      else if (base === 'narrow' && tip === 'pointed') taper = 25;
+      else if (base === 'narrow' && tip === 'rounded') taper = 40;
+      else if (base === 'narrow' && tip === 'broad') taper = 55;
+      taperSlider.value = taper;
+      taperVal.textContent = taper + '%';
+      recalc();
+      setTimeout(() => { modal.style.display = 'none'; }, 300);
+    });
+  })();
+
+  // ===== HELP MODAL SYSTEM =====
+  const helpData = {
+    wingspan:{title:"How Wide Are Your Wings?",body:"This is the total distance from one wingtip to the other — like stretching your arms out wide. Bigger wings catch more air when they flap, so they move in a slow, graceful way. Smaller wings flap faster and feel more zippy and energetic.",tip:"Most craft butterflies look best between 30–60cm. Go bigger (183–244cm) for a showstopper ceiling mobile at the gala!"},
+    chord:{title:"How Wide Is Each Wing Front-to-Back?",body:"Imagine tracing your finger from the front edge of the wing to the back edge. A wider wing scoops more air like a big paddle, making each flap feel stronger. A narrow wing slices through the air more easily, like a knife through butter.",tip:"Keep this around ¼ to ⅓ of your wingspan for a natural butterfly look."},
+    wingWeight:{title:"How Heavy Is Each Wing?",body:"Put one wing on a kitchen scale — that's this number. Heavier wings swing down harder when they flap, but need more energy to lift back up. Lighter wings flutter quickly and easily, like a feather floating in the breeze.",tip:"Paper or cardstock wings (5–15g) flap easiest. Foam or balsa wood? Keep under 50g per wing or you'll need a much heavier pull-weight."},
+    taper:{title:"Wing Shape — Pointed or Rounded?",body:"This changes whether your wings are wide rectangles or pointy triangles. At 100% the wing stays the same width all the way to the tip, like a paddle. Lower numbers make the wing narrow toward the tip, like a real butterfly. Pointy wings flap more easily because the tips are lighter.",tip:"Around 50–60% gives you the classic butterfly look. Go lower (30–40%) for a sleek dragonfly shape."},
+    bodyWeight:{title:"How Heavy Is the Body?",body:"The body hangs in the middle and holds everything together — the backbone of your butterfly. A heavier body keeps the whole mobile steady. But if it's too heavy, the wings will just dangle without flapping much.",tip:"Start with a body about 2–3× one wing's weight. A wooden bead or a dowel wrapped in yarn makes a great body."},
+    pullWeight:{title:"The Magic Pull-Weight",body:"This is the engine of your butterfly! It's the weight that hangs below on a string. When you pull it down and let go, it falls and makes the wings flap up. A heavier weight = bigger, stronger flaps. This is usually the MOST important slider to get right.",tip:"A stack of washers or a fishing sinker works perfectly. Start with about the same weight as both wings combined, then add/remove one washer at a time."},
+    tipWeight:{title:"Tiny Wingtip Weights",body:"These are small weights stuck on the very end of each wing — like putting coins on the tips of a seesaw. They make the wings swing with more momentum, so each flap is slower but more dramatic and swoopy.",tip:"A small blob of clay, a penny taped to each tip, or a few beads on the wing edge. Even 2–5g makes a noticeable difference!"},
+    stringLength:{title:"String Drop Length",body:"How long the string is between the body and the pull-weight below. A longer string means the weight falls farther before the wings finish flapping, giving you a longer, slower pull. A shorter string gives a quick, snappy tug.",tip:"Start around 20–30cm. If flapping stops too fast, try making the string longer so the weight has more room to travel."},
+    friction:{title:"Hinge Friction — How Stiff Is the Joint?",body:"Think about opening a brand-new book versus an old worn-out one. A stiff hinge makes the wings resist moving, so they stop quickly. A loose hinge lets them swing freely and keep flapping for a long time, like a well-oiled door.",tip:"Start in the middle (~40–50) and adjust. Wings barely move? Lower it. Flap wildly and never settle? Raise it."},
+    springK:{title:"Return Spring / Rubber Band",body:"This is like a rubber band pulling the wings back after each flap. More springiness = wings snap back fast and want to flap again. Less springiness = wings drift back slowly and gently, like they're moving through honey.",tip:"A little spring (20–40) makes flapping look alive. Too much makes wings jittery. If you use a rubber band as your hinge, you already have real spring built in!"},
+    initialPull:{title:"How Far Do You Pull to Start?",body:"Imagine pulling the weight straight down to cock the wings up before letting go. This angle is how far up the wings tilt at the start — like pulling a swing way back before releasing it. Bigger angle = bigger dramatic first flap.",tip:"15–30° is the sweet spot. Going past 45° might look dramatic but can make the mechanism jam."},
+    linkagePoint:{title:"Where the String Attaches to the Wing",body:"The string connects to each wing somewhere between the hinge and the tip. Close to the hinge = pushing a door near its hinges (very hard). Near the tip = pushing at the door handle (much easier). This changes how much force it takes to flap.",tip:"Start around 40–50%. Wings barely move? Slide it closer to the tips. Too wild? Move it closer to the hinge."},
+    pivotType:{title:"Wing Pivot Type",body:"How the wing connects to the body. A pin hinge is like a door hinge — smooth and free. A living hinge is a thin bendy piece (like a Tic-Tac box lid) that flexes. A friction hinge is two surfaces rubbing together, naturally slowing things down.",tip:"For a first build, a pin hinge (bamboo skewer through a straw) is the easiest and most reliable."},
+    upperAttach:{title:"Upper Attachment",body:"What you hang the whole mobile from. A regular string just holds it in place. An elastic cord adds a bounce — when the weight drops and wings flap, the whole butterfly bobs up and down too, making it look like it's actually flying!",tip:"Try a thin hair elastic or rubber band loop as your hanger — the bouncing effect makes it look SO much more alive."},
+    elasticK:{title:"Elastic Stiffness",body:"If you chose elastic for the upper attachment, this controls how stretchy it is. Low = loose floppy rubber band that bounces a lot. High = thick tight band that barely stretches.",tip:"Start around 30–40 for nice gentle bounce. Too bouncy? Increase. Barely moves? Decrease."},
+    'auto-calc':{title:"✨ Calculate Best Setup",body:"Not sure where to start? This button looks at your wing size and materials, then figures out the perfect weight, string length, and attachment point for amazing flapping. It's like asking an expert to set everything up for you!",tip:"Use this FIRST to get a working baseline, then tweak individual sliders to experiment and learn what each one does."},
+    presets:{title:"Quick Start Presets",body:"These buttons load a ready-made setup for Small (3ft), Medium (6ft), or Large (8ft) butterflies so you skip the math and start building immediately. All sliders get set to tested values that are known to work well.",tip:"Medium is the best starting point if you're unsure. Pick the closest size, then fine-tune from there."},
+    'photo-upload':{title:"📸 Photo Upload + AI",body:"Already built your butterfly? Take a photo of it and upload it here! The app will look at your picture, estimate the wingspan, shape, and materials, then set everything to match your real creation. See the simulation before you even hang it up!",tip:"Lay your butterfly flat with a ruler or coin next to it for scale. Good lighting + plain background = much better results."},
+    speedometer:{title:"Wing Score Gauge",body:"This gauge shows how well your setup will actually flap, scored 0–100. Low = wings barely move or flop awkwardly. High = smooth, satisfying, repeating flaps that look incredible. It checks balance, weight, timing — everything.",tip:"Aim for 60+ for good flapping. Stuck below 40? Try the auto-calculator or adjust your pull-weight first — it usually has the biggest impact."},
+    optimizer:{title:"⚡ Optimize Unlocked Sliders",body:"Lock the sliders you CAN'T change (like wingspan — you already cut the wings!) and leave the rest unlocked. This button finds the BEST values for only the unlocked sliders. It's like saying: I built these wings, now what else should I do?",tip:"Lock wingspan, chord, and wing weight first (those match your real materials), then optimize everything else for the most realistic recommendations."}
+  };
+  // Modal elements
+  const helpOverlay = document.getElementById('help-modal-overlay');
+  const helpTitle = document.getElementById('help-modal-title');
+  const helpBody = document.getElementById('help-modal-body');
+  const helpTip = document.getElementById('help-modal-tip');
+  document.getElementById('help-modal-close').addEventListener('click', () => helpOverlay.classList.remove('open'));
+  helpOverlay.addEventListener('click', (e) => { if (e.target === helpOverlay) helpOverlay.classList.remove('open'); });
+
+  function showHelp(id) {
+    const d = helpData[id];
+    if (!d) return;
+    helpTitle.textContent = d.title;
+    helpBody.textContent = d.body;
+    helpTip.textContent = d.tip;
+    helpOverlay.classList.add('open');
+  }
+
+  // Inject (?) buttons next to every slider label
+  const sliderHelpIds = ['wingspan','chord','wingWeight','taper','bodyWeight','pullWeight','tipWeight','stringLength','friction','springK','initialPull','linkagePoint','pivotType','upperAttach','elasticK'];
+  sliderHelpIds.forEach(id => {
+    const el = document.getElementById(id);
+    if (!el) return;
+    const label = el.closest('label');
+    if (!label) return;
+    const labelText = label.querySelector('.label-text');
+    if (!labelText) return;
+    const btn = document.createElement('button');
+    btn.className = 'help-btn';
+    btn.textContent = '?';
+    btn.title = 'Learn about this setting';
+    btn.addEventListener('click', (e) => { e.preventDefault(); e.stopPropagation(); showHelp(id); });
+    labelText.appendChild(btn);
+  });
+
+  // Help buttons for sections (auto-calc, presets, speedometer, optimizer)
+  const sectionHelps = [
+    {selector:'#autoCalcBtn', id:'auto-calc', insertAfter:true},
+    {selector:'#presets-section h2', id:'presets', insertAfter:false},
+    {selector:'#speedo-label', id:'speedometer', insertAfter:false},
+    {selector:'#optimize-btn', id:'optimizer', insertAfter:true},
+    {selector:'#photo-toggle', id:'photo-upload', insertAfter:false},
+  ];
+  sectionHelps.forEach(({selector, id, insertAfter}) => {
+    const target = document.querySelector(selector);
+    if (!target) return;
+    const btn = document.createElement('button');
+    btn.className = 'help-btn';
+    btn.textContent = '?';
+    btn.title = 'Learn about this';
+    btn.style.marginLeft = '8px';
+    btn.addEventListener('click', (e) => { e.preventDefault(); e.stopPropagation(); showHelp(id); });
+    if (insertAfter && target.parentNode) target.parentNode.insertBefore(btn, target.nextSibling);
+    else target.appendChild(btn);
+  });
+
+});
+// Service Worker registration
+if ('serviceWorker' in navigator) navigator.serviceWorker.register('/sw.js').catch(()=>{});
+</script>
+</body>
+</html>
