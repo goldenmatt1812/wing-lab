@@ -241,6 +241,8 @@ footer{text-align:center;padding:2rem 1rem;color:var(--text-dim);font-size:.75re
 .guide-btn:hover{transform:translateY(-2px);box-shadow:0 4px 20px rgba(196,164,105,0.25);border-color:rgba(196,164,105,0.55);background:linear-gradient(135deg,rgba(196,164,105,0.22),rgba(0,146,188,0.18))}
 .guide-btn .gb-fly{display:inline-block;transition:all .3s}
 .guide-btn:hover .gb-fly{animation:guideFlap .6s ease-in-out infinite}
+#unit-toggle{position:absolute;top:12px;right:14px;background:rgba(9,13,24,0.7);border:1px solid var(--border);color:var(--gold-light);font-size:.72rem;font-weight:700;padding:5px 12px;border-radius:8px;cursor:pointer;backdrop-filter:blur(6px);transition:all .2s;font-family:inherit;letter-spacing:.04em}
+#unit-toggle:hover{background:rgba(196,164,105,0.15);border-color:var(--gold-light)}
 #loading-overlay{position:fixed;inset:0;z-index:9999;background:var(--bg-deep);display:flex;flex-direction:column;align-items:center;justify-content:center;transition:opacity .5s;font-size:2rem}
 #loading-overlay span{font-size:1rem;color:var(--text-dim);margin-top:1rem;font-weight:600}
 #loading-overlay.fade-out{opacity:0;pointer-events:none}
@@ -268,6 +270,7 @@ footer{text-align:center;padding:2rem 1rem;color:var(--text-dim);font-size:.75re
     <p class="subtitle">Design Hanging Butterflies That Flap Beautifully</p>
     <p class="header-desc">Cut your wings, weigh them, enter what you know &mdash; we'll tell you exactly what weights to add and where, so your butterfly hangs flat and flaps gracefully.</p>
     <a href="/instructions.html" class="guide-btn"><span class="gb-fly">&#x1F98B;</span> Step-by-Step Build Guide</a>
+    <button id="unit-toggle" title="Switch metric / imperial" onclick="toggleUnits()">g / cm</button>
   </header>
 
   <main>
@@ -628,6 +631,11 @@ footer{text-align:center;padding:2rem 1rem;color:var(--text-dim);font-size:.75re
   <footer>Wing Lab &mdash; San Domenico 175th Anniversary &middot; Roots & Wings</footer>
 
 <script>
+// ============= UNITS =============
+let _imperial = false;
+const CM_TO_IN = 0.3937;
+const G_TO_OZ = 0.03527;
+
 // ============= PHYSICS =============
 const G = 9.81;
 const Physics = {
@@ -1255,12 +1263,12 @@ const R = {
       ctx.strokeStyle='#5b6b8a'; ctx.lineWidth=1; ctx.stroke();
     });
     ctx.font='bold 11px Inter,system-ui,sans-serif'; ctx.fillStyle='#8892a8';
-    ctx.textAlign='center'; ctx.fillText(p.wingspanCm + ' cm wingspan', cx, dimY - 8);
+    ctx.textAlign='center'; ctx.fillText((_imperial?(p.wingspanCm*CM_TO_IN).toFixed(1)+' in':p.wingspanCm+' cm')+' wingspan', cx, dimY - 8);
 
     // Wing weight labels
     ctx.font='9px Inter,system-ui,sans-serif'; ctx.fillStyle='#b89d5e';
     ctx.textAlign='center';
-    ctx.fillText(p.wingWeightG + 'g each wing', cx - wingLenPx * 0.5, pivotY + chordPx + 14);
+    ctx.fillText((_imperial?(p.wingWeightG*G_TO_OZ).toFixed(1)+'oz':(p.wingWeightG+'g'))+' each wing', cx - wingLenPx * 0.5, pivotY + chordPx + 14);
 
     // ===== TIP WEIGHTS =====
     if (p.tipMass > 0.0005) {
@@ -1271,7 +1279,7 @@ const R = {
         ctx.strokeStyle='#fff'; ctx.lineWidth=1.5; ctx.stroke();
       });
       ctx.font='bold 9px Inter,system-ui,sans-serif'; ctx.fillStyle='#ff9f43';
-      ctx.textAlign='right'; ctx.fillText(p.tipWeightG + 'g tip', tipLx - 8, tipLy + 3);
+      ctx.textAlign='right'; ctx.fillText((_imperial?(p.tipWeightG*G_TO_OZ).toFixed(2)+'oz':(p.tipWeightG+'g'))+' tip', tipLx - 8, tipLy + 3);
     }
 
     // ===== BUTTERFLY BODY =====
@@ -1322,7 +1330,7 @@ const R = {
 
     // Body label
     ctx.font='bold 10px Inter,system-ui,sans-serif'; ctx.fillStyle='#c9a96e';
-    ctx.textAlign='left'; ctx.fillText('BODY ' + p.bodyWeightG + 'g', bodyCx + bodyW + 12, bodyMidY + 3);
+    ctx.textAlign='left'; ctx.fillText('BODY '+(_imperial?(p.bodyWeightG*G_TO_OZ).toFixed(1)+'oz':(p.bodyWeightG+'g')), bodyCx + bodyW + 12, bodyMidY + 3);
 
     // ===== PIVOT (hinge where wings meet body) =====
     ctx.save(); ctx.shadowColor='rgba(0,146,188,0.4)'; ctx.shadowBlur=8;
@@ -1338,7 +1346,7 @@ const R = {
     ctx.strokeStyle='#6a7a98'; ctx.lineWidth=2;
     ctx.setLineDash([3,3]); ctx.stroke(); ctx.setLineDash([]);
     ctx.font='9px Inter,system-ui,sans-serif'; ctx.fillStyle='#4a5a78';
-    ctx.textAlign='left'; ctx.fillText(p.stringLenCm + 'cm drop', cx + 8, (bodyY + bodyH + weightY) / 2);
+    ctx.textAlign='left'; ctx.fillText((_imperial?(p.stringLenCm*CM_TO_IN).toFixed(1)+'in':(p.stringLenCm+'cm'))+' drop', cx + 8, (bodyY + bodyH + weightY) / 2);
 
     // ===== PULL WEIGHT =====
     ctx.save(); ctx.shadowColor='rgba(154,171,191,0.3)'; ctx.shadowBlur=10;
@@ -1355,7 +1363,7 @@ const R = {
     ctx.roundRect(cx - lblW/2, lblY - 10, lblW, lblH, 6); ctx.fill();
     ctx.font='bold 10px Inter,system-ui,sans-serif'; ctx.fillStyle='#b0c0d4';
     ctx.textAlign='center'; ctx.fillText('PULL WEIGHT', cx, lblY + 2);
-    ctx.fillText(p.pullWeightG + 'g', cx, lblY + 14);
+    ctx.fillText(_imperial?(p.pullWeightG*G_TO_OZ).toFixed(1)+'oz':(p.pullWeightG+'g'), cx, lblY + 14);
 
     // Store weight position for drag interaction
     this._weightPos = {x: cx, y: weightY, r: weightR};
@@ -1974,11 +1982,27 @@ document.addEventListener('DOMContentLoaded', () => {
 
   const sliders=['wingspan','chord','wingWeight','taper','bodyWeight','pullWeight','tipWeight',
     'stringLength','friction','springK','initialPull','linkagePoint'];
+  // ===== UNIT SYSTEM (metric default, toggle to imperial) =====
+  function _cm(v) { const n=parseFloat(v); return _imperial ? (n*CM_TO_IN).toFixed(1)+' in' : n.toFixed(0)+' cm'; }
+  function _cmF(v) { const n=parseFloat(v); return _imperial ? (n*CM_TO_IN).toFixed(1)+' in' : n.toFixed(1)+' cm'; }
+  function _g(v) { const n=parseFloat(v); return _imperial ? (n*G_TO_OZ).toFixed(2)+' oz' : n.toFixed(0)+' g'; }
+  function _gF(v) { const n=parseFloat(v); return _imperial ? (n*G_TO_OZ).toFixed(2)+' oz' : n.toFixed(1)+' g'; }
+  window.toggleUnits = function() {
+    _imperial = !_imperial;
+    document.getElementById('unit-toggle').textContent = _imperial ? 'oz / in' : 'g / cm';
+    // Re-format all slider outputs
+    sliders.forEach(id => {
+      const el=document.getElementById(id), out=document.getElementById(id+'-val');
+      if(out && fmt[id]) out.textContent = fmt[id](el.value);
+    });
+    // Redraw canvas with new units
+    if(R._restInfo) R.draw(R.currentAngle);
+  };
   const fmt={
-    wingspan:v=>parseFloat(v).toFixed(0)+' cm', chord:v=>parseFloat(v).toFixed(1)+' cm',
-    wingWeight:v=>parseFloat(v).toFixed(0)+' g', taper:v=>parseFloat(v).toFixed(0)+'%',
-    bodyWeight:v=>parseFloat(v).toFixed(0)+' g', pullWeight:v=>parseFloat(v).toFixed(0)+' g',
-    tipWeight:v=>parseFloat(v).toFixed(1)+' g', stringLength:v=>parseFloat(v).toFixed(0)+' cm',
+    wingspan:v=>_cm(v), chord:v=>_cmF(v),
+    wingWeight:v=>_g(v), taper:v=>parseFloat(v).toFixed(0)+'%',
+    bodyWeight:v=>_g(v), pullWeight:v=>_g(v),
+    tipWeight:v=>_gF(v), stringLength:v=>_cm(v),
     friction:v=>{const n=+v;return n<20?'Very Low':n<40?'Low':n<60?'Medium':n<80?'High':'Very High';},
     springK:v=>{const n=+v;return n===0?'None':n<20?'Slight':n<50?'Moderate':n<80?'Strong':'Very Strong';},
     initialPull:v=>parseFloat(v).toFixed(0)+'\u00B0', linkagePoint:v=>parseFloat(v).toFixed(0)+'%',
