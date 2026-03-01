@@ -519,7 +519,7 @@ footer{text-align:center;padding:2rem 1rem;color:var(--text-dim);font-size:.75re
           <label><span class="label-text">String Drop Length</span><span class="label-detail">Distance from body to pull-weight</span><div class="slider-row"><input type="range" id="stringLength" min="5" max="150" step="1" value="25"><output id="stringLength-val">25 cm</output></div></label>
           <label><span class="label-text">Hinge Friction</span><span class="label-detail">How sticky the pivot is &mdash; more = dies faster</span><div class="slider-row"><input type="range" id="friction" min="1" max="100" step="1" value="15"><output id="friction-val">Low</output></div></label>
           <label><span class="label-text">Return Spring / Elasticity</span><span class="label-detail">Rubber band, bent wire, etc.</span><div class="slider-row"><input type="range" id="springK" min="0" max="100" step="1" value="10"><output id="springK-val">Slight</output></div></label>
-          <label><span class="label-text">Initial Pull Angle</span><span class="label-detail">How far you tug before letting go</span><div class="slider-row"><input type="range" id="initialPull" min="5" max="60" step="1" value="25"><output id="initialPull-val">25&deg;</output></div></label>
+          <label><span class="label-text">Initial Pull Angle</span><span class="label-detail">How far you tug before letting go</span><div class="slider-row"><input type="range" id="initialPull" min="5" max="85" step="1" value="25"><output id="initialPull-val">25&deg;</output></div></label>
         </div>
         <div class="control-group">
           <h3>&#128279; Linkage</h3>
@@ -1011,11 +1011,30 @@ const R = {
       const dy=y-this._dragStartY;
       // Dynamic max pull based on canvas size — works on mobile + desktop
       const maxPx=Math.max(80, c.getBoundingClientRect().height*0.4);
-      const maxAng=60*Math.PI/180;
+      const maxAng=85*Math.PI/180;
       const pullAng=Math.max(0,Math.min(maxAng,(dy/maxPx)*maxAng));
       this._dragAngle=pullAng;
       this.currentAngle=pullAng;
       this.draw(pullAng);
+      // Auto-trigger flap when reaching max pull — no need to release!
+      if(pullAng>=maxAng*0.95){
+        this._dragging=false;
+        this._dragEndTime=performance.now();
+        c.style.cursor='grab';
+        c.style.touchAction='pan-y';
+        navigator.vibrate?.([15,30,15]);
+        const deg=Math.round(this._dragAngle*180/Math.PI);
+        const el=document.getElementById('initialPull');
+        el.value=Math.min(85,Math.max(1,deg));
+        const out=document.getElementById('initialPull-val');
+        if(out)out.textContent=el.value+'\u00B0';
+        const p=Physics.readParams();
+        const results=Physics.computeAll(p);
+        R._restInfo=results;
+        updateDash(results,null);
+        this.startAnimation(results);
+        return;
+      }
       e.preventDefault();
     };
     const end=(e)=>{
@@ -1027,16 +1046,18 @@ const R = {
       navigator.vibrate?.(15);
       // Any drag > 0.01 rad (~0.6°) triggers animation — no dead zone
       if(this._dragAngle>0.01){
-        // Set the initial pull slider to match drag angle (no 5° minimum clamp)
+        // Set the initial pull slider to match drag angle
         const deg=Math.round(this._dragAngle*180/Math.PI);
         const el=document.getElementById('initialPull');
-        el.value=Math.min(60,Math.max(1,deg));
+        el.value=Math.min(85,Math.max(1,deg));
         const out=document.getElementById('initialPull-val');
         if(out)out.textContent=el.value+'\u00B0';
-        // Recalc FIRST (updates dashboard), then animate (avoids visual flash)
+        // Compute physics + update dashboard WITHOUT drawing at rest angle (no snap-back!)
         const p=Physics.readParams();
         const results=Physics.computeAll(p);
-        if(typeof recalc==='function') recalc();
+        R._restInfo=results;
+        updateDash(results,null); // dashboard only, no draw
+        // Start animation — first frame draws at initialPull (matches drag angle)
         this.startAnimation(results);
       } else {
         // Tap/click without dragging — check for double-tap (full pull) vs single tap (hint)
@@ -2558,6 +2579,19 @@ document.addEventListener('DOMContentLoaded', () => {
     else{box.classList.add('verdict-bad');icon.textContent='\u26A0\uFE0F';text.textContent='Needs Work \u2014 See Suggestions Below';tips.innerHTML=issues.map(i=>'<div><strong>\u2192</strong> '+i+'</div>').join('');}
   }
 
+  // Default to Medium preset on page load
+  {
+    const medVals = presetData.medium;
+    Object.entries(medVals).forEach(([id, v]) => {
+      const el = document.getElementById(id);
+      if (!el) return;
+      el.value = v;
+      const out = document.getElementById(id + '-val');
+      if (out && fmt[id]) out.textContent = fmt[id](String(v));
+    });
+    const medBtn = document.querySelector('.preset-btn[data-preset="medium"]');
+    if (medBtn) medBtn.classList.add('active');
+  }
   recalc();
 
   // ===== PHOTO UPLOAD + CLAUDE VISION =====
