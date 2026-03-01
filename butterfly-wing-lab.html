@@ -60,6 +60,13 @@ main{max-width:1200px;margin:0 auto;padding:0 1rem 3rem}
 #canvas-label{position:absolute;top:10px;left:14px;font-size:.7rem;color:var(--text-dim);text-transform:uppercase;letter-spacing:.1em}
 #physics-math-btn{position:absolute;top:10px;right:14px;background:rgba(9,13,24,0.7);border:1px solid var(--border);color:var(--accent);width:32px;height:32px;border-radius:50%;font-size:.9rem;font-weight:700;cursor:pointer;backdrop-filter:blur(6px);transition:all .2s;display:flex;align-items:center;justify-content:center;z-index:10}
 #physics-math-btn:hover{background:rgba(56,189,248,0.2);border-color:var(--accent);transform:scale(1.1)}
+#fullscreen-btn{position:absolute;top:10px;right:54px;background:rgba(9,13,24,0.7);border:1px solid var(--border);color:var(--gold-light);width:32px;height:32px;border-radius:50%;font-size:.85rem;cursor:pointer;backdrop-filter:blur(6px);transition:all .2s;display:flex;align-items:center;justify-content:center;z-index:10;padding:0}
+#fullscreen-btn:hover{background:rgba(196,164,105,0.2);border-color:var(--gold);transform:scale(1.1)}
+/* Fullscreen mode */
+#wing-viz-section.fullscreen{position:fixed;inset:0;z-index:10000;margin:0;border-radius:0;border:none}
+#wing-viz-section.fullscreen #wingCanvas{height:100vh!important}
+#wing-viz-section.fullscreen #fullscreen-btn{top:14px;right:58px}
+#wing-viz-section.fullscreen #physics-math-btn{top:14px;right:18px}
 #physics-modal-overlay{position:fixed;inset:0;z-index:10001;background:rgba(0,0,0,0.7);backdrop-filter:blur(6px);display:none;align-items:flex-start;justify-content:center;padding:1.5rem;overflow-y:auto}
 #physics-modal-overlay.open{display:flex}
 #physics-modal{background:var(--bg-card);border:1px solid var(--border);border-radius:20px;max-width:680px;width:100%;max-height:none;padding:2rem 2.5rem;position:relative;box-shadow:0 24px 80px rgba(0,0,0,0.6);margin:1rem 0}
@@ -283,6 +290,7 @@ footer{text-align:center;padding:2rem 1rem;color:var(--text-dim);font-size:.75re
         </div>
       </div>
       <div id="canvas-label">Side view &middot; hanging from ceiling</div>
+      <button id="fullscreen-btn" title="Toggle fullscreen" onclick="toggleFullscreen()">&#x26F6;</button>
       <button id="physics-math-btn" title="View the physics equations" onclick="document.getElementById('physics-modal-overlay').classList.add('open')">?</button>
     </section>
 
@@ -1987,6 +1995,24 @@ document.addEventListener('DOMContentLoaded', () => {
   function _cmF(v) { const n=parseFloat(v); return _imperial ? (n*CM_TO_IN).toFixed(1)+' in' : n.toFixed(1)+' cm'; }
   function _g(v) { const n=parseFloat(v); return _imperial ? (n*G_TO_OZ).toFixed(2)+' oz' : n.toFixed(0)+' g'; }
   function _gF(v) { const n=parseFloat(v); return _imperial ? (n*G_TO_OZ).toFixed(2)+' oz' : n.toFixed(1)+' g'; }
+  window.toggleFullscreen = function() {
+    const sec = document.getElementById('wing-viz-section');
+    const btn = document.getElementById('fullscreen-btn');
+    sec.classList.toggle('fullscreen');
+    const isFs = sec.classList.contains('fullscreen');
+    btn.innerHTML = isFs ? '&#x2716;' : '&#x26F6;';
+    btn.title = isFs ? 'Exit fullscreen' : 'Toggle fullscreen';
+    // Lock/unlock body scroll
+    document.body.style.overflow = isFs ? 'hidden' : '';
+    // Resize canvas after layout change
+    setTimeout(function(){ R.resize(); if(R._restInfo) R.draw(R.currentAngle); }, 50);
+  };
+  // ESC to exit fullscreen
+  document.addEventListener('keydown', function(e) {
+    if(e.key === 'Escape' && document.getElementById('wing-viz-section').classList.contains('fullscreen')) {
+      toggleFullscreen();
+    }
+  });
   window.toggleUnits = function() {
     _imperial = !_imperial;
     document.getElementById('unit-toggle').textContent = _imperial ? 'oz / in' : 'g / cm';
