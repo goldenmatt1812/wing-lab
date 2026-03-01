@@ -47,7 +47,7 @@ header{text-align:center;padding:2.5rem 1rem 1.5rem;background:linear-gradient(1
 header::before{content:'';position:absolute;top:-20px;left:50%;transform:translateX(-50%);width:700px;height:250px;background:radial-gradient(ellipse,rgba(196,164,105,0.1) 0%,transparent 70%);pointer-events:none}
 .gala-badge{display:inline-block;font-size:.7rem;font-weight:700;letter-spacing:.18em;text-transform:uppercase;color:var(--gold);border:1px solid rgba(196,164,105,0.3);padding:5px 18px;border-radius:20px;margin-bottom:.75rem;background:rgba(196,164,105,0.06)}
 header h1{font-size:2.8rem;font-weight:800;letter-spacing:-.03em;background:linear-gradient(135deg,var(--sd-green) 0%,var(--sd-teal) 35%,var(--sd-blue) 70%,var(--gold-light) 100%);-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text}
-.subtitle{color:var(--text-dim);font-size:1.05rem;letter-spacing:.08em;margin-top:.25rem}
+.gala-theme{font-size:1.35rem;font-weight:800;letter-spacing:.06em;color:var(--gold-light);margin-bottom:.5rem;text-shadow:0 0 20px rgba(196,164,105,0.2)}
 .header-desc{color:var(--text-dim);font-size:.85rem;margin-top:.5rem;max-width:560px;margin-left:auto;margin-right:auto;line-height:1.5}
 main{max-width:1200px;margin:0 auto;padding:0 1rem 3rem}
 
@@ -195,11 +195,11 @@ footer{text-align:center;padding:2rem 1rem;color:var(--text-dim);font-size:.75re
 @media(max-width:600px){
   header{padding:1.5rem .75rem 1rem}
   header h1{font-size:1.8rem}
-  .subtitle{font-size:1rem}
+  .gala-theme{font-size:1.1rem}
   .header-desc{font-size:.88rem}
   main{padding:0 .5rem 2rem}
   section{margin:1rem 0!important}
-  #wingCanvas{height:380px}
+  #wingCanvas{height:480px}
   #auto-calc-section{padding:1rem .75rem}
   .auto-row{grid-template-columns:1fr 1fr!important;gap:.75rem}
   #autoCalcBtn{padding:14px;font-size:1.05rem}
@@ -265,10 +265,10 @@ footer{text-align:center;padding:2rem 1rem;color:var(--text-dim);font-size:.75re
 <body>
   <div id="loading-overlay">&#x1F98B;<span>Loading Wing Lab...</span></div>
   <header>
-    <div class="gala-badge">San Domenico &middot; 175th Anniversary &middot; Roots & Wings</div>
+    <div class="gala-badge">San Domenico &middot; 175th Anniversary</div>
+    <div class="gala-theme">Roots &amp; Wings</div>
     <h1>&#x1F98B; Wing Lab</h1>
-    <p class="subtitle">Design Hanging Butterflies That Flap Beautifully</p>
-    <p class="header-desc">Cut your wings, weigh them, enter what you know &mdash; we'll tell you exactly what weights to add and where, so your butterfly hangs flat and flaps gracefully.</p>
+    <p class="header-desc">Design wings that flap beautifully &mdash; cut your wings, weigh them, enter what you know, and we'll tell you exactly what weights to add and where so they hang flat and flap gracefully.</p>
     <a href="/instructions.html" class="guide-btn"><span class="gb-fly">&#x1F98B;</span> Step-by-Step Build Guide</a>
     <button id="unit-toggle" title="Switch metric / imperial" onclick="toggleUnits()">g / cm</button>
   </header>
@@ -1180,8 +1180,8 @@ const R = {
     ceilGrd.addColorStop(1, 'transparent');
     ctx.beginPath(); ctx.moveTo(cx - ceilW/2, ceilingY); ctx.lineTo(cx + ceilW/2, ceilingY);
     ctx.strokeStyle=ceilGrd; ctx.lineWidth=1.5; ctx.stroke();
-    ctx.font='600 9px Inter,system-ui,sans-serif'; ctx.fillStyle='rgba(196,164,105,0.35)';
-    ctx.textAlign='center'; ctx.fillText('\u2302 CEILING', cx, 14);
+    if(!_mob){ctx.font='600 9px Inter,system-ui,sans-serif'; ctx.fillStyle='rgba(196,164,105,0.35)';
+    ctx.textAlign='center'; ctx.fillText('\u2302 CEILING', cx, 14);}
 
     // Calculate linkage points on wings (where strings from bar attach)
     const tipLx = cx - wingLenPx * Math.cos(angle);
@@ -1218,8 +1218,8 @@ const R = {
       ctx.beginPath(); ctx.arc(bx, barY, 3, 0, Math.PI*2);
       ctx.fillStyle='#c9a96e'; ctx.fill();
     });
-    ctx.font='bold 9px Inter,system-ui,sans-serif'; ctx.fillStyle='#c9a96e';
-    ctx.textAlign='left'; ctx.fillText('SPREADER BAR', barRx + 6, barY + 3);
+    if(!_mob){ctx.font='bold 9px Inter,system-ui,sans-serif'; ctx.fillStyle='#c9a96e';
+    ctx.textAlign='left'; ctx.fillText('SPREADER BAR', barRx + 6, barY + 3);}
 
     // ===== GHOST WINGS (at rest angle, not flat) =====
     const ghostAngle=this._restInfo?this._restInfo.restAngle:0;
@@ -1249,10 +1249,10 @@ const R = {
     ctx.fillStyle='#38bdf8';
     ctx.beginPath(); ctx.arc(lkLx, lkLy, 3, 0, Math.PI*2); ctx.fill();
     ctx.beginPath(); ctx.arc(lkRx, lkRy, 3, 0, Math.PI*2); ctx.fill();
-    // Label
-    ctx.font='9px Inter,system-ui,sans-serif'; ctx.fillStyle='#8b7340';
+    // Label (hide on mobile to reduce clutter)
+    if(!_mob){ctx.font='9px Inter,system-ui,sans-serif'; ctx.fillStyle='#8b7340';
     ctx.textAlign='left';
-    ctx.fillText('string to wing (' + p.linkagePct + '%)', lkRx + 6, (barY + lkRy) / 2);
+    ctx.fillText('string to wing (' + p.linkagePct + '%)', lkRx + 6, (barY + lkRy) / 2);}
 
     // ===== WINGSPAN DIMENSION LINE =====
     const dimY = pivotY - chordPx - 18;
@@ -1265,10 +1265,10 @@ const R = {
     ctx.font='bold 11px Inter,system-ui,sans-serif'; ctx.fillStyle='#8892a8';
     ctx.textAlign='center'; ctx.fillText((_imperial?(p.wingspanCm*CM_TO_IN).toFixed(1)+' in':p.wingspanCm+' cm')+' wingspan', cx, dimY - 8);
 
-    // Wing weight labels
-    ctx.font='9px Inter,system-ui,sans-serif'; ctx.fillStyle='#b89d5e';
+    // Wing weight labels (hide on mobile)
+    if(!_mob){ctx.font='9px Inter,system-ui,sans-serif'; ctx.fillStyle='#b89d5e';
     ctx.textAlign='center';
-    ctx.fillText((_imperial?(p.wingWeightG*G_TO_OZ).toFixed(1)+'oz':(p.wingWeightG+'g'))+' each wing', cx - wingLenPx * 0.5, pivotY + chordPx + 14);
+    ctx.fillText((_imperial?(p.wingWeightG*G_TO_OZ).toFixed(1)+'oz':(p.wingWeightG+'g'))+' each wing', cx - wingLenPx * 0.5, pivotY + chordPx + 14);}
 
     // ===== TIP WEIGHTS =====
     if (p.tipMass > 0.0005) {
@@ -1278,8 +1278,8 @@ const R = {
         ctx.fillStyle='#ff9f43'; ctx.fill();
         ctx.strokeStyle='#fff'; ctx.lineWidth=1.5; ctx.stroke();
       });
-      ctx.font='bold 9px Inter,system-ui,sans-serif'; ctx.fillStyle='#ff9f43';
-      ctx.textAlign='right'; ctx.fillText((_imperial?(p.tipWeightG*G_TO_OZ).toFixed(2)+'oz':(p.tipWeightG+'g'))+' tip', tipLx - 8, tipLy + 3);
+      if(!_mob){ctx.font='bold 9px Inter,system-ui,sans-serif'; ctx.fillStyle='#ff9f43';
+      ctx.textAlign='right'; ctx.fillText((_imperial?(p.tipWeightG*G_TO_OZ).toFixed(2)+'oz':(p.tipWeightG+'g'))+' tip', tipLx - 8, tipLy + 3);}
     }
 
     // ===== BUTTERFLY BODY =====
@@ -1328,9 +1328,9 @@ const R = {
     ctx.fillStyle = abg; ctx.fill();
     ctx.strokeStyle='#8b7340'; ctx.lineWidth=1; ctx.stroke();
 
-    // Body label
-    ctx.font='bold 10px Inter,system-ui,sans-serif'; ctx.fillStyle='#c9a96e';
-    ctx.textAlign='left'; ctx.fillText('BODY '+(_imperial?(p.bodyWeightG*G_TO_OZ).toFixed(1)+'oz':(p.bodyWeightG+'g')), bodyCx + bodyW + 12, bodyMidY + 3);
+    // Body label (hide on mobile)
+    if(!_mob){ctx.font='bold 10px Inter,system-ui,sans-serif'; ctx.fillStyle='#c9a96e';
+    ctx.textAlign='left'; ctx.fillText('BODY '+(_imperial?(p.bodyWeightG*G_TO_OZ).toFixed(1)+'oz':(p.bodyWeightG+'g')), bodyCx + bodyW + 12, bodyMidY + 3);}
 
     // ===== PIVOT (hinge where wings meet body) =====
     ctx.save(); ctx.shadowColor='rgba(0,146,188,0.4)'; ctx.shadowBlur=8;
@@ -1338,15 +1338,15 @@ const R = {
     ctx.fillStyle='#e8d5a3'; ctx.fill();
     ctx.strokeStyle='#b89d5e'; ctx.lineWidth=1.5; ctx.stroke();
     ctx.restore();
-    ctx.font='bold 9px Inter,system-ui,sans-serif'; ctx.fillStyle='#e8d5a3';
-    ctx.textAlign='right'; ctx.fillText('PIVOT', cx - bodyW - 6, pivotY + 3);
+    if(!_mob){ctx.font='bold 9px Inter,system-ui,sans-serif'; ctx.fillStyle='#e8d5a3';
+    ctx.textAlign='right'; ctx.fillText('PIVOT', cx - bodyW - 6, pivotY + 3);}
 
     // ===== PULL STRING (body to weight) =====
     ctx.beginPath(); ctx.moveTo(cx, bodyY + bodyH); ctx.lineTo(cx, weightY);
     ctx.strokeStyle='#6a7a98'; ctx.lineWidth=2;
     ctx.setLineDash([3,3]); ctx.stroke(); ctx.setLineDash([]);
-    ctx.font='9px Inter,system-ui,sans-serif'; ctx.fillStyle='#4a5a78';
-    ctx.textAlign='left'; ctx.fillText((_imperial?(p.stringLenCm*CM_TO_IN).toFixed(1)+'in':(p.stringLenCm+'cm'))+' drop', cx + 8, (bodyY + bodyH + weightY) / 2);
+    if(!_mob){ctx.font='9px Inter,system-ui,sans-serif'; ctx.fillStyle='#4a5a78';
+    ctx.textAlign='left'; ctx.fillText((_imperial?(p.stringLenCm*CM_TO_IN).toFixed(1)+'in':(p.stringLenCm+'cm'))+' drop', cx + 8, (bodyY + bodyH + weightY) / 2);}
 
     // ===== PULL WEIGHT =====
     ctx.save(); ctx.shadowColor='rgba(154,171,191,0.3)'; ctx.shadowBlur=10;

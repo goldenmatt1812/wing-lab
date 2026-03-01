@@ -104,6 +104,24 @@ body.show-all .progress-dots{display:none}
 .step-body strong{color:var(--bright)}
 .step-encourage{margin-top:.5rem;font-size:.85rem;color:var(--mint);font-weight:600;font-style:italic}
 
+/* Build type picker */
+.build-picker{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin:.6rem 0}
+.pick-card{padding:12px;border:2px solid var(--border);border-radius:12px;background:var(--surface);cursor:pointer;transition:all .25s;text-align:center}
+.pick-card:hover{border-color:var(--dim);background:rgba(0,146,188,0.06)}
+.pick-card.active{border-color:var(--teal);background:rgba(0,146,188,0.1);box-shadow:0 0 16px rgba(0,146,188,0.15)}
+.pick-card .pick-icon{font-size:1.6rem;display:block;margin-bottom:4px}
+.pick-card .pick-label{font-size:.88rem;font-weight:800;color:var(--bright);display:block}
+.pick-card .pick-desc{font-size:.73rem;color:var(--dim);line-height:1.4;margin-top:3px}
+.pick-badge{display:inline-block;padding:2px 10px;border-radius:6px;font-size:.68rem;font-weight:700;letter-spacing:.03em;margin-top:.25rem}
+.pick-badge.frame{background:rgba(0,146,188,0.1);border:1px solid rgba(0,146,188,0.25);color:var(--teal)}
+.pick-badge.panel{background:rgba(196,164,105,0.1);border:1px solid rgba(196,164,105,0.25);color:var(--gold-lt)}
+/* Adaptive content — hidden based on build type selection */
+body.build-frame .for-panel{display:none}
+body.build-panel .for-frame{display:none}
+/* Current build type indicator */
+.build-indicator{text-align:center;font-size:.72rem;font-weight:700;color:var(--dim);padding:2px 0;margin-bottom:.25rem}
+.build-indicator span{color:var(--teal);cursor:pointer;text-decoration:underline;text-decoration-style:dotted}
+
 /* Learn More button */
 .learn-more-btn{display:inline-flex;align-items:center;gap:5px;margin-top:.6rem;padding:6px 16px;border:1px solid var(--border);background:rgba(0,146,188,0.06);color:var(--teal);font-size:.8rem;font-weight:700;border-radius:8px;cursor:pointer;transition:all .2s;font-family:inherit}
 .learn-more-btn:hover{background:rgba(0,146,188,0.15);border-color:var(--teal)}
@@ -265,14 +283,23 @@ footer a{color:var(--teal);text-decoration:none}
       <div class="step-head"><div class="step-num">2</div><h3>Pick Your Materials</h3></div>
       <div class="step-illust">&#x1F6D2;</div>
       <div class="step-body">
-        <p><strong>Our top recommendation for the gala:</strong></p>
-        <ul>
-          <li><strong>Bamboo stakes</strong> for the wing frame (light, strong, cheap)</li>
-          <li><strong>Ripstop nylon</strong> for the wing skin (nearly weightless, gorgeous)</li>
-          <li><strong>Wooden dowel</strong> for the body</li>
-        </ul>
+        <p><strong>Pick your build approach:</strong></p>
+        <div class="build-picker">
+          <div class="pick-card" data-build="frame" onclick="pickBuild('frame')">
+            <span class="pick-icon">&#x1F38D;</span>
+            <span class="pick-label">Frame + Skin</span>
+            <span class="pick-desc">Bamboo/dowel frame with fabric overlay</span>
+            <span class="pick-badge frame">Best for 4-8 ft</span>
+          </div>
+          <div class="pick-card" data-build="panel" onclick="pickBuild('panel')">
+            <span class="pick-icon">&#x1F4CB;</span>
+            <span class="pick-label">Rigid Panel</span>
+            <span class="pick-desc">Cardboard, foam board, or plywood</span>
+            <span class="pick-badge panel">Best for 1-4 ft</span>
+          </div>
+        </div>
       </div>
-      <p class="step-encourage">This combo gives you the lightest wings with the most dramatic flap!</p>
+      <p class="step-encourage">Lighter materials = more dramatic flap. Simpler builds = less time!</p>
       <div class="lab-cta">
         <span class="lab-cta-text">&#x2699;&#xFE0F; <strong>Wing Lab:</strong> Set <strong>Pivot Type</strong> to match your hinge plan (pin, bolt, or living hinge) and <strong>Upper Attach</strong> if using elastic</span>
         <a href="/" class="lab-link">Open Wing Lab &#x2192;</a>
@@ -283,14 +310,15 @@ footer a{color:var(--teal);text-decoration:none}
       <button class="learn-more-btn" onclick="showDetail('d2')">&#x1F4A1; Shopping Tips</button>
     </div>
 
-    <!-- Step 3: Build Your Frame -->
+    <!-- Step 3: Shape Your Wings -->
     <div class="step-card" data-step="3">
-      <div class="step-head"><div class="step-num">3</div><h3>Build the Wing Frame</h3></div>
+      <div class="build-indicator" style="display:none"></div>
+      <div class="step-head"><div class="step-num">3</div><h3>Shape Your Wings</h3></div>
       <div class="step-illust">&#x1F528;</div>
       <div class="step-body">
         <ul>
-          <li><strong>Bend bamboo or wire</strong> into your wing outline shape</li>
-          <li>Add ribs every 15-20 cm so the skin doesn't sag</li>
+          <li class="for-frame"><strong>Bend your frame material</strong> (bamboo, dowels, wire) into the wing outline. Add ribs every 15-20 cm</li>
+          <li class="for-panel"><strong>Trace and cut</strong> your wing shape from cardboard, foam board, or plywood</li>
           <li>Make <strong>both wings identical</strong> &mdash; lay one on top of the other to check</li>
         </ul>
       </div>
@@ -302,15 +330,16 @@ footer a{color:var(--teal);text-decoration:none}
       <button class="learn-more-btn" onclick="showDetail('d3')">&#x1F4A1; Frame Tips</button>
     </div>
 
-    <!-- Step 4: Attach the Skin -->
+    <!-- Step 4: Cover & Finish -->
     <div class="step-card" data-step="4">
-      <div class="step-head"><div class="step-num">4</div><h3>Stretch & Attach Skin</h3></div>
+      <div class="build-indicator" style="display:none"></div>
+      <div class="step-head"><div class="step-num">4</div><h3>Cover & Finish Edges</h3></div>
       <div class="step-illust">&#x1F9F5;</div>
       <div class="step-body">
         <ul>
-          <li><strong>Lay fabric over the frame</strong> &mdash; pull gently taut, no wrinkles</li>
-          <li>Hot glue or sew the skin to the frame edges</li>
-          <li>Trim excess, leaving 1 cm overlap</li>
+          <li class="for-frame"><strong>Lay fabric over the frame</strong>, pull gently taut, hot glue or sew to edges</li>
+          <li class="for-panel"><strong>Sand edges smooth</strong>, seal with tape or paint to prevent fraying</li>
+          <li>Trim any excess material &mdash; clean edges make a big difference</li>
         </ul>
       </div>
       <p class="step-encourage">Don't stress about perfection &mdash; a little character adds charm!</p>
@@ -353,12 +382,13 @@ footer a{color:var(--teal);text-decoration:none}
 
     <!-- Step 7: Attach Wings -->
     <div class="step-card" data-step="7">
+      <div class="build-indicator" style="display:none"></div>
       <div class="step-head"><div class="step-num">7</div><h3>Attach the Wings</h3></div>
       <div class="step-illust">&#x1F4CC;</div>
       <div class="step-body">
         <ul>
-          <li>Push a <strong>wire or bolt</strong> through both wings and the body hole</li>
-          <li>Wings must <strong>swing freely</strong> &mdash; like a seesaw</li>
+          <li>Push a <strong>pin, bolt, or dowel</strong> through both wings and the body pivot hole</li>
+          <li>Wings must <strong>swing freely</strong> &mdash; like a seesaw, regardless of material</li>
           <li>Test: push one wingtip down. Does it swing smoothly? &#x2705;</li>
         </ul>
       </div>
@@ -610,6 +640,26 @@ footer a{color:var(--teal);text-decoration:none}
 </footer>
 
 <script>
+// ===== BUILD TYPE PICKER =====
+let buildType = null; // 'frame' or 'panel'
+
+function pickBuild(type) {
+  buildType = type;
+  document.body.classList.remove('build-frame', 'build-panel');
+  document.body.classList.add('build-' + type);
+  // Update picker card visuals
+  document.querySelectorAll('.pick-card').forEach(function(c) {
+    c.classList.toggle('active', c.dataset.build === type);
+  });
+  // Show indicator on subsequent steps
+  document.querySelectorAll('.build-indicator').forEach(function(el) {
+    el.style.display = 'block';
+    el.innerHTML = 'Building with: <strong style="color:var(--teal)">' +
+      (type === 'frame' ? '🎍 Frame + Skin' : '📋 Rigid Panel') +
+      '</strong> &mdash; <span onclick="pickBuild(\'' + (type === 'frame' ? 'panel' : 'frame') + '\')">switch</span>';
+  });
+}
+
 // ===== DETAIL MODAL CONTENT =====
 const details = {
   d1: {
@@ -636,25 +686,37 @@ const details = {
 <div class="tip-box">Buy 20% more material than you think you need. First cuts rarely come out perfect!</div>`
   },
   d3: {
-    title: '&#x1F528; Frame Building Tips',
-    html: `<p><strong>Frame structure for 6-8 ft wings:</strong></p>
+    title: '&#x1F528; Wing Shaping Tips',
+    html: `<p><strong>Frame + skin approach (4-8 ft):</strong></p>
 <ul>
-<li><strong>Main spar</strong> &mdash; Runs along the top edge (leading edge). Use the thickest bamboo/dowel.</li>
-<li><strong>Ribs</strong> &mdash; Branch off the main spar every 15-20 cm. Use thinner bamboo.</li>
-<li><strong>Joints</strong> &mdash; Hot glue + wrapping with thread or floral wire. Super strong!</li>
+<li><strong>Main spar</strong> &mdash; Runs along the top edge. Use bamboo, dowels, fiberglass, or PVC.</li>
+<li><strong>Ribs</strong> &mdash; Branch off every 15-20 cm. Use thinner sticks or wire.</li>
+<li><strong>Joints</strong> &mdash; Hot glue + thread or floral wire wrapping. Super strong!</li>
 </ul>
-<div class="tip-box">Shape the frame FIRST, then attach the skin. Much easier than trying to add structure to loose fabric.</div>
-<div class="big-note">For 8 ft builds, bundle 2-3 bamboo stakes together for the main spar (wrap with tape). Single stakes flex too much at that length.</div>`
+<p><strong>Rigid panel approach (1-4 ft):</strong></p>
+<ul>
+<li><strong>Cardboard</strong> &mdash; Trace your shape, cut with box cutter. Double-layer for stiffness.</li>
+<li><strong>Foam board</strong> &mdash; Easy to cut, very light. Score and snap for clean lines.</li>
+<li><strong>Plywood (3mm)</strong> &mdash; Jigsaw or scroll saw. Beautiful grain, heavier but elegant.</li>
+</ul>
+<div class="tip-box">Whatever your material, make both wings match! Lay one on top of the other to compare.</div>
+<div class="big-note">For 8 ft frame builds, bundle 2-3 bamboo stakes for the main spar (wrap with tape). Single stakes flex too much at that length.</div>`
   },
   d4: {
-    title: '&#x1F9F5; Skin Attachment Tips',
-    html: `<p><strong>Method depends on material:</strong></p>
+    title: '&#x1F9F5; Covering & Finishing Tips',
+    html: `<p><strong>Frame + skin builds:</strong></p>
 <ul>
 <li><strong>Ripstop nylon</strong> &mdash; Fold edges over frame, hot glue every 5 cm. Pull gently taut.</li>
-<li><strong>Tissue paper</strong> &mdash; Lay paper over frame, brush with diluted white glue. Wraps around edges naturally.</li>
-<li><strong>Tyvek</strong> &mdash; Staple to frame, trim with scissors. Can also use spray adhesive.</li>
+<li><strong>Tissue paper</strong> &mdash; Lay paper over frame, brush with diluted white glue.</li>
+<li><strong>Tyvek</strong> &mdash; Staple to frame, trim with scissors.</li>
 </ul>
-<div class="tip-box">Work from the center outward. Attach the main spar first, then stretch toward edges. This prevents wrinkles.</div>`
+<p><strong>Rigid panel builds:</strong></p>
+<ul>
+<li><strong>Cardboard</strong> &mdash; Seal edges with tape or white glue. Reinforce the pivot area with extra layers.</li>
+<li><strong>Foam board</strong> &mdash; Sand edges lightly, cover with decorative paper or paint directly.</li>
+<li><strong>Plywood</strong> &mdash; Sand smooth, seal with a coat of white glue or clear spray before painting.</li>
+</ul>
+<div class="tip-box">Frame builds: work from center outward — attach spar first, then stretch toward edges. Rigid panels: reinforce the pivot hole with a washer or extra material.</div>`
   },
   d5: {
     title: '&#x1F3A8; Decoration Ideas',
