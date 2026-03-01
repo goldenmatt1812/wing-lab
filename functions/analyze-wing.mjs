@@ -1,6 +1,6 @@
 const CORS = { 'access-control-allow-origin': '*', 'content-type': 'application/json' };
 
-export default async (request) => {
+export default async (request, context) => {
   if (request.method === 'OPTIONS') {
     return new Response('', { status: 204, headers: { 'access-control-allow-origin': '*', 'access-control-allow-headers': 'content-type', 'access-control-allow-methods': 'POST' } });
   }
@@ -8,8 +8,10 @@ export default async (request) => {
     return new Response(JSON.stringify({ error: 'Method not allowed' }), { status: 405, headers: CORS });
   }
 
-  // Use server-side environment variable — never exposed to client
-  const apiKey = process.env.ANTHROPIC_API_KEY;
+  // Server-side env var — try multiple access methods for Netlify Functions v2
+  const apiKey = process.env.ANTHROPIC_API_KEY
+    || (typeof Netlify !== 'undefined' && Netlify.env && Netlify.env.get('ANTHROPIC_API_KEY'))
+    || null;
   if (!apiKey) {
     return new Response(JSON.stringify({ error: 'Server configuration error: API key not set' }), { status: 500, headers: CORS });
   }
@@ -152,7 +154,7 @@ Even with a problematic photo, if you CAN make reasonable estimates, do so (set 
         'content-type': 'application/json',
       },
       body: JSON.stringify({
-        model: 'claude-sonnet-4-5-20250514',
+        model: 'claude-sonnet-4-20250514',
         max_tokens: 1024,
         system: SYSTEM_PROMPT,
         messages: [{
