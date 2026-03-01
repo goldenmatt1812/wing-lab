@@ -47,29 +47,29 @@ header{text-align:center;padding:2.5rem 1rem 1.5rem;background:linear-gradient(1
 header::before{content:'';position:absolute;top:-20px;left:50%;transform:translateX(-50%);width:700px;height:250px;background:radial-gradient(ellipse,rgba(196,164,105,0.1) 0%,transparent 70%);pointer-events:none}
 .gala-badge{display:inline-block;font-size:.7rem;font-weight:700;letter-spacing:.18em;text-transform:uppercase;color:var(--gold);border:1px solid rgba(196,164,105,0.3);padding:5px 18px;border-radius:20px;margin-bottom:.75rem;background:rgba(196,164,105,0.06)}
 header h1{font-size:2.8rem;font-weight:800;letter-spacing:-.03em;background:linear-gradient(135deg,var(--sd-green) 0%,var(--sd-teal) 35%,var(--sd-blue) 70%,var(--gold-light) 100%);-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text}
-.gala-theme{font-size:1.35rem;font-weight:800;letter-spacing:.06em;color:var(--gold-light);margin-bottom:.5rem;text-shadow:0 0 20px rgba(196,164,105,0.2)}
+.gala-theme{font-size:1.35rem;font-weight:800;letter-spacing:.06em;color:var(--gold-light);margin-bottom:.5rem}
 .header-desc{color:var(--text-dim);font-size:.85rem;margin-top:.5rem;max-width:560px;margin-left:auto;margin-right:auto;line-height:1.5}
 main{max-width:1200px;margin:0 auto;padding:0 1rem 3rem}
 
 #wing-viz-section{position:relative;margin:1.5rem 0;border-radius:16px;overflow:hidden;border:1px solid var(--border);background:radial-gradient(ellipse at 50% 20%,#131b2e 0%,#090d18 70%)}
 #wingCanvas{display:block;width:100%;height:640px;touch-action:pan-y}
 #anim-controls{position:absolute;bottom:14px;left:50%;transform:translateX(-50%);display:flex;gap:8px}
-#anim-controls button{background:rgba(17,24,39,0.9);border:1px solid var(--border);color:var(--accent);padding:8px 20px;border-radius:10px;font-size:.85rem;font-weight:600;cursor:pointer;backdrop-filter:blur(8px);transition:all .2s}
+#anim-controls button{background:rgba(17,24,39,0.92);border:1px solid var(--border);color:var(--accent);padding:8px 20px;border-radius:10px;font-size:.85rem;font-weight:600;cursor:pointer;transition:all .2s}
 #anim-controls button:hover{background:rgba(56,189,248,0.15);border-color:var(--accent);transform:translateY(-1px)}
 #anim-controls button.active{background:var(--accent);color:var(--bg-deep)}
 #canvas-label{position:absolute;top:10px;left:14px;font-size:.7rem;color:var(--text-dim);text-transform:uppercase;letter-spacing:.1em}
-#physics-math-btn{position:absolute;top:10px;right:14px;background:rgba(9,13,24,0.7);border:1px solid var(--border);color:var(--accent);width:32px;height:32px;border-radius:50%;font-size:.9rem;font-weight:700;cursor:pointer;backdrop-filter:blur(6px);transition:all .2s;display:flex;align-items:center;justify-content:center;z-index:10}
+#physics-math-btn{position:absolute;top:10px;right:14px;background:rgba(9,13,24,0.88);border:1px solid var(--border);color:var(--accent);width:32px;height:32px;border-radius:50%;font-size:.9rem;font-weight:700;cursor:pointer;transition:all .2s;display:flex;align-items:center;justify-content:center;z-index:10}
 #physics-math-btn:hover{background:rgba(56,189,248,0.2);border-color:var(--accent);transform:scale(1.1)}
-#fullscreen-btn{position:absolute;top:10px;right:54px;background:rgba(9,13,24,0.7);border:1px solid var(--border);color:var(--gold-light);width:32px;height:32px;border-radius:50%;font-size:.85rem;cursor:pointer;backdrop-filter:blur(6px);transition:all .2s;display:flex;align-items:center;justify-content:center;z-index:10;padding:0}
+#fullscreen-btn{position:absolute;top:10px;right:54px;background:rgba(9,13,24,0.88);border:1px solid var(--border);color:var(--gold-light);width:32px;height:32px;border-radius:50%;font-size:.85rem;cursor:pointer;transition:all .2s;display:flex;align-items:center;justify-content:center;z-index:10;padding:0}
 #fullscreen-btn:hover{background:rgba(196,164,105,0.2);border-color:var(--gold);transform:scale(1.1)}
 /* Fullscreen mode */
 #wing-viz-section.fullscreen{position:fixed;inset:0;z-index:10000;margin:0;border-radius:0;border:none}
 #wing-viz-section.fullscreen #wingCanvas{height:100vh!important}
 #wing-viz-section.fullscreen #fullscreen-btn{top:14px;right:58px}
 #wing-viz-section.fullscreen #physics-math-btn{top:14px;right:18px}
-#physics-modal-overlay{position:fixed;inset:0;z-index:10001;background:rgba(0,0,0,0.7);backdrop-filter:blur(6px);display:none;align-items:flex-start;justify-content:center;padding:1.5rem;overflow-y:auto}
+#physics-modal-overlay{position:fixed;inset:0;z-index:10001;background:rgba(0,0,0,0.82);display:none;align-items:flex-start;justify-content:center;padding:1.5rem;overflow-y:auto}
 #physics-modal-overlay.open{display:flex}
-#physics-modal{background:var(--bg-card);border:1px solid var(--border);border-radius:20px;max-width:680px;width:100%;max-height:none;padding:2rem 2.5rem;position:relative;box-shadow:0 24px 80px rgba(0,0,0,0.6);margin:1rem 0}
+#physics-modal{background:var(--bg-card);border:1px solid var(--border);border-radius:20px;max-width:680px;width:100%;max-height:none;padding:2rem 2.5rem;position:relative;box-shadow:0 8px 24px rgba(0,0,0,0.5);margin:1rem 0}
 #physics-modal h3{font-size:1.15rem;color:var(--gold-light);margin:1.5rem 0 .5rem;font-weight:700}
 #physics-modal h3:first-of-type{margin-top:.5rem}
 #physics-modal .eq{font-family:'Cambria Math','Latin Modern Math','STIX Two Math',Georgia,serif;font-size:1.05rem;color:#e2e8f0;background:rgba(56,189,248,0.06);border:1px solid rgba(56,189,248,0.12);border-radius:12px;padding:1rem 1.25rem;margin:.75rem 0;line-height:1.8;overflow-x:auto}
@@ -122,7 +122,7 @@ main{max-width:1200px;margin:0 auto;padding:0 1rem 3rem}
 .slider-row input[type="range"]:active::-webkit-slider-thumb{transform:scale(1.25)}
 .slider-row input[type="range"]::-moz-range-thumb{width:20px;height:20px;border-radius:50%;background:var(--thumb-color,var(--accent));cursor:pointer;border:none;transition:background .3s}
 .slider-row output{min-width:72px;text-align:right;font-size:.85rem;font-weight:700;color:var(--accent);font-variant-numeric:tabular-nums}
-.slider-hint{width:22px;font-size:1.1rem;text-align:center;font-weight:900;opacity:1;transition:opacity .3s,color .3s;flex-shrink:0;line-height:1;text-shadow:0 0 6px currentColor}
+.slider-hint{width:22px;font-size:1.1rem;text-align:center;font-weight:900;opacity:1;transition:opacity .3s,color .3s;flex-shrink:0;line-height:1}
 .slider-lock{width:28px;height:28px;border:1px solid var(--border);background:transparent;color:var(--text-dim);border-radius:6px;cursor:pointer;font-size:.85rem;flex-shrink:0;display:flex;align-items:center;justify-content:center;transition:all .2s;padding:0}
 .slider-lock:hover{border-color:var(--accent);color:var(--accent)}
 .slider-lock.locked{background:rgba(251,191,36,0.15);border-color:var(--yellow);color:var(--yellow)}
@@ -131,7 +131,7 @@ main{max-width:1200px;margin:0 auto;padding:0 1rem 3rem}
 .slider-row.locked .slider-hint{opacity:0.2}
 #optimize-btn{display:block;width:100%;margin-top:1rem;padding:12px;background:linear-gradient(135deg,rgba(0,146,188,0.15),rgba(167,139,250,0.15));border:1px solid var(--accent);color:var(--accent);border-radius:10px;font-size:.9rem;font-weight:700;cursor:pointer;transition:all .2s}
 #optimize-btn:hover{background:rgba(0,146,188,0.25);transform:translateY(-1px);box-shadow:0 4px 16px rgba(0,146,188,0.2)}
-.slider-row.computed output{color:var(--gold-light);text-shadow:0 0 8px rgba(196,164,105,0.3)}
+.slider-row.computed output{color:var(--gold-light)}
 .slider-row select{flex:1;background:var(--bg-surface);border:1px solid var(--border);color:var(--text);padding:6px 10px;border-radius:8px;font-size:.85rem;cursor:pointer;outline:none}
 .slider-row select:focus{border-color:var(--accent)}
 
@@ -154,10 +154,10 @@ main{max-width:1200px;margin:0 auto;padding:0 1rem 3rem}
 .dashboard-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:1rem}
 .metric-card{background:var(--bg-card);border:1px solid var(--border);border-radius:14px;padding:1.25rem;text-align:center;transition:border-color .3s,box-shadow .3s,transform .2s}
 .metric-card:hover{transform:translateY(-2px);box-shadow:0 4px 20px rgba(0,0,0,0.3)}
-.metric-card.status-great{border-color:var(--green);box-shadow:0 0 15px var(--green-dim)}
-.metric-card.status-ok{border-color:var(--yellow);box-shadow:0 0 15px var(--yellow-dim)}
-.metric-card.status-warn{border-color:var(--orange);box-shadow:0 0 15px var(--orange-dim)}
-.metric-card.status-bad{border-color:var(--red);box-shadow:0 0 15px var(--red-dim)}
+.metric-card.status-great{border-color:var(--green);box-shadow:0 0 6px var(--green-dim)}
+.metric-card.status-ok{border-color:var(--yellow);box-shadow:0 0 6px var(--yellow-dim)}
+.metric-card.status-warn{border-color:var(--orange);box-shadow:0 0 6px var(--orange-dim)}
+.metric-card.status-bad{border-color:var(--red);box-shadow:0 0 6px var(--red-dim)}
 .metric-icon{font-size:2rem;margin-bottom:.3rem}
 .metric-label{font-size:.72rem;font-weight:700;text-transform:uppercase;letter-spacing:.1em;color:var(--text-dim);margin-bottom:.25rem}
 .metric-value{font-size:1.7rem;font-weight:800;color:var(--text-bright);line-height:1.2}
@@ -173,10 +173,10 @@ main{max-width:1200px;margin:0 auto;padding:0 1rem 3rem}
 /* Verdict */
 #verdict-section{margin:1.5rem 0 2rem}
 #verdict-box{background:var(--bg-card);border:2px solid var(--border);border-radius:16px;padding:1.75rem 2rem;text-align:center;transition:border-color .4s,box-shadow .4s}
-#verdict-box.verdict-great{border-color:var(--green);box-shadow:0 0 30px var(--green-dim)}
-#verdict-box.verdict-good{border-color:var(--yellow);box-shadow:0 0 30px var(--yellow-dim)}
-#verdict-box.verdict-meh{border-color:var(--orange);box-shadow:0 0 30px var(--orange-dim)}
-#verdict-box.verdict-bad{border-color:var(--red);box-shadow:0 0 30px var(--red-dim)}
+#verdict-box.verdict-great{border-color:var(--green);box-shadow:0 0 8px var(--green-dim)}
+#verdict-box.verdict-good{border-color:var(--yellow);box-shadow:0 0 8px var(--yellow-dim)}
+#verdict-box.verdict-meh{border-color:var(--orange);box-shadow:0 0 8px var(--orange-dim)}
+#verdict-box.verdict-bad{border-color:var(--red);box-shadow:0 0 8px var(--red-dim)}
 #verdict-icon{font-size:2.8rem;margin-bottom:.4rem}
 #verdict-text{font-size:1.3rem;font-weight:800;color:var(--text-bright);margin-bottom:.6rem}
 #verdict-tips{font-size:.85rem;color:var(--text-dim);line-height:1.6;max-width:650px;margin:0 auto}
@@ -193,7 +193,7 @@ footer{text-align:center;padding:2rem 1rem;color:var(--text-dim);font-size:.75re
 .preset-btn{display:flex;flex-direction:column;align-items:center;gap:4px;padding:18px 16px;background:linear-gradient(135deg,var(--bg-surface),var(--bg-card));border:2px solid var(--border);border-radius:16px;cursor:pointer;transition:all .25s;color:var(--text);min-height:60px}
 .preset-btn:hover{border-color:var(--gold);background:linear-gradient(135deg,rgba(196,164,105,0.08),var(--bg-card));transform:translateY(-2px);box-shadow:0 6px 20px rgba(196,164,105,0.15)}
 .preset-btn:active{transform:translateY(0);box-shadow:none}
-.preset-btn.active{border-color:var(--sd-green);box-shadow:0 0 16px rgba(0,132,61,0.3)}
+.preset-btn.active{border-color:var(--sd-green);box-shadow:0 0 6px rgba(0,132,61,0.3)}
 .preset-icon{font-size:1.6rem;line-height:1}
 .preset-label{font-size:1.1rem;font-weight:700;color:var(--gold-light)}
 .preset-size{font-size:.78rem;color:var(--text-dim)}
@@ -248,16 +248,16 @@ footer{text-align:center;padding:2rem 1rem;color:var(--text-dim);font-size:.75re
 .guide-btn:hover{transform:translateY(-2px);box-shadow:0 4px 20px rgba(196,164,105,0.25);border-color:rgba(196,164,105,0.55);background:linear-gradient(135deg,rgba(196,164,105,0.22),rgba(0,146,188,0.18))}
 .guide-btn .gb-fly{display:inline-block;transition:all .3s}
 .guide-btn:hover .gb-fly{animation:guideFlap .6s ease-in-out infinite}
-#unit-toggle{position:absolute;top:12px;right:14px;background:rgba(9,13,24,0.7);border:1px solid var(--border);color:var(--gold-light);font-size:.72rem;font-weight:700;padding:5px 12px;border-radius:8px;cursor:pointer;backdrop-filter:blur(6px);transition:all .2s;font-family:inherit;letter-spacing:.04em}
+#unit-toggle{position:absolute;top:12px;right:14px;background:rgba(9,13,24,0.88);border:1px solid var(--border);color:var(--gold-light);font-size:.72rem;font-weight:700;padding:5px 12px;border-radius:8px;cursor:pointer;transition:all .2s;font-family:inherit;letter-spacing:.04em}
 #unit-toggle:hover{background:rgba(196,164,105,0.15);border-color:var(--gold-light)}
 #loading-overlay{position:fixed;inset:0;z-index:9999;background:var(--bg-deep);display:flex;flex-direction:column;align-items:center;justify-content:center;transition:opacity .5s;font-size:2rem}
 #loading-overlay span{font-size:1rem;color:var(--text-dim);margin-top:1rem;font-weight:600}
 #loading-overlay.fade-out{opacity:0;pointer-events:none}
 
 /* Help Modal */
-#help-modal-overlay{position:fixed;inset:0;z-index:10000;background:rgba(0,0,0,0.6);backdrop-filter:blur(4px);display:none;align-items:center;justify-content:center;padding:1rem}
+#help-modal-overlay{position:fixed;inset:0;z-index:10000;background:rgba(0,0,0,0.78);display:none;align-items:center;justify-content:center;padding:1rem}
 #help-modal-overlay.open{display:flex}
-#help-modal{background:var(--bg-card);border:1px solid var(--border);border-radius:20px;max-width:440px;width:100%;max-height:80vh;overflow-y:auto;padding:2rem;position:relative;box-shadow:0 20px 60px rgba(0,0,0,0.5)}
+#help-modal{background:var(--bg-card);border:1px solid var(--border);border-radius:20px;max-width:440px;width:100%;max-height:80vh;overflow-y:auto;padding:2rem;position:relative;box-shadow:0 8px 24px rgba(0,0,0,0.5)}
 #help-modal-close{position:absolute;top:12px;right:16px;background:none;border:none;color:var(--text-dim);font-size:1.5rem;cursor:pointer;padding:4px 8px;border-radius:8px;transition:all .2s}
 #help-modal-close:hover{color:var(--text);background:var(--bg-surface)}
 #help-modal h3{font-size:1.2rem;font-weight:800;color:var(--gold-light);margin-bottom:.75rem;padding-right:2rem}
@@ -285,7 +285,7 @@ footer{text-align:center;padding:2rem 1rem;color:var(--text-dim);font-size:.75re
     <section id="wing-viz-section">
       <canvas id="wingCanvas" role="img" aria-label="Interactive butterfly wing simulation — drag the weight to flap"></canvas>
       <div id="anim-controls">
-        <div id="drag-hint" style="color:var(--gold-light);font-size:1rem;font-weight:600;opacity:1;pointer-events:none;text-align:center;animation:hintPulse 2s ease-in-out infinite">
+        <div id="drag-hint" style="color:var(--gold-light);font-size:1rem;font-weight:600;opacity:1;pointer-events:none;text-align:center;animation:hintPulse 2s ease-in-out 3">
           &#11015;&#65039; Pull weight down to flap &mdash; double&#8209;tap for full pull &#11015;&#65039;
         </div>
       </div>
@@ -569,7 +569,7 @@ footer{text-align:center;padding:2rem 1rem;color:var(--text-dim);font-size:.75re
       <canvas id="plotCanvas"></canvas>
     </section>
     <!-- Wing Shape Modal -->
-    <div id="shape-modal" style="display:none;position:fixed;inset:0;z-index:5000;background:rgba(0,0,0,0.7);backdrop-filter:blur(4px);align-items:center;justify-content:center">
+    <div id="shape-modal" style="display:none;position:fixed;inset:0;z-index:5000;background:rgba(0,0,0,0.82);align-items:center;justify-content:center">
       <div style="background:var(--bg-card);border:1px solid var(--border);border-radius:16px;max-width:500px;width:90%;max-height:90vh;overflow-y:auto;padding:1.5rem 2rem;position:relative">
         <button id="shape-modal-close" style="position:absolute;top:8px;right:8px;background:none;border:none;color:var(--text-dim);font-size:1.5rem;cursor:pointer;width:44px;height:44px;display:flex;align-items:center;justify-content:center">&times;</button>
         <h3 style="color:var(--gold-light);margin-bottom:.75rem">Wing Shape Helper</h3>
@@ -1766,8 +1766,10 @@ const R = {
 
   _startBreathing() {
     if (this._breathId) return;
+    if (typeof _canvasVisible !== 'undefined' && !_canvasVisible) return; // offscreen — skip
     const breathe = () => {
       if (this.animating || this._dragging) { this._breathId = null; return; }
+      if (typeof _canvasVisible !== 'undefined' && !_canvasVisible) { this._breathId = null; return; }
       // Read restAngle LIVE each frame — never stale after slider changes
       const restA = this._restInfo ? this._restInfo.restAngle : 0;
       const b = Math.sin(performance.now() / 2000) * 0.008;
@@ -1815,6 +1817,23 @@ document.addEventListener('DOMContentLoaded', () => {
   let _sliderColorTimer = 0;
   R.init();
 
+  // ===== PERFORMANCE: Pause canvas RAF when offscreen =====
+  let _canvasVisible = true;
+  const vizSection = document.getElementById('wing-viz-section');
+  if ('IntersectionObserver' in window && vizSection) {
+    const vizObs = new IntersectionObserver((entries) => {
+      _canvasVisible = entries[0].isIntersecting;
+      if (_canvasVisible) {
+        // Resumed: restart breathing if idle
+        if (!R.animating && !R._dragging) R._startBreathing();
+      } else {
+        // Offscreen: stop breathing to free main thread
+        R._stopBreathing();
+      }
+    }, { threshold: 0 });
+    vizObs.observe(vizSection);
+  }
+
   // ===== SPEEDOMETER GAUGE (Canvas-drawn half-circle) =====
   const speedoCanvas = document.getElementById('speedo-canvas');
   let speedoDpr = window.devicePixelRatio || 1;
@@ -1829,7 +1848,8 @@ document.addEventListener('DOMContentLoaded', () => {
     _lastSpeedoScore = -1; // force redraw
   }
   resizeSpeedo();
-  window.addEventListener('resize', () => { resizeSpeedo(); if (_lastSpeedoScore >= 0) drawSpeedo(_lastSpeedoScore); });
+  let _resizeTimer = 0;
+  window.addEventListener('resize', () => { clearTimeout(_resizeTimer); _resizeTimer = setTimeout(() => { resizeSpeedo(); if (_lastSpeedoScore >= 0) drawSpeedo(_lastSpeedoScore); }, 150); });
 
   function drawSpeedo(score) {
     // Gauge: 50% on left, 100% at top (straight up), 150% on right
@@ -2456,7 +2476,7 @@ document.addEventListener('DOMContentLoaded', () => {
     bn.innerHTML = '<div style="font-size:2.5rem;margin-bottom:4px">\uD83E\uDD8B\u2728\uD83E\uDD8B</div>' +
       '<div style="font-size:1.3rem;font-weight:800;letter-spacing:1px">PERFECT WING DESIGN!</div>' +
       '<div style="font-size:.85rem;margin-top:4px;opacity:0.8">This butterfly will be absolutely stunning at the gala</div>';
-    bn.style.cssText = 'position:fixed;top:50%;left:50%;transform:translate(-50%,-50%);z-index:10001;text-align:center;padding:24px 40px;background:linear-gradient(135deg,rgba(15,23,42,0.95),rgba(30,41,59,0.95));border:2px solid rgba(196,164,105,0.6);border-radius:16px;color:#FFD700;box-shadow:0 0 40px rgba(196,164,105,0.3);animation:celebPulse 1s ease-in-out 3';
+    bn.style.cssText = 'position:fixed;top:50%;left:50%;transform:translate(-50%,-50%);z-index:10001;text-align:center;padding:24px 40px;background:linear-gradient(135deg,rgba(15,23,42,0.95),rgba(30,41,59,0.95));border:2px solid rgba(196,164,105,0.6);border-radius:16px;color:#FFD700;box-shadow:0 0 8px rgba(196,164,105,0.3);animation:celebPulse 1s ease-in-out 3';
     document.body.appendChild(bn);
     setTimeout(() => { bn.style.transition = 'opacity .5s'; bn.style.opacity = '0'; setTimeout(() => bn.remove(), 600); }, 4500);
   }
