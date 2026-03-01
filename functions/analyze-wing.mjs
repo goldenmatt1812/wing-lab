@@ -2,15 +2,16 @@ const CORS = { 'access-control-allow-origin': '*', 'content-type': 'application/
 
 export default async (request) => {
   if (request.method === 'OPTIONS') {
-    return new Response('', { status: 204, headers: { 'access-control-allow-origin': '*', 'access-control-allow-headers': 'content-type, authorization', 'access-control-allow-methods': 'POST' } });
+    return new Response('', { status: 204, headers: { 'access-control-allow-origin': '*', 'access-control-allow-headers': 'content-type', 'access-control-allow-methods': 'POST' } });
   }
   if (request.method !== 'POST') {
     return new Response(JSON.stringify({ error: 'Method not allowed' }), { status: 405, headers: CORS });
   }
 
-  const apiKey = request.headers.get('authorization')?.replace('Bearer ', '');
-  if (!apiKey || !apiKey.startsWith('sk-ant-')) {
-    return new Response(JSON.stringify({ error: 'Missing or invalid API key. It should start with sk-ant-...' }), { status: 401, headers: CORS });
+  // Use server-side environment variable — never exposed to client
+  const apiKey = process.env.ANTHROPIC_API_KEY;
+  if (!apiKey) {
+    return new Response(JSON.stringify({ error: 'Server configuration error: API key not set' }), { status: 500, headers: CORS });
   }
 
   let body;
@@ -23,75 +24,124 @@ export default async (request) => {
     return new Response(JSON.stringify({ error: 'Missing image or mediaType' }), { status: 400, headers: CORS });
   }
 
-  const SYSTEM_PROMPT = `You are a butterfly wing measurement tool for a physics ornithopter lab at a school gala. You analyze overhead photographs of butterfly wings (cut from paper, fabric, or other craft materials) laid flat on a surface with a reference object for scale.
+  // ─── SYSTEM PROMPT ───────────────────────────────────────────
+  const SYSTEM_PROMPT = `You are the AI vision system for Wing Lab — an interactive physics tool used at a school gala where students and families build butterfly wings from craft materials (paper, cardboard, fabric, foam, plywood) and then hang them on a string-and-weight mechanism that makes them flap.
 
-Your job:
-1. Identify the reference object (ruler, credit card, coin, paper sheet, dollar bill, or other known object) and use its known dimensions to establish a pixels-to-centimeters scale
-2. Measure the wing's maximum span (tip to tip if both wings shown, or double the single wing width)
-3. Measure the chord (front-to-back depth at the widest point of one wing, perpendicular to the span axis)
-4. Classify the wing shape as one of: monarch, swallowtail, luna, rounded
-5. Estimate the taper percentage (100 = rectangular/no taper, lower = pointier tips)
-6. Estimate the weight based on the visible material and measured area
+Your task: analyze an overhead photograph of a hand-made butterfly wing to extract precise measurements that feed into a physics simulator. The simulator uses these measurements to calculate optimal weights, string positions, and flap dynamics.
 
-IMPORTANT: If the photo appears to be taken at an angle (not straight overhead), note this in the "notes" field and adjust your confidence to "medium" or "low". Perspective distortion from angled photos can cause 10-30% measurement error.
+## ANALYSIS PIPELINE
 
-If multiple wings are visible, measure the largest/most prominent one and note others.
+### Step 1: Photo Quality Assessment
+Before measuring anything, evaluate whether this photo CAN be accurately measured:
+- Is there a wing visible?
+- Is there a recognizable reference object for scale?
+- Is the photo taken roughly overhead (bird's-eye)?
+- Is the wing reasonably flat and fully visible?
+- Is lighting adequate (not washed out, not too dark)?
 
-If any part of the wing extends beyond the photo frame, note this and set confidence to "low".
+If the photo has serious problems that prevent accurate measurement, set "photo_ok" to false and provide specific, friendly guidance in "photo_tips" explaining exactly what to fix. Be encouraging — these are families at a school event, not professional photographers.
 
-Return ONLY a valid JSON object. No markdown fences, no explanation, no extra text. Just the JSON.`;
+### Step 2: Scale Calibration
+Identify the reference object and compute a pixels-to-cm conversion factor.
 
-  const USER_PROMPT = `Analyze this photograph of a butterfly wing laid flat on a surface. There should be a reference object visible for scale measurement.
+Known reference dimensions:
+| Object | Size |
+|--------|------|
+| Ruler | Read markings directly |
+| Credit/debit card | 8.56 × 5.40 cm |
+| US quarter | 2.43 cm ⌀ |
+| US penny | 1.91 cm ⌀ |
+| US dollar bill | 15.61 × 6.63 cm |
+| US letter paper | 27.94 × 21.59 cm |
+| A4 paper | 29.7 × 21.0 cm |
+| Post-it note | 7.62 × 7.62 cm |
+| iPhone (recent) | ~7.1 cm wide |
+| Standard pencil | 19 cm long |
 
-Reference object sizes for calibration:
-- Ruler: read the cm/inch markings directly
-- Standard credit/debit card: 8.56 cm × 5.40 cm
-- US quarter coin: 2.43 cm diameter
-- US penny coin: 1.91 cm diameter
-- US dollar bill: 15.61 cm × 6.63 cm
-- US letter paper (8.5×11): 27.94 cm × 21.59 cm
-- A4 paper: 29.7 cm × 21.0 cm
-- Standard sticky note (Post-it): 7.62 cm × 7.62 cm
-- iPhone (any recent model): approximately 7.1 cm wide
-- Standard pencil (new/unsharpened): 19 cm long, 0.7 cm diameter
+If no reference object is found, estimate based on contextual clues (hand size, table features, etc.) but set confidence to "low".
 
-Wing shape classification guide:
-- "monarch": wide at base/root, tapers to narrower rounded tips. Taper around 35%
-- "swallowtail": widest at mid-wing, dramatic taper with possible tail extensions. Taper around 45%
-- "luna": long and narrow with elegant trailing edges. Taper around 30%
-- "rounded": broad and evenly wide, gentle even taper. Taper around 70%
+### Step 3: Wing Measurements
+- **wingspan_cm**: Full tip-to-tip span. If only one wing is visible, double it.
+- **chord_cm**: Front-to-back depth at the widest point of one wing, measured perpendicular to the span axis.
+- **shape**: Classify as one of four types:
+  - "monarch" — wide at root/base, tapers to narrower rounded tips (taper ~35%)
+  - "swallowtail" — widest at mid-wing, dramatic taper, may have tail extensions (taper ~45%)
+  - "luna" — long, narrow, elegant trailing edges (taper ~30%)
+  - "rounded" — broad and evenly wide, gentle even taper (taper ~70%)
+- **taper_pct**: 100 = perfectly rectangular (no taper), lower = pointier tips. Range: 20-100.
 
-For weight estimation, identify the material and use these GSM values:
-- Tissue paper (30 gsm): area_cm² × 0.003 g
-- Vellum / tracing paper (75 gsm): area_cm² × 0.0075 g
-- Standard copy paper (80 gsm): area_cm² × 0.008 g
-- Construction paper (150 gsm): area_cm² × 0.015 g
-- Cardstock (200 gsm): area_cm² × 0.020 g
-- Felt/craft fabric (~150 gsm): area_cm² × 0.015 g
-- Organza/sheer fabric (~35 gsm): area_cm² × 0.0035 g
-- Silk fabric (~50 gsm): area_cm² × 0.005 g
-- Cellophane/acetate (~40 gsm): area_cm² × 0.004 g
-- Mylar/metallic film (~30 gsm): area_cm² × 0.003 g
-- Foam sheet 2mm (~165 gsm): area_cm² × 0.0165 g
-- Balsa wood sheet (1mm thick): area_cm² × 0.016 g
-- If unsure of material, assume cardstock (0.020 g/cm²)
+### Step 4: Weight Estimation
+Identify the material by visual appearance and estimate weight using GSM (grams per square meter):
 
-For body_weight_estimate_g: estimate 1.5× to 2.5× a single wing's weight (body is typically denser).
+| Material | GSM | g/cm² |
+|----------|-----|-------|
+| Tissue paper | 30 | 0.003 |
+| Tracing paper / vellum | 75 | 0.0075 |
+| Copy paper (standard) | 80 | 0.008 |
+| Construction paper | 150 | 0.015 |
+| Cardstock (poster board) | 200 | 0.020 |
+| Felt / craft fabric | 150 | 0.015 |
+| Organza / sheer fabric | 35 | 0.0035 |
+| Silk fabric | 50 | 0.005 |
+| Cellophane / acetate | 40 | 0.004 |
+| Mylar / metallic film | 30 | 0.003 |
+| Foam sheet (2mm) | 165 | 0.0165 |
+| Corrugated cardboard | 500 | 0.050 |
+| Balsa wood (1mm) | 160 | 0.016 |
+| Plywood (3mm) | 1200 | 0.120 |
 
-If NO reference object is visible, estimate dimensions based on typical craft wing sizes and set confidence to "low" with a note explaining.
+Wing area ≈ wingspan × chord × 0.65 (accounts for wing shape vs rectangle).
+estimated_weight_g = area_cm² × material_g_per_cm². This is for BOTH wings combined.
+body_weight_estimate_g ≈ 1.5× to 2.5× a single wing's weight.
+
+If the material is unclear, state what you think it might be and assume cardstock (0.020 g/cm²).
+
+### Step 5: Confidence Assessment
+- **high**: Clear reference object, overhead angle, wing fully visible, good lighting
+- **medium**: Minor issues (slight angle, partial shadow, reference partly obscured)
+- **low**: Major issues (no reference, extreme angle, wing cut off, very dark/blurry)
+
+Adjust measurements if you detect perspective distortion from angled photos (can cause 10-30% error).
+
+## OUTPUT FORMAT
+Return ONLY valid JSON. No markdown fences. No explanation. Just the JSON object.`;
+
+  // ─── USER PROMPT ─────────────────────────────────────────────
+  const USER_PROMPT = `Analyze this wing photograph and return measurements for the Wing Lab physics simulator.
 
 Return this exact JSON structure:
 {
-  "wingspan_cm": <number - full tip-to-tip span>,
-  "chord_cm": <number - front-to-back depth of widest wing>,
-  "shape": "<monarch|swallowtail|luna|rounded>",
-  "taper_pct": <number 20-100>,
-  "estimated_weight_g": <number - weight of BOTH wings combined>,
-  "body_weight_estimate_g": <number>,
-  "confidence": "<high|medium|low>",
-  "reference_object": "<what you detected as the scale reference>",
-  "notes": "<brief helpful note about the wing, material, or any measurement caveats>"
-}`;
+  "photo_ok": true,
+  "photo_tips": null,
+  "wingspan_cm": 45.2,
+  "chord_cm": 12.8,
+  "shape": "monarch",
+  "taper_pct": 35,
+  "estimated_weight_g": 8.4,
+  "body_weight_estimate_g": 6.3,
+  "material_guess": "cardstock",
+  "confidence": "high",
+  "reference_object": "US dollar bill",
+  "notes": "Clean measurement, well-lit overhead photo."
+}
+
+If the photo has problems that prevent accurate measurement, return:
+{
+  "photo_ok": false,
+  "photo_tips": "Friendly, specific tips on how to retake the photo for better results. Be encouraging!",
+  "wingspan_cm": null,
+  "chord_cm": null,
+  "shape": null,
+  "taper_pct": null,
+  "estimated_weight_g": null,
+  "body_weight_estimate_g": null,
+  "material_guess": null,
+  "confidence": "low",
+  "reference_object": null,
+  "notes": "What went wrong and why measurements aren't possible."
+}
+
+Even with a problematic photo, if you CAN make reasonable estimates, do so (set photo_ok: true but confidence: "low" or "medium") and include tips in photo_tips for a better retake. Only set photo_ok: false if the image truly cannot be measured at all (no wing visible, completely blurry, etc.)`;
 
   try {
     const anthropicRes = await fetch('https://api.anthropic.com/v1/messages', {
@@ -119,7 +169,7 @@ Return this exact JSON structure:
       const errText = await anthropicRes.text();
       let detail = errText;
       try { detail = JSON.parse(errText).error?.message || errText; } catch {}
-      return new Response(JSON.stringify({ error: 'Anthropic API error', status: anthropicRes.status, detail }), {
+      return new Response(JSON.stringify({ error: 'Analysis service error', status: anthropicRes.status, detail }), {
         status: anthropicRes.status, headers: CORS
       });
     }
@@ -127,33 +177,34 @@ Return this exact JSON structure:
     const result = await anthropicRes.json();
     const textBlock = result.content?.find(b => b.type === 'text');
     if (!textBlock) {
-      return new Response(JSON.stringify({ error: 'No text in Claude response' }), { status: 502, headers: CORS });
+      return new Response(JSON.stringify({ error: 'No response from analysis' }), { status: 502, headers: CORS });
     }
 
     const jsonMatch = textBlock.text.match(/\{[\s\S]*\}/);
     if (!jsonMatch) {
-      return new Response(JSON.stringify({ error: 'Could not parse structured response', raw: textBlock.text.substring(0, 500) }), {
+      return new Response(JSON.stringify({ error: 'Could not parse response', raw: textBlock.text.substring(0, 500) }), {
         status: 502, headers: CORS
       });
     }
 
     let parsed;
-    try {
-      parsed = JSON.parse(jsonMatch[0]);
-    } catch (parseErr) {
-      return new Response(JSON.stringify({ error: 'Claude returned invalid JSON', raw: textBlock.text.substring(0, 500) }), {
+    try { parsed = JSON.parse(jsonMatch[0]); } catch {
+      return new Response(JSON.stringify({ error: 'Invalid response format', raw: textBlock.text.substring(0, 500) }), {
         status: 502, headers: CORS
       });
     }
 
-    // Validate and sanitize response
+    // Validate and sanitize
     const validated = {
+      photo_ok: parsed.photo_ok === true,
+      photo_tips: typeof parsed.photo_tips === 'string' ? parsed.photo_tips.substring(0, 600) : null,
       wingspan_cm: typeof parsed.wingspan_cm === 'number' && parsed.wingspan_cm > 0 && parsed.wingspan_cm < 500 ? parsed.wingspan_cm : null,
       chord_cm: typeof parsed.chord_cm === 'number' && parsed.chord_cm > 0 && parsed.chord_cm < 200 ? parsed.chord_cm : null,
       shape: ['monarch','swallowtail','luna','rounded'].includes(parsed.shape) ? parsed.shape : null,
       taper_pct: typeof parsed.taper_pct === 'number' && parsed.taper_pct >= 20 && parsed.taper_pct <= 100 ? parsed.taper_pct : null,
       estimated_weight_g: typeof parsed.estimated_weight_g === 'number' && parsed.estimated_weight_g > 0 ? parsed.estimated_weight_g : null,
       body_weight_estimate_g: typeof parsed.body_weight_estimate_g === 'number' && parsed.body_weight_estimate_g > 0 ? parsed.body_weight_estimate_g : null,
+      material_guess: typeof parsed.material_guess === 'string' ? parsed.material_guess.substring(0, 100) : null,
       confidence: ['high','medium','low'].includes(parsed.confidence) ? parsed.confidence : 'low',
       reference_object: typeof parsed.reference_object === 'string' ? parsed.reference_object.substring(0, 200) : null,
       notes: typeof parsed.notes === 'string' ? parsed.notes.substring(0, 500) : null,
@@ -162,7 +213,7 @@ Return this exact JSON structure:
     return new Response(JSON.stringify(validated), { status: 200, headers: CORS });
 
   } catch (err) {
-    return new Response(JSON.stringify({ error: 'Function error', detail: err.message }), {
+    return new Response(JSON.stringify({ error: 'Analysis failed', detail: err.message }), {
       status: 500, headers: CORS
     });
   }

@@ -414,14 +414,6 @@ footer{text-align:center;padding:2rem 1rem;color:var(--text-dim);font-size:.75re
               <p style="margin:0;font-size:.72rem;opacity:0.7">You can photograph one wing or both &mdash; the AI handles either. Make sure your hand doesn't cast a shadow on the wing.</p>
             </div>
           </details>
-          <div style="display:flex;gap:10px;align-items:end;flex-wrap:wrap">
-            <div class="auto-field" style="flex:1;min-width:200px">
-              <span>Claude API Key <span style="font-size:.7rem;opacity:0.5">(saved in browser, sent securely)</span> <a href="https://console.anthropic.com" target="_blank" rel="noopener" style="font-size:.68rem;color:var(--accent);text-decoration:none;opacity:0.7">Get a key &rarr;</a></span>
-              <input type="password" id="apiKeyInput" placeholder="sk-ant-..." style="width:100%;background:var(--bg-surface);border:1px solid var(--border);color:var(--text);padding:8px 12px;border-radius:8px;font-size:.85rem">
-            </div>
-            <button id="analyzeBtn" disabled style="padding:10px 24px;background:linear-gradient(135deg,rgba(196,164,105,0.2),rgba(167,139,250,0.2));border:1px solid rgba(196,164,105,0.3);color:var(--gold-light);border-radius:10px;font-size:.9rem;font-weight:600;cursor:pointer;white-space:nowrap;opacity:0.5">&#128269; Analyze Wing</button>
-          </div>
-          <div id="analyzeHint" style="display:none;margin-top:6px;font-size:.72rem;color:var(--text-dim);opacity:0.7"></div>
           <div id="photo-status" style="display:none;margin-top:1rem;padding:12px 16px;background:var(--bg-surface);border-radius:10px;font-size:.85rem"></div>
         </div>
       </div>
@@ -2654,8 +2646,6 @@ document.addEventListener('DOMContentLoaded', () => {
     const preview = document.getElementById('photo-preview');
     const placeholder = document.getElementById('photo-placeholder');
     const retakeBtn = document.getElementById('photo-retake');
-    const apiKeyInput = document.getElementById('apiKeyInput');
-    const analyzeBtn = document.getElementById('analyzeBtn');
     const statusDiv = document.getElementById('photo-status');
     let photoData = null;
     let panelOpen = false;
@@ -2665,14 +2655,6 @@ document.addEventListener('DOMContentLoaded', () => {
       panelOpen = !panelOpen;
       inner.style.display = panelOpen ? 'block' : 'none';
       arrow.style.transform = panelOpen ? 'rotate(180deg)' : '';
-    });
-
-    // Load API key from localStorage
-    const savedKey = localStorage.getItem('claude-wing-api-key');
-    if (savedKey) apiKeyInput.value = savedKey;
-    apiKeyInput.addEventListener('input', () => {
-      localStorage.setItem('claude-wing-api-key', apiKeyInput.value);
-      updateAnalyzeBtn();
     });
 
     // File selection — camera for mobile, gallery for all
@@ -2723,15 +2705,14 @@ document.addEventListener('DOMContentLoaded', () => {
       try {
         showStatus('<div style="display:flex;align-items:center;gap:8px"><div style="width:14px;height:14px;border:2px solid var(--border);border-top:2px solid var(--accent);border-radius:50%;animation:spin .8s linear infinite"></div>Processing image\u2026</div>', 'info');
         const result = await compressImage(file);
-        // Check compressed size (base64 is ~1.33x raw)
         if (result.base64.length > 4 * 1024 * 1024) { showStatus('Image still too large after compression. Try a smaller photo.', 'error'); return; }
         photoData = { base64: result.base64, mediaType: result.mediaType };
         preview.src = result.dataUrl;
         preview.style.display = 'block';
         placeholder.style.display = 'none';
         retakeBtn.style.display = 'inline-block';
-        statusDiv.style.display = 'none';
-        updateAnalyzeBtn();
+        // Auto-analyze immediately
+        analyzeWing();
       } catch (err) {
         showStatus('Could not process image: ' + err.message, 'error');
       }
@@ -2741,20 +2722,7 @@ document.addEventListener('DOMContentLoaded', () => {
     function clearPhoto() {
       photoData = null; preview.src = ''; preview.style.display = 'none';
       placeholder.style.display = ''; retakeBtn.style.display = 'none';
-      fileInput.value = ''; cameraInput.value = ''; statusDiv.style.display = 'none'; updateAnalyzeBtn();
-    }
-
-    function updateAnalyzeBtn() {
-      const ready = photoData && apiKeyInput.value.startsWith('sk-ant-');
-      analyzeBtn.disabled = !ready;
-      analyzeBtn.style.opacity = ready ? '1' : '0.5';
-      const hint = document.getElementById('analyzeHint');
-      if (hint) {
-        if (!photoData && !apiKeyInput.value) { hint.style.display = 'block'; hint.textContent = 'Upload a photo and enter your API key to analyze'; }
-        else if (!photoData) { hint.style.display = 'block'; hint.textContent = 'Upload a wing photo above to enable analysis'; }
-        else if (!apiKeyInput.value.startsWith('sk-ant-')) { hint.style.display = 'block'; hint.textContent = 'Enter your Claude API key above to enable analysis'; }
-        else { hint.style.display = 'none'; }
-      }
+      fileInput.value = ''; cameraInput.value = ''; statusDiv.style.display = 'none';
     }
 
     function showStatus(msg, type) {
@@ -2773,20 +2741,19 @@ document.addEventListener('DOMContentLoaded', () => {
     // XSS-safe text escaper
     function esc(s) { const d = document.createElement('div'); d.textContent = s; return d.innerHTML; }
 
-    analyzeBtn.addEventListener('click', async () => {
-      if (!photoData || analyzeBtn.disabled) return;
-      analyzeBtn.disabled = true;
-      analyzeBtn.textContent = '\u2026 Analyzing';
-      showStatus('<div style="display:flex;align-items:center;gap:8px"><div style="width:16px;height:16px;border:2px solid var(--border);border-top:2px solid var(--accent);border-radius:50%;animation:spin .8s linear infinite"></div>Sending photo to Claude Vision\u2026 (5\u201315 seconds)</div>', 'info');
+    let _analyzing = false;
+    async function analyzeWing() {
+      if (!photoData || _analyzing) return;
+      _analyzing = true;
+      showStatus('<div style="display:flex;align-items:center;gap:10px"><div style="width:18px;height:18px;border:2px solid var(--border);border-top:2px solid var(--accent);border-radius:50%;animation:spin .8s linear infinite"></div><div><strong style="color:var(--gold-light)">Analyzing your wing\u2026</strong><br><span style="font-size:.75rem;opacity:0.7">AI is measuring dimensions, identifying materials, and calculating weight (5\u201315 sec)</span></div></div>', 'info');
 
-      // 30-second timeout
       const controller = new AbortController();
-      const timeout = setTimeout(() => controller.abort(), 30000);
+      const timeout = setTimeout(() => controller.abort(), 45000);
 
       try {
         const res = await fetch('/.netlify/functions/analyze-wing', {
           method: 'POST',
-          headers: { 'Content-Type': 'application/json', 'Authorization': 'Bearer ' + apiKeyInput.value },
+          headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify({ image: photoData.base64, mediaType: photoData.mediaType }),
           signal: controller.signal,
         });
@@ -2797,7 +2764,22 @@ document.addEventListener('DOMContentLoaded', () => {
         }
         const data = await res.json();
 
-        // Populate auto-calc fields
+        // ── Photo quality check ──
+        if (!data.photo_ok) {
+          let html = '<div style="font-weight:700;color:#fbbf24;margin-bottom:8px">\uD83D\uDCF7 Let\u2019s get a better photo!</div>';
+          if (data.photo_tips) {
+            html += '<div style="padding:10px 14px;background:rgba(251,191,36,0.08);border:1px solid rgba(251,191,36,0.25);border-radius:10px;font-size:.82rem;color:var(--text);line-height:1.5">' + esc(data.photo_tips) + '</div>';
+          }
+          if (data.notes) {
+            html += '<div style="margin-top:6px;font-size:.75rem;color:var(--text-dim)">' + esc(data.notes) + '</div>';
+          }
+          html += '<div style="margin-top:10px;font-size:.78rem;color:var(--accent);cursor:pointer" onclick="document.getElementById(\'photo-retake\').click()">&#128247; Tap here to retake your photo</div>';
+          showStatus(html, 'info');
+          _analyzing = false;
+          return;
+        }
+
+        // ── Populate auto-calc fields ──
         if (data.wingspan_cm) document.getElementById('ac-wingspan').value = Math.round(data.wingspan_cm);
         if (data.estimated_weight_g) document.getElementById('ac-wingWeight').value = Math.round(data.estimated_weight_g / 2);
         if (data.body_weight_estimate_g) document.getElementById('ac-bodyWeight').value = Math.round(data.body_weight_estimate_g);
@@ -2805,7 +2787,6 @@ document.addEventListener('DOMContentLoaded', () => {
           const sel = document.getElementById('ac-shape');
           if (['monarch','swallowtail','luna','rounded'].includes(data.shape)) sel.value = data.shape;
         }
-        // Also populate fine-tune sliders with chord + taper
         if (data.chord_cm) {
           const chordEl = document.getElementById('chord');
           chordEl.value = Math.min(parseFloat(chordEl.max), Math.max(parseFloat(chordEl.min), data.chord_cm));
@@ -2817,30 +2798,36 @@ document.addEventListener('DOMContentLoaded', () => {
           document.getElementById('taper-val').textContent = Math.round(data.taper_pct) + '%';
         }
 
-        // Build result display (XSS-safe)
-        let html = '<div style="font-weight:700;color:#34d399;margin-bottom:8px">\u2713 Wing analyzed successfully!</div>';
-        // Low-confidence warning
-        if (data.confidence === 'low') {
-          html += '<div style="padding:8px 12px;margin-bottom:8px;background:rgba(251,191,36,0.1);border:1px solid rgba(251,191,36,0.3);border-radius:8px;font-size:.78rem;color:#fbbf24">\u26A0 Low confidence &mdash; no clear reference object detected. Measurements are rough estimates. Add a ruler or coin and retake for better accuracy.</div>';
+        // ── Build results display ──
+        let html = '<div style="font-weight:700;color:#34d399;margin-bottom:8px">\u2713 Wing analyzed!</div>';
+
+        // Photo tips for medium/low confidence
+        if (data.photo_tips && data.confidence !== 'high') {
+          html += '<div style="padding:8px 12px;margin-bottom:8px;background:rgba(251,191,36,0.08);border:1px solid rgba(251,191,36,0.2);border-radius:8px;font-size:.78rem;color:#fbbf24">\uD83D\uDCA1 ' + esc(data.photo_tips) + '</div>';
         }
-        html += '<div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(110px,1fr));gap:8px">';
+        if (data.confidence === 'low') {
+          html += '<div style="padding:8px 12px;margin-bottom:8px;background:rgba(251,191,36,0.1);border:1px solid rgba(251,191,36,0.3);border-radius:8px;font-size:.78rem;color:#fbbf24">\u26A0 Low confidence \u2014 measurements are rough estimates. Retake with a ruler or coin for better accuracy.</div>';
+        }
+
+        html += '<div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(100px,1fr));gap:8px">';
         const fields = [
           { label: 'Wingspan', value: data.wingspan_cm ? data.wingspan_cm.toFixed(1) + ' cm' : '?' },
           { label: 'Chord', value: data.chord_cm ? data.chord_cm.toFixed(1) + ' cm' : '?' },
           { label: 'Shape', value: data.shape ? esc(data.shape) : '?' },
           { label: 'Taper', value: data.taper_pct ? data.taper_pct + '%' : '?' },
-          { label: 'Wing Weight', value: data.estimated_weight_g ? data.estimated_weight_g.toFixed(1) + ' g' : '?' },
+          { label: 'Weight', value: data.estimated_weight_g ? data.estimated_weight_g.toFixed(1) + ' g' : '?' },
+          { label: 'Material', value: data.material_guess ? esc(data.material_guess) : '?' },
           { label: 'Confidence', value: data.confidence ? esc(data.confidence) : '?' },
         ];
         fields.forEach(f => {
           html += '<div style="text-align:center;padding:8px;background:var(--bg-surface);border-radius:8px">';
-          html += '<div style="font-size:.65rem;color:var(--text-dim);text-transform:uppercase;letter-spacing:.5px">' + f.label + '</div>';
-          html += '<div style="font-size:1.05rem;font-weight:700;color:var(--gold-light)">' + f.value + '</div></div>';
+          html += '<div style="font-size:.6rem;color:var(--text-dim);text-transform:uppercase;letter-spacing:.5px">' + f.label + '</div>';
+          html += '<div style="font-size:1rem;font-weight:700;color:var(--gold-light)">' + f.value + '</div></div>';
         });
         html += '</div>';
-        if (data.reference_object) html += '<div style="margin-top:8px;font-size:.72rem;color:var(--text-dim)">Reference detected: <strong>' + esc(data.reference_object) + '</strong></div>';
+        if (data.reference_object) html += '<div style="margin-top:8px;font-size:.72rem;color:var(--text-dim)">Scale reference: <strong>' + esc(data.reference_object) + '</strong></div>';
         if (data.notes) html += '<div style="margin-top:4px;font-size:.78rem;color:var(--text-dim);line-height:1.4"><strong style="color:var(--text)">Notes:</strong> ' + esc(data.notes) + '</div>';
-        html += '<div style="margin-top:10px;font-size:.78rem;color:var(--accent)">Fields auto-filled above \u2191 \u2014 click <strong>Calculate Optimal Settings</strong> to optimize!</div>';
+        html += '<div style="margin-top:10px;font-size:.78rem;color:var(--accent)">Fields auto-filled \u2191 \u2014 scroll down and click <strong>Calculate Optimal Settings</strong>!</div>';
         showStatus(html, 'success');
 
         // Flash auto-calc + slider fields
@@ -2854,16 +2841,12 @@ document.addEventListener('DOMContentLoaded', () => {
         recalc();
       } catch (err) {
         clearTimeout(timeout);
-        const msg = err.name === 'AbortError' ? 'Request timed out (30s). Try again or check your connection.' : err.message;
-        showStatus('Analysis failed: ' + esc(msg) + '<br><span style="font-size:.72rem;opacity:0.7">Check your API key and try again.</span>', 'error');
+        const msg = err.name === 'AbortError' ? 'Request timed out. Try again or use a smaller photo.' : err.message;
+        showStatus('<div style="color:#f87171;font-weight:600">Analysis failed</div><div style="font-size:.82rem;margin-top:4px;color:var(--text-dim)">' + esc(msg) + '</div><div style="margin-top:8px;font-size:.78rem;color:var(--accent);cursor:pointer" onclick="analyzeWing()">\u21BB Try again</div>', 'error');
       } finally {
-        analyzeBtn.disabled = false;
-        analyzeBtn.innerHTML = '&#128269; Analyze Wing';
-        updateAnalyzeBtn();
+        _analyzing = false;
       }
-    });
-
-    updateAnalyzeBtn();
+    }
   })();
 
   // ===== WING SHAPE MODAL =====
