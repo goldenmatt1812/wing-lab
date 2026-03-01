@@ -1031,7 +1031,6 @@ const R = {
         const p=Physics.readParams();
         const results=Physics.computeAll(p);
         R._restInfo=results;
-        updateDash(results,null);
         this.startAnimation(results);
         return;
       }
@@ -1052,12 +1051,10 @@ const R = {
         el.value=Math.min(85,Math.max(1,deg));
         const out=document.getElementById('initialPull-val');
         if(out)out.textContent=el.value+'\u00B0';
-        // Compute physics + update dashboard WITHOUT drawing at rest angle (no snap-back!)
+        // Compute physics and start animation (no snap to rest angle!)
         const p=Physics.readParams();
         const results=Physics.computeAll(p);
         R._restInfo=results;
-        updateDash(results,null); // dashboard only, no draw
-        // Start animation — first frame draws at initialPull (matches drag angle)
         this.startAnimation(results);
       } else {
         // Tap/click without dragging — check for double-tap (full pull) vs single tap (hint)
