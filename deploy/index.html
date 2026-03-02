@@ -41,7 +41,7 @@
   --purple: #a78bfa;
 }
 *{margin:0;padding:0;box-sizing:border-box}
-body{font-family:'Inter',-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;background:var(--bg-deep);color:var(--text);line-height:1.5;min-height:100vh}
+body{font-family:'Inter',-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;background:var(--bg-deep);color:var(--text);line-height:1.5;min-height:100vh;-webkit-overflow-scrolling:touch}
 
 header{text-align:center;padding:2.5rem 1rem 1.5rem;background:linear-gradient(180deg,#12091e 0%,var(--bg-deep) 100%);position:relative;overflow:hidden}
 header::before{content:'';position:absolute;top:-20px;left:50%;transform:translateX(-50%);width:700px;height:250px;background:radial-gradient(ellipse,rgba(196,164,105,0.1) 0%,transparent 70%);pointer-events:none}
@@ -54,20 +54,20 @@ main{max-width:1200px;margin:0 auto;padding:0 1rem 3rem}
 #wing-viz-section{position:relative;margin:1.5rem 0;border-radius:16px;overflow:hidden;border:1px solid var(--border);background:radial-gradient(ellipse at 50% 20%,#131b2e 0%,#090d18 70%)}
 #wingCanvas{display:block;width:100%;height:640px;touch-action:pan-y}
 #anim-controls{position:absolute;bottom:14px;left:50%;transform:translateX(-50%);display:flex;gap:8px}
-#anim-controls button{background:rgba(17,24,39,0.92);border:1px solid var(--border);color:var(--accent);padding:8px 20px;border-radius:10px;font-size:.85rem;font-weight:600;cursor:pointer;transition:all .2s}
+#anim-controls button{background:rgba(17,24,39,0.92);border:1px solid var(--border);color:var(--accent);padding:8px 20px;border-radius:10px;font-size:.85rem;font-weight:600;cursor:pointer;transition:background .2s,border-color .2s}
 #anim-controls button:hover{background:rgba(56,189,248,0.15);border-color:var(--accent);transform:translateY(-1px)}
 #anim-controls button.active{background:var(--accent);color:var(--bg-deep)}
 #canvas-label{position:absolute;top:10px;left:14px;font-size:.7rem;color:var(--text-dim);text-transform:uppercase;letter-spacing:.1em}
-#physics-math-btn{position:absolute;top:10px;right:14px;background:rgba(9,13,24,0.88);border:1px solid var(--border);color:var(--accent);width:32px;height:32px;border-radius:50%;font-size:.9rem;font-weight:700;cursor:pointer;transition:all .2s;display:flex;align-items:center;justify-content:center;z-index:10}
+#physics-math-btn{position:absolute;top:10px;right:14px;background:rgba(9,13,24,0.88);border:1px solid var(--border);color:var(--accent);width:32px;height:32px;border-radius:50%;font-size:.9rem;font-weight:700;cursor:pointer;transition:transform .2s,background .2s;display:flex;align-items:center;justify-content:center;z-index:10}
 #physics-math-btn:hover{background:rgba(56,189,248,0.2);border-color:var(--accent);transform:scale(1.1)}
-#fullscreen-btn{position:absolute;top:10px;right:54px;background:rgba(9,13,24,0.88);border:1px solid var(--border);color:var(--gold-light);width:32px;height:32px;border-radius:50%;font-size:.85rem;cursor:pointer;transition:all .2s;display:flex;align-items:center;justify-content:center;z-index:10;padding:0}
+#fullscreen-btn{position:absolute;top:10px;right:54px;background:rgba(9,13,24,0.88);border:1px solid var(--border);color:var(--gold-light);width:32px;height:32px;border-radius:50%;font-size:.85rem;cursor:pointer;transition:transform .2s,background .2s;display:flex;align-items:center;justify-content:center;z-index:10;padding:0}
 #fullscreen-btn:hover{background:rgba(196,164,105,0.2);border-color:var(--gold);transform:scale(1.1)}
 /* Fullscreen mode */
 #wing-viz-section.fullscreen{position:fixed;inset:0;z-index:10000;margin:0;border-radius:0;border:none}
 #wing-viz-section.fullscreen #wingCanvas{height:100vh!important}
 #wing-viz-section.fullscreen #fullscreen-btn{top:14px;right:58px}
 #wing-viz-section.fullscreen #physics-math-btn{top:14px;right:18px}
-#physics-modal-overlay{position:fixed;inset:0;z-index:10001;background:rgba(0,0,0,0.82);display:none;align-items:flex-start;justify-content:center;padding:1.5rem;overflow-y:auto}
+#physics-modal-overlay{position:fixed;inset:0;z-index:10001;background:rgba(0,0,0,0.82);display:none;align-items:flex-start;justify-content:center;padding:1.5rem;overflow-y:auto;-webkit-overflow-scrolling:touch;touch-action:manipulation}
 #physics-modal-overlay.open{display:flex}
 #physics-modal{background:var(--bg-card);border:1px solid var(--border);border-radius:20px;max-width:680px;width:100%;max-height:none;padding:2rem 2.5rem;position:relative;box-shadow:0 8px 24px rgba(0,0,0,0.5);margin:1rem 0}
 #physics-modal h3{font-size:1.15rem;color:var(--gold-light);margin:1.5rem 0 .5rem;font-weight:700}
@@ -78,11 +78,11 @@ main{max-width:1200px;margin:0 auto;padding:0 1rem 3rem}
 #physics-modal .var-def{display:grid;grid-template-columns:auto 1fr;gap:4px 12px;font-size:.85rem;margin:.5rem 0}
 #physics-modal .var-def dt{color:var(--accent);font-family:'Cambria Math',Georgia,serif;font-style:italic;text-align:right}
 #physics-modal .var-def dd{color:var(--text-soft);margin:0}
-#physics-modal-close{position:absolute;top:12px;right:16px;background:none;border:none;color:var(--text-dim);font-size:1.5rem;cursor:pointer;padding:4px 8px;border-radius:8px;transition:all .2s}
+#physics-modal-close{position:absolute;top:12px;right:16px;background:none;border:none;color:var(--text-dim);font-size:1.5rem;cursor:pointer;padding:8px 12px;border-radius:8px;transition:color .2s;-webkit-tap-highlight-color:rgba(196,164,105,0.3);touch-action:manipulation}
 #physics-modal-close:hover{color:var(--text);background:var(--bg-surface)}
 
 /* Auto-calc */
-#auto-calc-section{margin:1.5rem 0;background:linear-gradient(135deg,rgba(196,164,105,0.08),rgba(167,139,250,0.08));border:1px solid rgba(196,164,105,0.25);border-radius:16px;padding:1.5rem 2rem}
+#auto-calc-section{margin:1.5rem 0;background:linear-gradient(135deg,rgba(196,164,105,0.08),rgba(167,139,250,0.08));border:1px solid rgba(196,164,105,0.25);border-radius:16px;padding:1.5rem 2rem;contain:layout style}
 #auto-calc-section h2{font-size:1.2rem;font-weight:700;color:var(--gold-light);margin-bottom:.25rem}
 .auto-desc{font-size:.82rem;color:var(--text-dim);margin-bottom:1rem;line-height:1.4}
 .auto-row{display:grid;grid-template-columns:repeat(auto-fill,minmax(140px,1fr));gap:1rem;align-items:end;margin-bottom:1rem}
@@ -104,7 +104,7 @@ main{max-width:1200px;margin:0 auto;padding:0 1rem 3rem}
 .ari .ari-detail{font-size:.7rem;color:var(--text-dim)}
 
 /* Controls */
-#controls-section{margin:2rem 0}
+#controls-section{margin:2rem 0;contain:layout style}
 #controls-section h2,#dashboard-section h2,#plot-section h2{font-size:1.35rem;font-weight:700;margin-bottom:1rem;color:var(--text-bright)}
 .controls-grid{display:grid;grid-template-columns:repeat(2,1fr);gap:1rem}
 .control-group{background:var(--bg-card);border:1px solid var(--border);border-radius:14px;padding:1.25rem 1.5rem;transition:border-color .3s}
@@ -117,19 +117,19 @@ main{max-width:1200px;margin:0 auto;padding:0 1rem 3rem}
 .slider-row{display:flex;align-items:center;gap:12px}
 .slider-row input[type="range"]{flex:1;-webkit-appearance:none;appearance:none;height:6px;background:var(--bg-surface);border-radius:3px;outline:none;transition:background .2s;touch-action:manipulation}
 .slider-row input[type="range"]:hover{background:#222d45}
-.slider-row input[type="range"]::-webkit-slider-thumb{-webkit-appearance:none;width:20px;height:20px;border-radius:50%;background:var(--thumb-color,var(--accent));cursor:pointer;box-shadow:0 0 10px var(--thumb-glow,var(--accent-glow)),0 2px 6px rgba(0,0,0,0.3);transition:transform .15s,box-shadow .15s,background .3s}
+.slider-row input[type="range"]::-webkit-slider-thumb{-webkit-appearance:none;width:20px;height:20px;border-radius:50%;background:var(--thumb-color,var(--accent));cursor:pointer;box-shadow:0 0 6px var(--thumb-glow,var(--accent-glow));transition:transform .15s,background .3s}
 .slider-row input[type="range"]::-webkit-slider-thumb:hover{transform:scale(1.15)}
 .slider-row input[type="range"]:active::-webkit-slider-thumb{transform:scale(1.25)}
 .slider-row input[type="range"]::-moz-range-thumb{width:20px;height:20px;border-radius:50%;background:var(--thumb-color,var(--accent));cursor:pointer;border:none;transition:background .3s}
 .slider-row output{min-width:72px;text-align:right;font-size:.85rem;font-weight:700;color:var(--accent);font-variant-numeric:tabular-nums}
 .slider-hint{width:22px;font-size:1.1rem;text-align:center;font-weight:900;opacity:1;transition:opacity .3s,color .3s;flex-shrink:0;line-height:1}
-.slider-lock{width:28px;height:28px;border:1px solid var(--border);background:transparent;color:var(--text-dim);border-radius:6px;cursor:pointer;font-size:.85rem;flex-shrink:0;display:flex;align-items:center;justify-content:center;transition:all .2s;padding:0}
+.slider-lock{width:28px;height:28px;border:1px solid var(--border);background:transparent;color:var(--text-dim);border-radius:6px;cursor:pointer;font-size:.85rem;flex-shrink:0;display:flex;align-items:center;justify-content:center;transition:border-color .2s,color .2s;padding:0}
 .slider-lock:hover{border-color:var(--accent);color:var(--accent)}
 .slider-lock.locked{background:rgba(251,191,36,0.15);border-color:var(--yellow);color:var(--yellow)}
 .slider-row.locked input[type="range"]{opacity:0.35;pointer-events:none}
 .slider-row.locked output{opacity:0.5}
 .slider-row.locked .slider-hint{opacity:0.2}
-#optimize-btn{display:block;width:100%;margin-top:1rem;padding:12px;background:linear-gradient(135deg,rgba(0,146,188,0.15),rgba(167,139,250,0.15));border:1px solid var(--accent);color:var(--accent);border-radius:10px;font-size:.9rem;font-weight:700;cursor:pointer;transition:all .2s}
+#optimize-btn{display:block;width:100%;margin-top:1rem;padding:12px;background:linear-gradient(135deg,rgba(0,146,188,0.15),rgba(167,139,248,0.15));border:1px solid var(--accent);color:var(--accent);border-radius:10px;font-size:.9rem;font-weight:700;cursor:pointer;transition:transform .2s,border-color .2s}
 #optimize-btn:hover{background:rgba(0,146,188,0.25);transform:translateY(-1px);box-shadow:0 4px 16px rgba(0,146,188,0.2)}
 .slider-row.computed output{color:var(--gold-light)}
 .slider-row select{flex:1;background:var(--bg-surface);border:1px solid var(--border);color:var(--text);padding:6px 10px;border-radius:8px;font-size:.85rem;cursor:pointer;outline:none}
@@ -150,9 +150,9 @@ main{max-width:1200px;margin:0 auto;padding:0 1rem 3rem}
 }
 
 /* Dashboard */
-#dashboard-section{margin:2.5rem 0 1.5rem}
+#dashboard-section{margin:2.5rem 0 1.5rem;contain:layout style}
 .dashboard-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:1rem}
-.metric-card{background:var(--bg-card);border:1px solid var(--border);border-radius:14px;padding:1.25rem;text-align:center;transition:border-color .3s,box-shadow .3s,transform .2s}
+.metric-card{background:var(--bg-card);border:1px solid var(--border);border-radius:14px;padding:1.25rem;text-align:center;transition:border-color .3s;contain:layout style}
 .metric-card:hover{transform:translateY(-2px);box-shadow:0 4px 20px rgba(0,0,0,0.3)}
 .metric-card.status-great{border-color:var(--green);box-shadow:0 0 6px var(--green-dim)}
 .metric-card.status-ok{border-color:var(--yellow);box-shadow:0 0 6px var(--yellow-dim)}
@@ -189,8 +189,8 @@ main{max-width:1200px;margin:0 auto;padding:0 1rem 3rem}
 footer{text-align:center;padding:2rem 1rem;color:var(--text-dim);font-size:.75rem;border-top:1px solid var(--border)}
 
 /* Preset buttons */
-#presets-section{margin:1.5rem 0}
-.preset-btn{display:flex;flex-direction:column;align-items:center;gap:4px;padding:18px 16px;background:linear-gradient(135deg,var(--bg-surface),var(--bg-card));border:2px solid var(--border);border-radius:16px;cursor:pointer;transition:all .25s;color:var(--text);min-height:60px}
+#presets-section{margin:1.5rem 0;contain:layout style}
+.preset-btn{display:flex;flex-direction:column;align-items:center;gap:4px;padding:18px 16px;background:linear-gradient(135deg,var(--bg-surface),var(--bg-card));border:2px solid var(--border);border-radius:16px;cursor:pointer;transition:transform .2s,border-color .2s;color:var(--text);min-height:60px}
 .preset-btn:hover{border-color:var(--gold);background:linear-gradient(135deg,rgba(196,164,105,0.08),var(--bg-card));transform:translateY(-2px);box-shadow:0 6px 20px rgba(196,164,105,0.15)}
 .preset-btn:active{transform:translateY(0);box-shadow:none}
 .preset-btn.active{border-color:var(--sd-green);box-shadow:0 0 6px rgba(0,132,61,0.3)}
@@ -244,27 +244,27 @@ footer{text-align:center;padding:2rem 1rem;color:var(--text-dim);font-size:.75re
 }
 @keyframes hintPulse{0%,100%{opacity:1;transform:translateY(0)}50%{opacity:0.6;transform:translateY(4px)}}
 @keyframes guideFlap{0%,100%{transform:rotate(0deg) scaleX(1)}25%{transform:rotate(-8deg) scaleX(0.85)}50%{transform:rotate(0deg) scaleX(1)}75%{transform:rotate(8deg) scaleX(0.85)}}
-.guide-btn{display:inline-flex;align-items:center;gap:8px;margin-top:1rem;padding:12px 28px;background:linear-gradient(135deg,rgba(196,164,105,0.15),rgba(0,146,188,0.12));border:1.5px solid rgba(196,164,105,0.35);color:var(--gold-light);font-size:.9rem;font-weight:700;border-radius:12px;text-decoration:none;transition:all .25s;box-shadow:0 2px 12px rgba(196,164,105,0.1);letter-spacing:.02em}
+.guide-btn{display:inline-flex;align-items:center;gap:8px;margin-top:1rem;padding:12px 28px;background:linear-gradient(135deg,rgba(196,164,105,0.15),rgba(0,146,188,0.12));border:1.5px solid rgba(196,164,105,0.35);color:var(--gold-light);font-size:.9rem;font-weight:700;border-radius:12px;text-decoration:none;transition:transform .2s,border-color .2s;box-shadow:0 2px 8px rgba(196,164,105,0.1);letter-spacing:.02em}
 .guide-btn:hover{transform:translateY(-2px);box-shadow:0 4px 20px rgba(196,164,105,0.25);border-color:rgba(196,164,105,0.55);background:linear-gradient(135deg,rgba(196,164,105,0.22),rgba(0,146,188,0.18))}
-.guide-btn .gb-fly{display:inline-block;transition:all .3s}
+.guide-btn .gb-fly{display:inline-block;transition:transform .3s}
 .guide-btn:hover .gb-fly{animation:guideFlap .6s ease-in-out infinite}
-#unit-toggle{position:absolute;top:12px;right:14px;background:rgba(9,13,24,0.88);border:1px solid var(--border);color:var(--gold-light);font-size:.72rem;font-weight:700;padding:5px 12px;border-radius:8px;cursor:pointer;transition:all .2s;font-family:inherit;letter-spacing:.04em}
+#unit-toggle{position:absolute;top:12px;right:14px;background:rgba(9,13,24,0.88);border:1px solid var(--border);color:var(--gold-light);font-size:.72rem;font-weight:700;padding:5px 12px;border-radius:8px;cursor:pointer;transition:background .2s,border-color .2s;font-family:inherit;letter-spacing:.04em}
 #unit-toggle:hover{background:rgba(196,164,105,0.15);border-color:var(--gold-light)}
 #loading-overlay{position:fixed;inset:0;z-index:9999;background:var(--bg-deep);display:flex;flex-direction:column;align-items:center;justify-content:center;transition:opacity .5s;font-size:2rem}
 #loading-overlay span{font-size:1rem;color:var(--text-dim);margin-top:1rem;font-weight:600}
 #loading-overlay.fade-out{opacity:0;pointer-events:none}
 
 /* Help Modal */
-#help-modal-overlay{position:fixed;inset:0;z-index:10000;background:rgba(0,0,0,0.78);display:none;align-items:center;justify-content:center;padding:1rem}
+#help-modal-overlay{position:fixed;inset:0;z-index:10000;background:rgba(0,0,0,0.78);display:none;align-items:center;justify-content:center;padding:1rem;touch-action:manipulation}
 #help-modal-overlay.open{display:flex}
 #help-modal{background:var(--bg-card);border:1px solid var(--border);border-radius:20px;max-width:440px;width:100%;max-height:80vh;overflow-y:auto;padding:2rem;position:relative;box-shadow:0 8px 24px rgba(0,0,0,0.5)}
-#help-modal-close{position:absolute;top:12px;right:16px;background:none;border:none;color:var(--text-dim);font-size:1.5rem;cursor:pointer;padding:4px 8px;border-radius:8px;transition:all .2s}
+#help-modal-close{position:absolute;top:12px;right:16px;background:none;border:none;color:var(--text-dim);font-size:1.5rem;cursor:pointer;padding:8px 12px;border-radius:8px;transition:color .2s;-webkit-tap-highlight-color:rgba(196,164,105,0.3);touch-action:manipulation}
 #help-modal-close:hover{color:var(--text);background:var(--bg-surface)}
 #help-modal h3{font-size:1.2rem;font-weight:800;color:var(--gold-light);margin-bottom:.75rem;padding-right:2rem}
 #help-modal .help-body{font-size:.92rem;color:var(--text);line-height:1.6;margin-bottom:1rem}
 #help-modal .help-tip{background:rgba(0,132,61,0.1);border:1px solid rgba(0,132,61,0.25);border-radius:12px;padding:10px 14px;font-size:.85rem;color:var(--green);line-height:1.5}
-#help-modal .help-tip::before{content:'\uD83D\uDCA1 ';font-size:1rem}
-.help-btn{display:inline-flex;align-items:center;justify-content:center;width:22px;height:22px;border-radius:50%;background:rgba(0,146,188,0.15);border:1px solid rgba(0,146,188,0.3);color:var(--accent);font-size:.7rem;font-weight:700;cursor:pointer;margin-left:6px;transition:all .2s;vertical-align:middle;flex-shrink:0}
+#help-modal .help-tip::before{content:'💡 ';font-size:1rem}
+.help-btn{display:inline-flex;align-items:center;justify-content:center;width:22px;height:22px;border-radius:50%;background:rgba(0,146,188,0.15);border:1px solid rgba(0,146,188,0.3);color:var(--accent);font-size:.7rem;font-weight:700;cursor:pointer;margin-left:6px;transition:transform .2s,background .2s;vertical-align:middle;flex-shrink:0;-webkit-tap-highlight-color:rgba(0,146,188,0.3);touch-action:manipulation}
 .help-btn:hover{background:rgba(0,146,188,0.3);transform:scale(1.1)}
 @media(max-width:600px){.help-btn{width:28px;height:28px;font-size:.8rem}}
   </style>
@@ -377,7 +377,7 @@ footer{text-align:center;padding:2rem 1rem;color:var(--text-dim);font-size:.75re
 
       <!-- PHOTO UPLOAD -->
       <div id="photo-panel">
-        <div id="photo-toggle" style="cursor:pointer;display:flex;align-items:center;gap:10px;margin-bottom:1rem;padding:12px 18px;background:var(--bg-surface);border:1px dashed rgba(196,164,105,0.3);border-radius:12px;transition:all .2s">
+        <div id="photo-toggle" style="cursor:pointer;display:flex;align-items:center;gap:10px;margin-bottom:1rem;padding:12px 18px;background:var(--bg-surface);border:1px dashed rgba(196,164,105,0.3);border-radius:12px;transition:border-color .2s">
           <span style="font-size:1.5rem">&#128247;</span>
           <div><span style="font-weight:600;color:var(--gold-light)">Upload a Photo of Your Wing</span><br><span style="font-size:.75rem;color:var(--text-dim)">Lay wing flat with a ruler or coin &mdash; AI measures it automatically</span></div>
           <span id="photo-arrow" style="margin-left:auto;color:var(--text-dim);transition:transform .2s">&#9660;</span>
@@ -569,28 +569,28 @@ footer{text-align:center;padding:2rem 1rem;color:var(--text-dim);font-size:.75re
       <canvas id="plotCanvas"></canvas>
     </section>
     <!-- Wing Shape Modal -->
-    <div id="shape-modal" style="display:none;position:fixed;inset:0;z-index:5000;background:rgba(0,0,0,0.82);align-items:center;justify-content:center">
+    <div id="shape-modal" style="display:none;position:fixed;inset:0;z-index:5000;background:rgba(0,0,0,0.82);align-items:center;justify-content:center;touch-action:manipulation">
       <div style="background:var(--bg-card);border:1px solid var(--border);border-radius:16px;max-width:500px;width:90%;max-height:90vh;overflow-y:auto;padding:1.5rem 2rem;position:relative">
         <button id="shape-modal-close" style="position:absolute;top:8px;right:8px;background:none;border:none;color:var(--text-dim);font-size:1.5rem;cursor:pointer;width:44px;height:44px;display:flex;align-items:center;justify-content:center">&times;</button>
         <h3 style="color:var(--gold-light);margin-bottom:.75rem">Wing Shape Helper</h3>
         <p style="font-size:.82rem;color:var(--text-dim);margin-bottom:1rem">Pick a shape that matches your wing, or describe it. We'll set the taper and dimensions for you.</p>
         <div id="shape-presets" style="display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:1.5rem">
-          <button class="shape-btn" data-shape="monarch" data-taper="35" data-desc="Wide at the base, narrows to rounded tips" style="padding:14px;background:var(--bg-surface);border:1px solid var(--border);border-radius:12px;cursor:pointer;text-align:center;color:var(--text);transition:all .2s">
+          <button class="shape-btn" data-shape="monarch" data-taper="35" data-desc="Wide at the base, narrows to rounded tips" style="padding:14px;background:var(--bg-surface);border:1px solid var(--border);border-radius:12px;cursor:pointer;text-align:center;color:var(--text);transition:border-color .2s">
             <div style="font-size:2rem;margin-bottom:4px">&#x1F98B;</div>
             <div style="font-weight:700;font-size:.9rem">Monarch</div>
             <div style="font-size:.7rem;color:var(--text-dim);margin-top:2px">Wide base, narrow tips</div>
           </button>
-          <button class="shape-btn" data-shape="swallowtail" data-taper="45" data-desc="Widest at mid-wing with dramatic taper" style="padding:14px;background:var(--bg-surface);border:1px solid var(--border);border-radius:12px;cursor:pointer;text-align:center;color:var(--text);transition:all .2s">
+          <button class="shape-btn" data-shape="swallowtail" data-taper="45" data-desc="Widest at mid-wing with dramatic taper" style="padding:14px;background:var(--bg-surface);border:1px solid var(--border);border-radius:12px;cursor:pointer;text-align:center;color:var(--text);transition:border-color .2s">
             <div style="font-size:2rem;margin-bottom:4px">&#127807;</div>
             <div style="font-weight:700;font-size:.9rem">Swallowtail</div>
             <div style="font-size:.7rem;color:var(--text-dim);margin-top:2px">Wide middle, pointed tips</div>
           </button>
-          <button class="shape-btn" data-shape="luna" data-taper="30" data-desc="Long and narrow with elegant trailing edges" style="padding:14px;background:var(--bg-surface);border:1px solid var(--border);border-radius:12px;cursor:pointer;text-align:center;color:var(--text);transition:all .2s">
+          <button class="shape-btn" data-shape="luna" data-taper="30" data-desc="Long and narrow with elegant trailing edges" style="padding:14px;background:var(--bg-surface);border:1px solid var(--border);border-radius:12px;cursor:pointer;text-align:center;color:var(--text);transition:border-color .2s">
             <div style="font-size:2rem;margin-bottom:4px">&#127769;</div>
             <div style="font-weight:700;font-size:.9rem">Luna Moth</div>
             <div style="font-size:.7rem;color:var(--text-dim);margin-top:2px">Long, narrow, elegant</div>
           </button>
-          <button class="shape-btn" data-shape="rounded" data-taper="70" data-desc="Broad and evenly rounded" style="padding:14px;background:var(--bg-surface);border:1px solid var(--border);border-radius:12px;cursor:pointer;text-align:center;color:var(--text);transition:all .2s">
+          <button class="shape-btn" data-shape="rounded" data-taper="70" data-desc="Broad and evenly rounded" style="padding:14px;background:var(--bg-surface);border:1px solid var(--border);border-radius:12px;cursor:pointer;text-align:center;color:var(--text);transition:border-color .2s">
             <div style="font-size:2rem;margin-bottom:4px">&#128155;</div>
             <div style="font-weight:700;font-size:.9rem">Rounded</div>
             <div style="font-size:.7rem;color:var(--text-dim);margin-top:2px">Broad, even shape</div>
@@ -1791,6 +1791,7 @@ const R = {
     this.simIndex=0; this.animating=true; this._r=results;
     this.animStartTime=performance.now();
     const go=(now)=>{if(!this.animating)return;
+      if(typeof _canvasVisible!=='undefined'&&!_canvasVisible){this.animId=requestAnimationFrame(go);return;} // skip draw when offscreen
       const elapsed=(now-this.animStartTime)/1000;
       this.simIndex=Math.min(Math.floor(elapsed/this.simDt),this.simData.length-1);
       if(this.simIndex>=this.simData.length-1){this.stopAnimation();return;}
