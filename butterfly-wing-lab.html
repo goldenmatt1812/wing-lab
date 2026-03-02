@@ -40,7 +40,7 @@
   --red-dim: rgba(248, 113, 113, 0.15);
   --purple: #a78bfa;
 }
-*{margin:0;padding:0;box-sizing:border-box}
+*{margin:0;padding:0;box-sizing:border-box;touch-action:manipulation}
 body{font-family:'Inter',-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;background:var(--bg-deep);color:var(--text);line-height:1.5;min-height:100vh;-webkit-overflow-scrolling:touch}
 
 header{text-align:center;padding:2.5rem 1rem 1.5rem;background:linear-gradient(180deg,#12091e 0%,var(--bg-deep) 100%);position:relative;overflow:hidden}
@@ -2340,43 +2340,49 @@ document.addEventListener('DOMContentLoaded', () => {
     return s;
   }
 
-  // Compute per-slider colors + direction arrows
+  // Compute per-slider colors + direction arrows (chunked to avoid blocking main thread)
+  let _colorRafId = 0;
   function updateSliderColors() {
+    if (_colorRafId) return; // already queued
     const ids=['wingspan','chord','wingWeight','taper','bodyWeight','pullWeight','tipWeight',
       'stringLength','friction','springK','initialPull','linkagePoint'];
     const saved={};
     ids.forEach(id=>saved[id]=document.getElementById(id).value);
-    ids.forEach(id=>{
-      const el=document.getElementById(id);
-      const val=parseFloat(saved[id]);
-      const mn=parseFloat(el.min),mx=parseFloat(el.max);
-      const step=(mx-mn)*0.05;
-      // Score at +step
-      el.value=Math.min(mx,val+step);
-      const upScore=qScore(Physics.computeAll(Physics.readParams()));
-      // Score at -step
-      el.value=Math.max(mn,val-step);
-      const downScore=qScore(Physics.computeAll(Physics.readParams()));
-      el.value=saved[id]; // restore
-      // Gradient: positive diff = increasing helps = too little = yellow
-      const diff=upScore-downScore;
-      const norm=Math.max(-1,Math.min(1,diff/4));
-      let hue;
-      if(norm>0.08)hue=120-norm*70; // green(120)→yellow(50)
-      else if(norm<-0.08)hue=120+norm*120; // green(120)→red(0)
-      else hue=120;
-      const col='hsl('+hue+',70%,50%)';
-      el.style.setProperty('--thumb-color',col);
-      el.style.setProperty('--thumb-glow','hsla('+hue+',70%,50%,0.3)');
-      // Arrow hint: show direction to improve
-      const row=el.closest('.slider-row');
-      if(!row)return;
-      let hint=row.querySelector('.slider-hint');
-      if(!hint){hint=document.createElement('span');hint.className='slider-hint';row.appendChild(hint);}
-      if(norm>0.12){hint.textContent='\u25B6';hint.style.color=col;hint.title='Increase for better flap';}
-      else if(norm<-0.12){hint.textContent='\u25C0';hint.style.color=col;hint.title='Decrease for better flap';}
-      else{hint.textContent='\u2713';hint.style.color='#34d399';hint.title='Sweet spot!';}
-    });
+    let i = 0;
+    function chunk() {
+      const start = performance.now();
+      while (i < ids.length && performance.now() - start < 8) { // max 8ms per frame
+        const id = ids[i++];
+        const el=document.getElementById(id);
+        const val=parseFloat(saved[id]);
+        const mn=parseFloat(el.min),mx=parseFloat(el.max);
+        const step=(mx-mn)*0.05;
+        el.value=Math.min(mx,val+step);
+        const upScore=qScore(Physics.computeAll(Physics.readParams()));
+        el.value=Math.max(mn,val-step);
+        const downScore=qScore(Physics.computeAll(Physics.readParams()));
+        el.value=saved[id];
+        const diff=upScore-downScore;
+        const norm=Math.max(-1,Math.min(1,diff/4));
+        let hue;
+        if(norm>0.08)hue=120-norm*70;
+        else if(norm<-0.08)hue=120+norm*120;
+        else hue=120;
+        const col='hsl('+hue+',70%,50%)';
+        el.style.setProperty('--thumb-color',col);
+        el.style.setProperty('--thumb-glow','hsla('+hue+',70%,50%,0.3)');
+        const row=el.closest('.slider-row');
+        if(!row)continue;
+        let hint=row.querySelector('.slider-hint');
+        if(!hint){hint=document.createElement('span');hint.className='slider-hint';row.appendChild(hint);}
+        if(norm>0.12){hint.textContent='\u25B6';hint.style.color=col;hint.title='Increase for better flap';}
+        else if(norm<-0.12){hint.textContent='\u25C0';hint.style.color=col;hint.title='Decrease for better flap';}
+        else{hint.textContent='\u2713';hint.style.color='#34d399';hint.title='Sweet spot!';}
+      }
+      if (i < ids.length) { _colorRafId = requestAnimationFrame(chunk); }
+      else { _colorRafId = 0; }
+    }
+    _colorRafId = requestAnimationFrame(chunk);
   }
 
   // ===== CELEBRATION SYSTEM =====
