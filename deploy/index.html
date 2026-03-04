@@ -772,6 +772,11 @@ const Physics = {
     const cp=2*0.25*omega_pend*IpEff; // pendulum damping ζ_p=0.25 (settles in ~4 cycles)
     // Center of pressure (correct lever arm for air drag velocity)
     const rCop=p.halfSpan*(1+2*p.taper)/(3*(1+p.taper));
+    // Wing-wing contact: tips can touch at the very bottom (−90°) but
+    // can't pass through each other. Elastic bounce at contact.
+    const thetaMin=-Math.PI/2;
+    const kContact=Math.max(20, r.k*50);
+    const cContact=2*0.15*Math.sqrt(kContact*I); // ζ=0.15 → bounce (e≈0.6)
     const n=Math.ceil(dur/dt), d=new Float64Array(n);
     let th=p.initialPull, thd=0;
     // Weight starts displaced: arc-length geometry (arcsin, not linear approx)
@@ -788,7 +793,14 @@ const Physics = {
       // Air drag: velocity at center of pressure (rCop), not halfSpan/2
       const v=td*rCop;
       const tAir=-2*(adc||0)*v*Math.abs(v);
-      return (tg+tGrav+tEl+tCf+tAir-ks*t-c*td)/I;
+      // Wing-wing contact: stiff spring + damping when wings press together
+      let tWC=0;
+      if(t<thetaMin){
+        const pen=thetaMin-t; // penetration depth (positive)
+        tWC=kContact*pen; // spring pushes back up
+        if(td<0) tWC-=cContact*td; // extra damping only when pushing INTO contact
+      }
+      return (tg+tGrav+tEl+tCf+tAir+tWC-ks*t-c*td)/I;
     };
     // Weight pendulum acceleration (DOF 2)
     const aWeight=(t,td,ph,pd)=>{
@@ -1567,19 +1579,31 @@ const R = {
       }
     }
 
-    // ===== WINGTIP SPARKLES (during animation) =====
-    if (this.animating) {
-      const sCols = ['#FFCD00','#FFD700','#e8c98e','#00843D','#0092BC','#fff'];
-      for (let s = 0; s < 2; s++) {
-        [{x:tipLx,y:tipLy},{x:tipRx,y:tipRy}].forEach(tp => {
-          this._sparkles.push({
-            x:tp.x+(Math.random()-0.5)*6, y:tp.y+(Math.random()-0.5)*6,
-            vx:(Math.random()-0.5)*1.5, vy:Math.random()*1.2+0.3,
-            life:1, decay:0.02+Math.random()*0.03,
-            size:1.5+Math.random()*2.5,
-            color:sCols[Math.floor(Math.random()*sCols.length)]
+    // ===== WINGTIP SPARKLES (proportional to flapping speed) =====
+    if (this.animating && this.simData) {
+      // Angular speed from sim data (radians/sec)
+      const i0 = Math.max(0, this.simIndex);
+      const i1 = Math.min(i0 + 1, this.simData.length - 1);
+      const angSpeed = Math.abs(this.simData[i1] - this.simData[i0]) / this.simDt;
+      // Normalize: full sparkles at ~5 rad/s, none below ~0.3 rad/s
+      const intensity = Math.max(0, Math.min(1, (angSpeed - 0.3) / 4.7));
+      // Spawn 0-2 sparkles per tip based on intensity (probabilistic)
+      if (intensity > 0) {
+        const sCols = ['#FFCD00','#FFD700','#e8c98e','#00843D','#0092BC','#fff'];
+        const count = Math.floor(intensity * 2 + 0.5); // 0, 1, or 2
+        for (let s = 0; s < count; s++) {
+          [{x:tipLx,y:tipLy},{x:tipRx,y:tipRy}].forEach(tp => {
+            if (Math.random() < intensity) { // probabilistic thinning at low speeds
+              this._sparkles.push({
+                x:tp.x+(Math.random()-0.5)*6, y:tp.y+(Math.random()-0.5)*6,
+                vx:(Math.random()-0.5)*1.5*intensity, vy:(Math.random()*1.2+0.3)*intensity,
+                life:1, decay:0.02+Math.random()*0.03,
+                size:(1.5+Math.random()*2.5)*intensity,
+                color:sCols[Math.floor(Math.random()*sCols.length)]
+              });
+            }
           });
-        });
+        }
       }
     }
     // Draw and age sparkles
