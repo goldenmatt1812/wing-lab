@@ -851,6 +851,7 @@ function setView(mode) {
     body.classList.add('show-all');
     btnAll.classList.add('active');
     btnSlide.classList.remove('active');
+    document.getElementById('slide-track').style.transform = 'none';
   } else {
     body.classList.remove('show-all');
     btnSlide.classList.add('active');

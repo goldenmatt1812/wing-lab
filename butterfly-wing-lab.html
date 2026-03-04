@@ -52,7 +52,7 @@ header h1{font-size:2.8rem;font-weight:800;letter-spacing:-.03em;background:line
 main{max-width:1200px;margin:0 auto;padding:0 1rem 3rem}
 
 #wing-viz-section{position:relative;margin:1.5rem 0;border-radius:16px;overflow:hidden;border:1px solid var(--border);background:radial-gradient(ellipse at 50% 20%,#131b2e 0%,#090d18 70%)}
-#wingCanvas{display:block;width:100%;height:640px;touch-action:pan-y}
+#wingCanvas{display:block;width:100%;height:576px;touch-action:pan-y}
 #anim-controls{position:absolute;bottom:14px;left:50%;transform:translateX(-50%);display:flex;gap:8px}
 #anim-controls button{background:rgba(17,24,39,0.92);border:1px solid var(--border);color:var(--accent);padding:8px 20px;border-radius:10px;font-size:.85rem;font-weight:600;cursor:pointer;transition:background .2s,border-color .2s}
 #anim-controls button:hover{background:rgba(56,189,248,0.15);border-color:var(--accent);transform:translateY(-1px)}
@@ -206,7 +206,7 @@ footer{text-align:center;padding:2rem 1rem;color:var(--text-dim);font-size:.75re
   .header-desc{font-size:.88rem}
   main{padding:0 .5rem 2rem}
   section{margin:1rem 0!important}
-  #wingCanvas{height:480px}
+  #wingCanvas{height:432px}
   #auto-calc-section{padding:1rem .75rem}
   .auto-row{grid-template-columns:1fr 1fr!important;gap:.75rem}
   #autoCalcBtn{padding:14px;font-size:1.05rem}
@@ -242,7 +242,6 @@ footer{text-align:center;padding:2rem 1rem;color:var(--text-dim);font-size:.75re
   .auto-row{grid-template-columns:1fr!important}
   .gala-badge{font-size:.6rem;padding:4px 12px}
 }
-@keyframes hintPulse{0%,100%{opacity:1;transform:translateY(0)}50%{opacity:0.6;transform:translateY(4px)}}
 @keyframes guideFlap{0%,100%{transform:rotate(0deg) scaleX(1)}25%{transform:rotate(-8deg) scaleX(0.85)}50%{transform:rotate(0deg) scaleX(1)}75%{transform:rotate(8deg) scaleX(0.85)}}
 .guide-btn{display:inline-flex;align-items:center;gap:8px;margin-top:1rem;padding:12px 28px;background:linear-gradient(135deg,rgba(196,164,105,0.15),rgba(0,146,188,0.12));border:1.5px solid rgba(196,164,105,0.35);color:var(--gold-light);font-size:.9rem;font-weight:700;border-radius:12px;text-decoration:none;transition:transform .2s,border-color .2s;box-shadow:0 2px 8px rgba(196,164,105,0.1);letter-spacing:.02em}
 .guide-btn:hover{transform:translateY(-2px);box-shadow:0 4px 20px rgba(196,164,105,0.25);border-color:rgba(196,164,105,0.55);background:linear-gradient(135deg,rgba(196,164,105,0.22),rgba(0,146,188,0.18))}
@@ -284,11 +283,7 @@ footer{text-align:center;padding:2rem 1rem;color:var(--text-dim);font-size:.75re
     <!-- Visualization -->
     <section id="wing-viz-section">
       <canvas id="wingCanvas" role="img" aria-label="Interactive butterfly wing simulation — drag the weight to flap"></canvas>
-      <div id="anim-controls">
-        <div id="drag-hint" style="color:var(--gold-light);font-size:1rem;font-weight:600;opacity:1;pointer-events:none;text-align:center;animation:hintPulse 2s ease-in-out 3">
-          &#11015;&#65039; Pull weight down to flap &mdash; double&#8209;tap for full pull &#11015;&#65039;
-        </div>
-      </div>
+      <div id="anim-controls"></div>
       <div id="canvas-label">Side view &middot; hanging from ceiling</div>
       <button id="fullscreen-btn" title="Toggle fullscreen" onclick="toggleFullscreen()">&#x26F6;</button>
       <button id="physics-math-btn" title="View the physics equations" onclick="document.getElementById('physics-modal-overlay').classList.add('open')">?</button>
@@ -334,6 +329,32 @@ footer{text-align:center;padding:2rem 1rem;color:var(--text-dim);font-size:.75re
         <p>When &tau;<sub>net</sub> &gt; 0 (heavy body/pull weight): wings tilt <strong>up</strong> (V-shape).<br>
         When &tau;<sub>net</sub> &lt; 0 (heavy wings): wings <strong>droop</strong> down.</p>
 
+        <h3>&#128205; Body Drop Geometry</h3>
+        <p>The butterfly hangs from a spreader bar by strings of fixed length. When the wings angle up by &theta;, the body must drop to maintain the string constraint:</p>
+        <div class="eq">
+          <div class="eq-label">Body drop from string geometry</div>
+          &delta;(&theta;) = R &middot; sin(&theta;) &minus; d<sub>0</sub> + &radic;(d<sub>0</sub>&sup2; &minus; R&sup2; &middot; (cos(&theta;) &minus; 1)&sup2;)
+        </div>
+        <dl class="var-def">
+          <dt>R</dt><dd>Linkage radius &mdash; distance from pivot to string attachment on wing</dd>
+          <dt>d<sub>0</sub></dt><dd>Rest distance from spreader bar to pivot (string length at &theta;=0)</dd>
+          <dt>&delta;</dt><dd>How far the body drops (positive = downward)</dd>
+        </dl>
+        <p>At small angles, &delta; &approx; R &middot; &theta; (linear). At 45&deg; the body drops &sim;70% of R. The pivot, body, wing attachment, and pull weight all move together.</p>
+
+        <h3>&#128279; Inextensible Pull String</h3>
+        <p>The lower string (body &rarr; weight) has <strong>fixed length</strong> &mdash; no elasticity. The pull weight&rsquo;s position is determined entirely by the body drop:</p>
+        <div class="eq">
+          <div class="eq-label">Weight position (fixed string constraint)</div>
+          y<sub>weight</sub> = y<sub>body</sub> + L<sub>body</sub> + L<sub>string</sub>
+        </div>
+        <dl class="var-def">
+          <dt>y<sub>body</sub></dt><dd>Body top position = rest position + &delta;(&theta;)</dd>
+          <dt>L<sub>body</sub></dt><dd>Body length (head to abdomen)</dd>
+          <dt>L<sub>string</sub></dt><dd>Drop string length (constant, set by slider)</dd>
+        </dl>
+        <p>When you pull the weight, you&rsquo;re not stretching the string &mdash; you&rsquo;re pulling the body down, which forces the wings up through the upper string geometry. The weight only moves as far as the wing angle allows the body to drop.</p>
+
         <h3>&#9881;&#65039; Moment of Inertia</h3>
         <div class="eq">
           <div class="eq-label">Total rotational inertia</div>
@@ -365,7 +386,7 @@ footer{text-align:center;padding:2rem 1rem;color:var(--text-dim);font-size:.75re
         <p>A flap is "visible" only when <strong>both</strong> thresholds are exceeded simultaneously.</p>
 
         <div style="margin-top:1.5rem;padding-top:1rem;border-top:1px solid var(--border);color:var(--text-dim);font-size:.75rem">
-          Wing Lab &middot; San Domenico 175th Anniversary Gala &middot; Physics engine v2.0
+          Wing Lab &middot; San Domenico 175th Anniversary Gala &middot; Physics engine v3.0
         </div>
       </div>
     </div>
@@ -974,7 +995,7 @@ const R = {
   W:0,H:0, // cached canvas dimensions (updated on resize only)
   simData:null,simIndex:0,animating:false,animId:null,simDt:1/120,animStartTime:0,
   currentAngle:0,_lp:null,_r:null,_weightPos:null,
-  _dragging:false,_dragStartY:0,_dragAngle:0,_dragEndTime:0,_lastWeightTap:0,_tapHintTimer:null,
+  _dragging:false,_dragTouchY:0,_dragAngle:0,_dragEndTime:0,_dragStartTime:0,_lastWeightTap:0,_tapHintTimer:null,_canvasRect:null,_hintDismissed:false,_pointerId:null,
 
   init() {
     this.canvas=document.getElementById('wingCanvas');
@@ -991,133 +1012,153 @@ const R = {
 
   _initDrag() {
     const c=this.canvas;
-    const getY=(e)=>{
-      const r=c.getBoundingClientRect();
-      const t=e.touches?e.touches[0]:e;
-      return t.clientY-r.top;
+    const self=this;
+    this._hintDismissed=localStorage.getItem('wing-lab-hint-seen')==='1';
+    // Whoosh sound on release — Web Audio API filtered noise burst
+    const playWhoosh=(intensity)=>{
+      try{
+        const ac=new(window.AudioContext||window.webkitAudioContext)();
+        const buf=ac.createBuffer(1,ac.sampleRate*0.15,ac.sampleRate);
+        const d=buf.getChannelData(0);
+        for(let i=0;i<d.length;i++)d[i]=(Math.random()*2-1)*Math.exp(-i/(d.length*0.3));
+        const src=ac.createBufferSource();src.buffer=buf;
+        const gain=ac.createGain();gain.gain.value=0.06*intensity;
+        const filt=ac.createBiquadFilter();filt.type='bandpass';filt.frequency.value=300+intensity*500;filt.Q.value=0.8;
+        src.connect(filt);filt.connect(gain);gain.connect(ac.destination);
+        src.start();setTimeout(()=>ac.close(),500);
+      }catch(_){}
+    };
+    const getXY=(e)=>{
+      const t=e.touches?e.touches[0]:(e.changedTouches?e.changedTouches[0]:e);
+      return {x:t.clientX-self._canvasRect.left, y:t.clientY-self._canvasRect.top};
+    };
+    const triggerFlap=(dragAngle)=>{
+      const deg=Math.max(10,Math.round(Math.abs(dragAngle)*180/Math.PI));
+      const el=document.getElementById('initialPull');
+      el.value=Math.min(85,deg);
+      const out=document.getElementById('initialPull-val');
+      if(out)out.textContent=el.value+'\u00B0';
+      const p=Physics.readParams();
+      const results=Physics.computeAll(p);
+      R._restInfo=results;
+      playWhoosh(Math.min(1, deg / 60));
+      this.startAnimation(results);
     };
     const start=(e)=>{
       if(!this._weightPos)return;
-      const y=getY(e);
+      if(this._dragging)return; // prevent double-fire (pointer + touch)
+      this._canvasRect=c.getBoundingClientRect();
+      const pos=getXY(e);
       const wp=this._weightPos;
-      const dist=Math.abs(y-wp.y);
-      if(dist<wp.r+50){
-        // Stop animation immediately if flapping — user wants to re-pull
-        if(this.animating){this.stopAnimation();recalc();}
+      const dx=pos.x-wp.x, dy2=pos.y-wp.y;
+      const dist=Math.sqrt(dx*dx+dy2*dy2);
+      const hitRadius=wp.r+50;
+      if(dist<hitRadius){
+        if(this.animating){
+          const curA=this.currentAngle;
+          this._stopAnimationQuiet();
+          this.draw(curA);
+        }
         this._stopBreathing();
         this._dragging=true;
-        this._dragStartY=wp.y;
-        this._dragAngle=0; // reset stale angle from previous drag
+        this._dragStartTime=performance.now();
+        this._dragTouchY=pos.y;
+        this._dragAngle=0;
+        this._hintDismissed=true;
+        localStorage.setItem('wing-lab-hint-seen','1');
         c.style.cursor='grabbing';
-        c.style.touchAction='none'; // prevent scroll during drag
+        c.style.touchAction='none';
+        navigator.vibrate?.(8); // haptic grab confirmation
+        if(e.pointerId!=null){
+          try{c.setPointerCapture(e.pointerId);this._pointerId=e.pointerId;}catch(_){}
+        }
         e.preventDefault();
       }
     };
     const move=(e)=>{
       if(!this._dragging)return;
-      const y=getY(e);
-      const dy=y-this._dragStartY;
-      // Dynamic max pull based on canvas size — works on mobile + desktop
-      const maxPx=Math.max(80, c.getBoundingClientRect().height*0.4);
+      e.preventDefault();
+      const pos=getXY(e);
+      const dy=pos.y-this._dragTouchY;
+      // maxPx: 10% beyond canvas bottom — reachable with pointer capture, allows 85° with slight below-canvas drag
+      const maxPx=Math.max(80, (this.H-this._dragTouchY)*1.1);
       const maxAng=85*Math.PI/180;
-      const pullAng=Math.max(0,Math.min(maxAng,(dy/maxPx)*maxAng));
+      // Sublinear ease: responsive start, builds resistance like pulling against spring
+      const tRaw=Math.max(0,dy/maxPx);
+      const t=Math.min(1,Math.pow(tRaw,0.7));
+      const pullAng=t*maxAng;
       this._dragAngle=pullAng;
       this.currentAngle=pullAng;
       this.draw(pullAng);
-      // Auto-trigger flap when reaching max pull — no need to release!
-      if(pullAng>=maxAng*0.95){
-        this._dragging=false;
-        this._dragEndTime=performance.now();
-        c.style.cursor='grab';
-        c.style.touchAction='pan-y';
-        navigator.vibrate?.([15,30,15]);
-        const deg=Math.round(this._dragAngle*180/Math.PI);
-        const el=document.getElementById('initialPull');
-        el.value=Math.min(85,Math.max(1,deg));
-        const out=document.getElementById('initialPull-val');
-        if(out)out.textContent=el.value+'\u00B0';
-        const p=Physics.readParams();
-        const results=Physics.computeAll(p);
-        R._restInfo=results;
-        this.startAnimation(results);
-        return;
-      }
-      e.preventDefault();
     };
     const end=(e)=>{
       if(!this._dragging)return;
       this._dragging=false;
-      this._dragEndTime=performance.now(); // prevent click from killing animation
+      this._dragEndTime=performance.now();
+      const dragDuration=this._dragEndTime-this._dragStartTime;
       c.style.cursor='grab';
-      c.style.touchAction='pan-y'; // restore scrolling
+      c.style.touchAction='pan-y';
+      if(this._pointerId!=null){
+        try{c.releasePointerCapture(this._pointerId);}catch(_){}
+        this._pointerId=null;
+      }
       navigator.vibrate?.(15);
-      // Any drag > 0.01 rad (~0.6°) triggers animation — no dead zone
-      if(this._dragAngle>0.01){
-        // Set the initial pull slider to match drag angle
-        const deg=Math.round(this._dragAngle*180/Math.PI);
-        const el=document.getElementById('initialPull');
-        el.value=Math.min(85,Math.max(1,deg));
-        const out=document.getElementById('initialPull-val');
-        if(out)out.textContent=el.value+'\u00B0';
-        // Compute physics and start animation (no snap to rest angle!)
-        const p=Physics.readParams();
-        const results=Physics.computeAll(p);
-        R._restInfo=results;
-        this.startAnimation(results);
+      // RULE: ANY drag movement or hold > 120ms → ALWAYS FLAP. Never snap.
+      if(this._dragAngle>0.0005||dragDuration>120){
+        triggerFlap(this._dragAngle);
       } else {
-        // Tap/click without dragging — check for double-tap (full pull) vs single tap (hint)
+        // Pure instant tap — double-tap = full flap, single-tap = mini flap
         const now=performance.now();
         if(this._lastWeightTap&&now-this._lastWeightTap<400){
-          // DOUBLE-TAP: Full pull using initialPull slider value!
           clearTimeout(this._tapHintTimer);
           this._lastWeightTap=0;
-          const p=Physics.readParams();
-          const results=Physics.computeAll(p);
-          if(typeof recalc==='function') recalc();
-          this.startAnimation(results);
-          navigator.vibrate?.([10,50,10]); // distinct vibration pattern for double-tap
+          triggerFlap(0);
+          navigator.vibrate?.([10,50,10]);
         } else {
-          // First tap — wait to see if it becomes a double-tap
           this._lastWeightTap=now;
-          const _ra=this._restInfo?this._restInfo.restAngle:0;this.currentAngle=_ra;this.draw(_ra);
           this._tapHintTimer=setTimeout(()=>{
-            // Single tap confirmed — pulse drag hint to teach user to PULL down
-            const hint=document.getElementById('drag-hint');
-            if(hint&&!hint.classList.contains('hide')){
-              hint.style.animation='none';hint.offsetHeight;
-              hint.style.animation='hintPulse 0.5s ease-in-out 3';
-            }
-            setTimeout(()=>{if(!this.animating&&!this._dragging)this._startBreathing();},500);
+            triggerFlap(0); // even single tap = mini flap (10°), never nothing
           },350);
         }
       }
     };
-    // Handle touchcancel (e.g., system gesture, notification)
-    c.addEventListener('touchcancel',(e)=>{
+    // Pointer events — unified mouse+touch with capture support
+    c.addEventListener('pointerdown',start,{passive:false});
+    c.addEventListener('pointermove',move,{passive:false});
+    c.addEventListener('pointerup',end,{passive:false});
+    c.addEventListener('pointercancel',(e)=>{
       if(!this._dragging)return;
       this._dragging=false;
       c.style.cursor='grab';
       c.style.touchAction='pan-y';
-      const _ra=this._restInfo?this._restInfo.restAngle:0;this.currentAngle=_ra;this.draw(_ra);
-      setTimeout(()=>{if(!this.animating&&!this._dragging)this._startBreathing();},500);
+      this._pointerId=null;
+      triggerFlap(this._dragAngle); // ALWAYS flap on cancel
     });
-    // Hover cursor
+    // Touch fallback for browsers without pointer events
+    c.addEventListener('touchstart',(e)=>{if(window.PointerEvent)return;start(e);},{passive:false});
+    c.addEventListener('touchmove',(e)=>{if(window.PointerEvent)return;move(e);},{passive:false});
+    c.addEventListener('touchend',(e)=>{if(window.PointerEvent)return;end(e);},{passive:false});
+    c.addEventListener('touchcancel',(e)=>{
+      if(window.PointerEvent)return;
+      if(!this._dragging)return;
+      this._dragging=false;
+      c.style.cursor='grab';
+      c.style.touchAction='pan-y';
+      triggerFlap(this._dragAngle);
+    });
+    // Hover cursor — cached rect, matches hit radius
+    let _hoverRect=null;
+    const _cacheHoverRect=()=>{_hoverRect=c.getBoundingClientRect();};
+    window.addEventListener('resize',_cacheHoverRect);
+    _cacheHoverRect();
     c.addEventListener('mousemove',(e)=>{
       if(this._dragging)return;
-      if(!this._weightPos)return;
-      const r=c.getBoundingClientRect();
-      const y=e.clientY-r.top;
-      const dist=Math.abs(y-this._weightPos.y);
-      // Show grab cursor even during animation — user can stop and re-pull
-      c.style.cursor=dist<this._weightPos.r+30?'grab':'default';
+      if(!this._weightPos||!_hoverRect)return;
+      const mx=e.clientX-_hoverRect.left, my=e.clientY-_hoverRect.top;
+      const wp=this._weightPos;
+      const d=Math.sqrt((mx-wp.x)**2+(my-wp.y)**2);
+      c.style.cursor=d<wp.r+50?'grab':'default';
     });
-    c.addEventListener('mousedown',start);
-    c.addEventListener('mousemove',move);
-    c.addEventListener('mouseup',end);
-    c.addEventListener('mouseleave',(e)=>{if(this._dragging)end(e);});
-    c.addEventListener('touchstart',start,{passive:false});
-    c.addEventListener('touchmove',move,{passive:false});
-    c.addEventListener('touchend',end);
   },
   resize() {
     const r=this.canvas.getBoundingClientRect();
@@ -1155,22 +1196,37 @@ const R = {
     const linkagePx = p.linkageR * scaleFactor;
 
     const cx = W / 2;
-    // Layout: ceiling -> bar -> strings -> wings+body -> pull string -> weight
     const ceilingY = 20;
-    const bodyY = H * 0.35; // Move wings down ~35% of canvas
+    const barY = ceilingY + 22; // spreader bar position (fixed to ceiling)
+
+    // === BODY DROP PHYSICS ===
+    // When wings angle up, the body drops — string geometry constraint.
+    // The strings from spreader bar to wing linkage points have fixed length.
+    // As the pivot drops by δ, the linkage points must stay at string length
+    // from the bar, so the wings rotate upward.
+    // Formula: δ(θ) = R·sin(θ) − d₀ + √(d₀² − R²·(cos(θ)−1)²)
+    // where R = linkage radius, d₀ = rest pivot-to-bar distance
+    const bodyY_rest = H * 0.42;
     const bodyH = Math.max(20, Math.min(40, p.bodyMass * 250));
     const bodyW = Math.max(10, Math.min(22, bodyH * 0.5));
-    const pivotY = bodyY + bodyH * 0.35;
+    const pivotY_rest = bodyY_rest + bodyH * 0.35;
+    const d0 = pivotY_rest - barY; // rest string length (bar to pivot)
+    const cosA = Math.cos(angle), sinA = Math.sin(angle);
+    const caDiff = cosA - 1; // always ≤ 0
+    const sqArg = d0 * d0 - linkagePx * linkagePx * caDiff * caDiff;
+    const bodyDrop = (d0 > linkagePx && Math.abs(angle) > 0.005)
+      ? linkagePx * sinA - d0 + Math.sqrt(Math.max(0, sqArg))
+      : 0;
+    const bodyY = bodyY_rest + bodyDrop;
+    const pivotY = pivotY_rest + bodyDrop;
+
     const stringDropPx = Math.max(50, Math.min(180, p.stringLen * scaleFactor));
-    // Weight position responds to wing angle — linkage mechanics:
-    // When wings tilt up, linkage string shortens → weight drops down
-    // When wings return to level, weight rises back up
-    const dragExtra = this._dragging ? (this._dragAngle / (60*Math.PI/180)) * 200 : 0;
-    const _restA = this._restInfo ? this._restInfo.restAngle : 0;
-    const animExtra = (!this._dragging && Math.abs(angle - _restA) > 0.01) ? Math.abs(angle - _restA) * linkagePx * 1.5 : 0;
-    const weightY = bodyY + bodyH + stringDropPx + dragExtra + animExtra;
+    // Lower string is fixed length (inextensible). Weight moves down ONLY because
+    // the body drops (upper string geometry). No artificial stretch.
+    const maxAng = 85 * Math.PI / 180;
+    const weightY = bodyY + bodyH + stringDropPx;
     const _mob = window.innerWidth < 600;
-    const weightR = Math.max(_mob?14:7, Math.min(_mob?22:16, Math.sqrt(p.pullMass * 1000) * 2));
+    const weightR = Math.max(_mob?18:10, Math.min(_mob?24:18, Math.sqrt(p.pullMass * 1000) * 2));
 
     // ===== CEILING (subtle gradient line) =====
     const ceilW = Math.max(wingLenPx * 2 + 40, 120);
@@ -1194,8 +1250,6 @@ const R = {
     const lkRy = lkLy;
 
     // ===== SPREADER BAR + CEILING STRING =====
-    // Bar hangs from ceiling by a single string, positioned between ceiling and wings
-    const barY = ceilingY + 22;
     // Bar width matches the linkage point spread at rest (no angle)
     const barHalfW = linkagePx;
     const barLx = cx - barHalfW;
@@ -1221,10 +1275,10 @@ const R = {
     if(!_mob){ctx.font='bold 9px Inter,system-ui,sans-serif'; ctx.fillStyle='#c9a96e';
     ctx.textAlign='left'; ctx.fillText('SPREADER BAR', barRx + 6, barY + 3);}
 
-    // ===== GHOST WINGS (at rest angle, not flat) =====
+    // ===== GHOST WINGS (at rest angle, at rest pivot position — no body drop) =====
     const ghostAngle=this._restInfo?this._restInfo.restAngle:0;
-    this._wing(ctx,cx,pivotY,wingLenPx,chordPx,ghostAngle,p.taper,true,false);
-    this._wing(ctx,cx,pivotY,wingLenPx,chordPx,ghostAngle,p.taper,true,true);
+    this._wing(ctx,cx,pivotY_rest,wingLenPx,chordPx,ghostAngle,p.taper,true,false);
+    this._wing(ctx,cx,pivotY_rest,wingLenPx,chordPx,ghostAngle,p.taper,true,true);
 
     // ===== WING SHADOW (moves with flap angle) =====
     ctx.save();
@@ -1349,24 +1403,62 @@ const R = {
     ctx.textAlign='left'; ctx.fillText((_imperial?(p.stringLenCm*CM_TO_IN).toFixed(1)+'in':(p.stringLenCm+'cm'))+' drop', cx + 8, (bodyY + bodyH + weightY) / 2);}
 
     // ===== PULL WEIGHT =====
-    ctx.save(); ctx.shadowColor='rgba(154,171,191,0.3)'; ctx.shadowBlur=10;
-    ctx.beginPath(); ctx.arc(cx, weightY, weightR, 0, Math.PI * 2);
-    const wg = ctx.createRadialGradient(cx - 2, weightY - 2, 1, cx, weightY, weightR);
-    wg.addColorStop(0, '#b0c0d4'); wg.addColorStop(1, '#5a6a82');
-    ctx.fillStyle = wg; ctx.fill();
-    ctx.strokeStyle='#c0cfdf'; ctx.lineWidth=2.5; ctx.stroke();
-    ctx.restore();
-    // Label pill background
+    const _isIdle = !this.animating && !this._dragging;
+    // Weight can go off-screen on big pulls — only draw parts that are visible
+    if (weightY - weightR < H) {
+      // Pulsing glow ring when idle — "I'm interactive, grab me!"
+      if (_isIdle) {
+        const pulseT = (Math.sin(performance.now() / 1000) + 1) / 2;
+        const pulseR = weightR + 8 + pulseT * 14;
+        const pulseA = 0.15 + pulseT * 0.35; // stronger: 0.15→0.50
+        ctx.save();
+        ctx.beginPath(); ctx.arc(cx, weightY, pulseR, 0, Math.PI * 2);
+        ctx.strokeStyle = `rgba(232,201,142,${pulseA})`;
+        ctx.lineWidth = 2.5;
+        ctx.setLineDash([5, 4]); ctx.stroke(); ctx.setLineDash([]);
+        ctx.restore();
+      }
+      // Weight breathing scale when idle
+      const drawR = _isIdle ? weightR * (1 + Math.sin(performance.now() / 800) * 0.06) : weightR;
+      ctx.save(); ctx.shadowColor=_isIdle?'rgba(232,201,142,0.4)':'rgba(154,171,191,0.3)'; ctx.shadowBlur=_isIdle?14:10;
+      ctx.beginPath(); ctx.arc(cx, weightY, drawR, 0, Math.PI * 2);
+      const wg = ctx.createRadialGradient(cx - 2, weightY - 2, 1, cx, weightY, drawR);
+      wg.addColorStop(0, '#e8d5a3'); wg.addColorStop(1, '#8b7340'); // gold-tinted weight
+      ctx.fillStyle = wg; ctx.fill();
+      ctx.strokeStyle='#d4b87a'; ctx.lineWidth=2.5; ctx.stroke();
+      ctx.restore();
+    }
+    // "Grab & pull!" hint — drawn on canvas above weight, fades after 6s or first interaction
+    if (_isIdle && !this._hintDismissed && weightY - weightR - 30 > 0 && weightY - weightR < H) {
+      if (!this._hintAppearTime) this._hintAppearTime = performance.now();
+      const hintAge = performance.now() - this._hintAppearTime;
+      const fadeStart = 10000, fadeDur = 2000;
+      let hintAlpha = 1;
+      if (hintAge > fadeStart) hintAlpha = Math.max(0, 1 - (hintAge - fadeStart) / fadeDur);
+      if (hintAlpha > 0) {
+        const throb = 0.7 + 0.3 * Math.sin(performance.now() / 600);
+        ctx.save();
+        ctx.globalAlpha = hintAlpha * throb;
+        ctx.font = 'bold 14px Inter, system-ui, sans-serif';
+        ctx.fillStyle = '#e8c98e';
+        ctx.textAlign = 'center';
+        ctx.fillText('Grab & pull \u2193', cx, weightY - weightR - 16);
+        ctx.restore();
+      }
+    }
+    // Label pill — only draw if fully on-screen
     const lblY = weightY + weightR + 12;
-    const lblW = 80, lblH = 28;
-    ctx.fillStyle='rgba(10,14,26,0.7)'; ctx.beginPath();
-    ctx.roundRect(cx - lblW/2, lblY - 10, lblW, lblH, 6); ctx.fill();
-    ctx.font='bold 10px Inter,system-ui,sans-serif'; ctx.fillStyle='#b0c0d4';
-    ctx.textAlign='center'; ctx.fillText('PULL WEIGHT', cx, lblY + 2);
-    ctx.fillText(_imperial?(p.pullWeightG*G_TO_OZ).toFixed(1)+'oz':(p.pullWeightG+'g'), cx, lblY + 14);
+    if (lblY + 20 < H) {
+      const lblW = 80, lblH = 28;
+      ctx.fillStyle='rgba(10,14,26,0.7)'; ctx.beginPath();
+      ctx.roundRect(cx - lblW/2, lblY - 10, lblW, lblH, 6); ctx.fill();
+      ctx.font='bold 10px Inter,system-ui,sans-serif'; ctx.fillStyle='#b0c0d4';
+      ctx.textAlign='center'; ctx.fillText('PULL WEIGHT', cx, lblY + 2);
+      ctx.fillText(_imperial?(p.pullWeightG*G_TO_OZ).toFixed(1)+'oz':(p.pullWeightG+'g'), cx, lblY + 14);
+    }
 
-    // Store weight position for drag interaction
-    this._weightPos = {x: cx, y: weightY, r: weightR};
+    // Store weight position for drag interaction (clamped to canvas for hit-test)
+    this._weightPos = {x: cx, y: Math.min(weightY, H - 10), r: weightR};
 
     // ===== ANGLE ARC =====
     if (Math.abs(angle) > 0.02) {
@@ -1504,16 +1596,20 @@ const R = {
       }
     }
 
-    // ===== WINGTIP SPARKLES (during animation) =====
-    if (this.animating) {
+    // ===== WINGTIP SPARKLES (during animation — tapers with flap energy) =====
+    if (this.animating && this.simData) {
+      // Intensity based on how far wings are from rest — big flaps = sparkles, near rest = nothing
+      const _rA = this._restInfo ? this._restInfo.restAngle : 0;
+      const energy = Math.abs(angle - _rA) / (maxAng * 0.5); // 0-1+ normalized intensity
+      const spawnChance = Math.min(1, energy * 0.8); // 0 near rest, ~0.8 at big angles
       const sCols = ['#FFCD00','#FFD700','#e8c98e','#00843D','#0092BC','#fff'];
-      for (let s = 0; s < 2; s++) {
+      if (Math.random() < spawnChance && this._sparkles.length < 80) {
         [{x:tipLx,y:tipLy},{x:tipRx,y:tipRy}].forEach(tp => {
           this._sparkles.push({
             x:tp.x+(Math.random()-0.5)*6, y:tp.y+(Math.random()-0.5)*6,
-            vx:(Math.random()-0.5)*1.5, vy:Math.random()*1.2+0.3,
-            life:1, decay:0.02+Math.random()*0.03,
-            size:1.5+Math.random()*2.5,
+            vx:(Math.random()-0.5)*1.2, vy:Math.random()*0.8+0.2,
+            life:1, decay:0.03+Math.random()*0.04,
+            size:1+Math.random()*1.8,
             color:sCols[Math.floor(Math.random()*sCols.length)]
           });
         });
@@ -1781,17 +1877,28 @@ const R = {
   _stopBreathing() {
     if (this._breathId) { cancelAnimationFrame(this._breathId); this._breathId = null; }
   },
+  // Stop animation without drawing — used by drag start to avoid visual flash
+  _stopAnimationQuiet() {
+    this.animating=false;
+    if(this.animId){cancelAnimationFrame(this.animId);this.animId=null;}
+  },
   startAnimation(results) {
     this._stopBreathing();
-    this.stopAnimation();
+    // Cancel any running animation without drawing (no flash to restAngle)
+    this._stopAnimationQuiet();
     this._sparkles = [];
     const dur=Math.min(Math.max(results.decayTime*4,10),60);
     this.simDt=1/120; this.simData=Physics.simulate(results,dur,this.simDt);
     this.flapInfo=Physics.analyzeFlaps(this.simData,this.simDt,results.params.halfSpan);
     this.simIndex=0; this.animating=true; this._r=results;
     this.animStartTime=performance.now();
+    // Draw first frame immediately (no waiting for RAF) — seamless transition from drag
+    if(this.simData&&this.simData.length>0){
+      this.currentAngle=this.simData[0];
+      this.draw(this.currentAngle);
+    }
     const go=(now)=>{if(!this.animating)return;
-      if(typeof _canvasVisible!=='undefined'&&!_canvasVisible){this.animId=requestAnimationFrame(go);return;} // skip draw when offscreen
+      if(typeof _canvasVisible!=='undefined'&&!_canvasVisible){this.animId=requestAnimationFrame(go);return;}
       const elapsed=(now-this.animStartTime)/1000;
       this.simIndex=Math.min(Math.floor(elapsed/this.simDt),this.simData.length-1);
       if(this.simIndex>=this.simData.length-1){this.stopAnimation();return;}
@@ -1803,7 +1910,6 @@ const R = {
     this.animating=false;if(this.animId){cancelAnimationFrame(this.animId);this.animId=null;}
     this.currentAngle=this._restInfo?this._restInfo.restAngle:0;
     this.draw(this.currentAngle);
-    // Start gentle breathing after animation ends
     setTimeout(() => { if (!this.animating && !this._dragging) this._startBreathing(); }, 500);
   }
 };
@@ -2191,21 +2297,28 @@ document.addEventListener('DOMContentLoaded', () => {
     });
   });
 
-  // Tap on canvas: stop animation if running, otherwise do nothing (drag to flap!)
+  // Tap on canvas: stop animation if running — but never snap, always animate to rest
   document.getElementById('wingCanvas').addEventListener('click',(e)=>{
-    // Don't trigger if dragging or just finished dragging (click fires after mouseup!)
     if(R._dragging) return;
     if(performance.now()-R._dragEndTime<300) return;
-    // Only stop — never start. User must DRAG the weight to flap.
-    if(R.animating){R.stopAnimation();recalc();}
+    if(R.animating){
+      // Grab current angle, stop animation, then re-animate from current angle to rest
+      const curAngle=R.currentAngle;
+      R._stopAnimationQuiet();
+      R.draw(curAngle); // hold at current angle, no flash to rest
+      // Re-animate from current position — wings flap down to rest, never snap
+      const deg=Math.max(5,Math.round(Math.abs(curAngle)*180/Math.PI));
+      const el=document.getElementById('initialPull');
+      el.value=Math.min(85,deg);
+      const out=document.getElementById('initialPull-val');
+      if(out)out.textContent=el.value+'\u00B0';
+      const p=Physics.readParams();
+      const results=Physics.computeAll(p);
+      R._restInfo=results;
+      R.startAnimation(results);
+    }
   });
-  // Hide hint after first interaction (permanently)
-  const _dragHint=document.getElementById('drag-hint');
-  let _hintDismissed=false;
-  const _origStop=R.stopAnimation.bind(R);
-  const _origStart=R.startAnimation.bind(R);
-  R.startAnimation=function(r){_origStart(r);if(_dragHint){_dragHint.style.opacity='0';_hintDismissed=true;}};
-  R.stopAnimation=function(){_origStop();if(_dragHint&&!_hintDismissed)_dragHint.style.opacity='1';};
+  // Hint is now canvas-drawn (in draw loop) with localStorage dismissal — no monkey-patching needed
 
   // ===== AUTO-CALCULATE (Grid Search Optimizer) =====
   const WING_SHAPES = {
@@ -2659,6 +2772,20 @@ document.addEventListener('DOMContentLoaded', () => {
     if (medBtn) medBtn.classList.add('active');
   }
   recalc();
+
+  // ===== ATTRACT MODE: gentle demo flap on load =====
+  setTimeout(() => {
+    if (!R.animating && !R._dragging) {
+      const el = document.getElementById('initialPull');
+      el.value = 20;
+      const out = document.getElementById('initialPull-val');
+      if (out) out.textContent = '20\u00B0';
+      const p = Physics.readParams();
+      const results = Physics.computeAll(p);
+      R._restInfo = results;
+      R.startAnimation(results);
+    }
+  }, 1800);
 
   // ===== PHOTO UPLOAD + CLAUDE VISION =====
   (function initPhotoUpload() {

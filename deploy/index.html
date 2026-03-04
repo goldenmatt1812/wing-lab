@@ -4,7 +4,7 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <meta name="theme-color" content="#00843D">
-  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="mobile-web-app-capable" content="yes">
   <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
   <link rel="manifest" href="/manifest.json">
   <link rel="icon" type="image/svg+xml" href="/icon-192.svg">
@@ -52,7 +52,7 @@ header h1{font-size:2.8rem;font-weight:800;letter-spacing:-.03em;background:line
 main{max-width:1200px;margin:0 auto;padding:0 1rem 3rem}
 
 #wing-viz-section{position:relative;margin:1.5rem 0;border-radius:16px;overflow:hidden;border:1px solid var(--border);background:radial-gradient(ellipse at 50% 20%,#131b2e 0%,#090d18 70%)}
-#wingCanvas{display:block;width:100%;height:640px;touch-action:pan-y}
+#wingCanvas{display:block;width:100%;height:640px;touch-action:none;-webkit-user-select:none;user-select:none}
 #anim-controls{position:absolute;bottom:14px;left:50%;transform:translateX(-50%);display:flex;gap:8px}
 #anim-controls button{background:rgba(17,24,39,0.92);border:1px solid var(--border);color:var(--accent);padding:8px 20px;border-radius:10px;font-size:.85rem;font-weight:600;cursor:pointer;transition:background .2s,border-color .2s}
 #anim-controls button:hover{background:rgba(56,189,248,0.15);border-color:var(--accent);transform:translateY(-1px)}
@@ -660,9 +660,8 @@ const Physics = {
     const {halfSpan:L,wingMass:m,tipMass:mt,taper:t}=p;
     const tf=(1+3*t)/(6*(1+t));
     const Iw=m*L*L*tf, It=mt*L*L;
-    // Pull weight swings on linkage arm — contributes to moment of inertia
-    const Ip=p.pullMass*p.linkageR*p.linkageR;
-    return {I_total:2*(Iw+It)+Ip,I_oneWing:Iw,I_oneTip:It,I_pull:Ip,taperFactor:tf};
+    // Pull weight inertia handled by 2-DOF pendulum coupling (not added to wing I)
+    return {I_total:2*(Iw+It),I_oneWing:Iw,I_oneTip:It,taperFactor:tf};
   },
   calcSpring(p) {
     const kg=p.pullMass*G*p.linkageR; // pull weight pendulum stiffness (linearized)
@@ -680,10 +679,11 @@ const Physics = {
   },
   calcDamping(p,I,k) {
     const cc=2*Math.sqrt(I*k);
-    let z=0.02+(p.frictionPct/100)*1.98;
+    let z=0.02+(p.frictionPct/100)*0.43;
     // Pivot type modifies damping character
-    if(p.pivotType==='living') z*=0.6; // living hinge has less friction but adds spring
+    if(p.pivotType==='living') z*=0.7; // living hinge has less friction but adds spring
     else if(p.pivotType==='friction') z*=1.4; // friction hinge = more damping
+    z=Math.min(z,0.65); // hard cap: never overdamped
     return {c:z*cc,zeta:z,c_crit:cc,pivotType:p.pivotType};
   },
   computeAll(p) {
@@ -740,43 +740,84 @@ const Physics = {
     const Cd=1.2; // flat plate drag coefficient
     const rCop=p.halfSpan*(1+2*p.taper)/(3*(1+p.taper)); // center of pressure
     const airDragCoeff=0.5*rho*Cd*wingArea*rCop; // multiply by v^2 for torque per wing
+    // Weight pendulum natural frequency (for 2-DOF coupling)
+    const omega_p=Math.sqrt(G/p.stringLen);
+    const freq_p=omega_p/(2*Math.PI);
+    const period_p=freq_p>0.001?1/freq_p:Infinity;
+    const couplingRatio=omega_p>0.001?omega_p*omega_p/(omega_p*omega_p+omega_n*omega_n):0;
     return {params:p,inertia,spring,damping,I,k,omega_n,freq,period,omega_d,freq_d,period_d,zeta,
       decayRate:dr,decayTime:dt_,numFlaps:nf,maxTorque:mt,sweepDeg:p.initialPullDeg,
       totalMass:p.bodyMass+2*p.wingMass+2*p.tipMass+p.pullMass,restAngle,balanceRatio,staticImbalance,
-      tauNet,wingArea,airDragCoeff};
+      tauNet,wingArea,airDragCoeff,omega_p,freq_p,period_p,couplingRatio};
   },
+  /**
+   * 2-DOF Simulation: wing angle θ + weight pendulum angle φ
+   *
+   * DOF 1 — Wing (θ): driven by pull weight position, gravity bias, spring, damping
+   * DOF 2 — Weight pendulum (φ): swings on string, coupled to wing via linkage
+   *
+   * String length controls coupling: short string → weight tracks wing (strong),
+   * long string → weight lags behind (weaker, delayed restoring force).
+   */
   simulate(r,dur,dt) {
     const {params:p,I,damping,spring,tauNet,airDragCoeff:adc}=r, c=damping.c;
-    const ks=spring.k_spring; // material spring only (no more wing gravity baked in)
+    const ks=spring.k_spring;
     const kEl=spring.k_elastic||0;
     const isFrictionHinge=p.pivotType==='friction';
-    const coulombTorque=isFrictionHinge?c*0.15:0;
+    const coulombTorque=isFrictionHinge?c*0.05:0;
+    // Weight pendulum parameters
+    const s=p.stringLen;
+    const IpEff=p.pullMass*s*s+p.bodyMass*s*s*0.1; // body contributes ~10%
+    const omega_pend=Math.sqrt(G/s);
+    const cp=2*0.25*omega_pend*IpEff; // pendulum damping ζ_p=0.25 (settles in ~4 cycles)
+    // Center of pressure (correct lever arm for air drag velocity)
+    const rCop=p.halfSpan*(1+2*p.taper)/(3*(1+p.taper));
     const n=Math.ceil(dur/dt), d=new Float64Array(n);
     let th=p.initialPull, thd=0;
-    const a=(t,td)=>{
-      // Pull weight pendulum (nonlinear restoring force, equilibrium at θ=0)
-      const tg=-p.pullMass*G*p.linkageR*Math.sin(t);
+    // Weight starts displaced: arc-length geometry (arcsin, not linear approx)
+    let phi=Math.asin(Math.min(1,p.linkageR*Math.sin(p.initialPull)/s)), phid=0;
+    // Wing acceleration (DOF 1)
+    const aWing=(t,td,ph)=>{
+      // Pull weight torque: depends on weight's ACTUAL position (φ), not wing angle
+      const tg=-p.pullMass*G*p.linkageR*Math.sin(ph);
       // Net gravitational bias: (string tension UP − wing gravity DOWN) × cos(θ)
-      // This is the PHYSICAL torque from the tug-of-war between body weight
-      // lifting the wings vs wing mass pulling them down. cos(θ) is correct
-      // because the effective moment arm decreases as wings tilt.
-      // At θ_rest: tg + tGrav = 0 (equilibrium emerges naturally from physics)
       const tGrav=tauNet*Math.cos(t);
       const tEl=-kEl*t;
-      const tCf=coulombTorque>0?-coulombTorque*Math.sign(td||0.0001):0;
-      // Air drag: opposes angular velocity, proportional to v^2
-      const v=td*p.halfSpan*0.5;
+      // Smooth sign (no discontinuity at td=0 — avoids torque kinks at each reversal)
+      const tCf=coulombTorque>0?-coulombTorque*(td/(Math.abs(td)+0.001)):0;
+      // Air drag: velocity at center of pressure (rCop), not halfSpan/2
+      const v=td*rCop;
       const tAir=-2*(adc||0)*v*Math.abs(v);
       return (tg+tGrav+tEl+tCf+tAir-ks*t-c*td)/I;
     };
+    // Weight pendulum acceleration (DOF 2)
+    const aWeight=(t,td,ph,pd)=>{
+      const restore=-G/s*Math.sin(ph);
+      const drive=(p.linkageR/s)*G*Math.sin(t-ph);
+      const damp=-cp*pd/IpEff;
+      return restore+drive+damp;
+    };
+    // RK4 with 4 state variables
     for(let i=0;i<n;i++){
       d[i]=th;
-      const k1v=a(th,thd),k1x=thd;
-      const k2v=a(th+.5*dt*k1x,thd+.5*dt*k1v),k2x=thd+.5*dt*k1v;
-      const k3v=a(th+.5*dt*k2x,thd+.5*dt*k2v),k3x=thd+.5*dt*k2v;
-      const k4v=a(th+dt*k3x,thd+dt*k3v),k4x=thd+dt*k3v;
-      th+=(dt/6)*(k1x+2*k2x+2*k3x+k4x);
-      thd+=(dt/6)*(k1v+2*k2v+2*k3v+k4v);
+      const k1_thd=thd, k1_tha=aWing(th,thd,phi);
+      const k1_phd=phid, k1_pha=aWeight(th,thd,phi,phid);
+      const th2=th+.5*dt*k1_thd, thd2=thd+.5*dt*k1_tha;
+      const ph2=phi+.5*dt*k1_phd, phd2=phid+.5*dt*k1_pha;
+      const k2_thd=thd2, k2_tha=aWing(th2,thd2,ph2);
+      const k2_phd=phd2, k2_pha=aWeight(th2,thd2,ph2,phd2);
+      const th3=th+.5*dt*k2_thd, thd3=thd+.5*dt*k2_tha;
+      const ph3=phi+.5*dt*k2_phd, phd3=phid+.5*dt*k2_pha;
+      const k3_thd=thd3, k3_tha=aWing(th3,thd3,ph3);
+      const k3_phd=phd3, k3_pha=aWeight(th3,thd3,ph3,phd3);
+      const th4=th+dt*k3_thd, thd4=thd+dt*k3_tha;
+      const ph4=phi+dt*k3_phd, phd4=phid+dt*k3_pha;
+      const k4_thd=thd4, k4_tha=aWing(th4,thd4,ph4);
+      const k4_phd=phd4, k4_pha=aWeight(th4,thd4,ph4,phd4);
+      th+=(dt/6)*(k1_thd+2*k2_thd+2*k3_thd+k4_thd);
+      thd+=(dt/6)*(k1_tha+2*k2_tha+2*k3_tha+k4_tha);
+      phi+=(dt/6)*(k1_phd+2*k2_phd+2*k3_phd+k4_phd);
+      phid+=(dt/6)*(k1_pha+2*k2_pha+2*k3_pha+k4_pha);
     }
     return d;
   },
@@ -974,7 +1015,7 @@ const R = {
   W:0,H:0, // cached canvas dimensions (updated on resize only)
   simData:null,simIndex:0,animating:false,animId:null,simDt:1/120,animStartTime:0,
   currentAngle:0,_lp:null,_r:null,_weightPos:null,
-  _dragging:false,_dragStartY:0,_dragAngle:0,_dragEndTime:0,_lastWeightTap:0,_tapHintTimer:null,
+  _dragging:false,_dragTouchY:0,_dragAngle:0,_dragEndTime:0,_dragStartTime:0,_lastWeightTap:0,_tapHintTimer:null,_canvasRect:null,_hintDismissed:false,_pointerId:null,
 
   init() {
     this.canvas=document.getElementById('wingCanvas');
@@ -990,134 +1031,146 @@ const R = {
   },
 
   _initDrag() {
-    const c=this.canvas;
-    const getY=(e)=>{
-      const r=c.getBoundingClientRect();
-      const t=e.touches?e.touches[0]:e;
-      return t.clientY-r.top;
+    const c=this.canvas, self=this;
+    const playWhoosh=(intensity)=>{
+      try{
+        const ac=new(window.AudioContext||window.webkitAudioContext)();
+        const buf=ac.createBuffer(1,ac.sampleRate*0.15,ac.sampleRate);
+        const d=buf.getChannelData(0);
+        for(let i=0;i<d.length;i++)d[i]=(Math.random()*2-1)*Math.exp(-i/(d.length*0.3));
+        const src=ac.createBufferSource();src.buffer=buf;
+        const gain=ac.createGain();gain.gain.value=0.06*intensity;
+        const filt=ac.createBiquadFilter();filt.type='bandpass';filt.frequency.value=300+intensity*500;filt.Q.value=0.8;
+        src.connect(filt);filt.connect(gain);gain.connect(ac.destination);
+        src.start();setTimeout(()=>ac.close(),500);
+      }catch(_){}
+    };
+    const getXY=(e)=>{
+      const t=e.touches?e.touches[0]:(e.changedTouches?e.changedTouches[0]:e);
+      return {x:t.clientX-self._canvasRect.left, y:t.clientY-self._canvasRect.top};
+    };
+    const triggerFlap=(dragAngle)=>{
+      const deg=Math.max(10,Math.round(Math.abs(dragAngle)*180/Math.PI));
+      const el=document.getElementById('initialPull');
+      el.value=Math.min(85,deg);
+      const out=document.getElementById('initialPull-val');
+      if(out)out.textContent=el.value+'\u00B0';
+      const p=Physics.readParams();
+      const results=Physics.computeAll(p);
+      R._restInfo=results;
+      playWhoosh(Math.min(1, deg / 60));
+      this.startAnimation(results);
     };
     const start=(e)=>{
       if(!this._weightPos)return;
-      const y=getY(e);
+      if(this._dragging)return; // prevent double-fire (pointer + touch)
+      this._canvasRect=c.getBoundingClientRect();
+      const pos=getXY(e);
       const wp=this._weightPos;
-      const dist=Math.abs(y-wp.y);
-      if(dist<wp.r+50){
-        // Stop animation immediately if flapping — user wants to re-pull
-        if(this.animating){this.stopAnimation();recalc();}
+      const dx=pos.x-wp.x, dy2=pos.y-wp.y;
+      const dist=Math.sqrt(dx*dx+dy2*dy2);
+      const hitRadius=wp.r+50;
+      if(dist<hitRadius){
+        if(this.animating){
+          const curA=this.currentAngle;
+          this._stopAnimationQuiet();
+          this.draw(curA);
+        }
         this._stopBreathing();
         this._dragging=true;
-        this._dragStartY=wp.y;
-        this._dragAngle=0; // reset stale angle from previous drag
+        this._dragStartTime=performance.now();
+        this._dragTouchY=pos.y;
+        this._dragAngle=0;
+        this._hintDismissed=true;
         c.style.cursor='grabbing';
-        c.style.touchAction='none'; // prevent scroll during drag
+        c.style.touchAction='none';
+        navigator.vibrate?.(8);
+        if(e.pointerId!=null){
+          try{c.setPointerCapture(e.pointerId);this._pointerId=e.pointerId;}catch(_){}
+        }
         e.preventDefault();
       }
     };
     const move=(e)=>{
       if(!this._dragging)return;
-      const y=getY(e);
-      const dy=y-this._dragStartY;
-      // Dynamic max pull based on canvas size — works on mobile + desktop
-      const maxPx=Math.max(80, c.getBoundingClientRect().height*0.4);
+      e.preventDefault();
+      const pos=getXY(e);
+      const dy=pos.y-this._dragTouchY;
+      // maxPx: 10% beyond canvas bottom — reachable with pointer capture
+      const maxPx=Math.max(80, (this.H-this._dragTouchY)*1.1);
       const maxAng=85*Math.PI/180;
-      const pullAng=Math.max(0,Math.min(maxAng,(dy/maxPx)*maxAng));
+      // Sublinear ease: responsive start, builds resistance like pulling against spring
+      const tRaw=Math.max(0,dy/maxPx);
+      const t=Math.min(1,Math.pow(tRaw,0.7));
+      const pullAng=t*maxAng;
       this._dragAngle=pullAng;
       this.currentAngle=pullAng;
       this.draw(pullAng);
-      // Auto-trigger flap when reaching max pull — no need to release!
-      if(pullAng>=maxAng*0.95){
-        this._dragging=false;
-        this._dragEndTime=performance.now();
-        c.style.cursor='grab';
-        c.style.touchAction='pan-y';
-        navigator.vibrate?.([15,30,15]);
-        const deg=Math.round(this._dragAngle*180/Math.PI);
-        const el=document.getElementById('initialPull');
-        el.value=Math.min(85,Math.max(1,deg));
-        const out=document.getElementById('initialPull-val');
-        if(out)out.textContent=el.value+'\u00B0';
-        const p=Physics.readParams();
-        const results=Physics.computeAll(p);
-        R._restInfo=results;
-        this.startAnimation(results);
-        return;
-      }
-      e.preventDefault();
     };
     const end=(e)=>{
       if(!this._dragging)return;
       this._dragging=false;
-      this._dragEndTime=performance.now(); // prevent click from killing animation
+      this._dragEndTime=performance.now();
+      const dragDuration=this._dragEndTime-this._dragStartTime;
       c.style.cursor='grab';
-      c.style.touchAction='pan-y'; // restore scrolling
+      c.style.touchAction='pan-y';
+      if(this._pointerId!=null){
+        try{c.releasePointerCapture(this._pointerId);}catch(_){}
+        this._pointerId=null;
+      }
       navigator.vibrate?.(15);
-      // Any drag > 0.01 rad (~0.6°) triggers animation — no dead zone
-      if(this._dragAngle>0.01){
-        // Set the initial pull slider to match drag angle
-        const deg=Math.round(this._dragAngle*180/Math.PI);
-        const el=document.getElementById('initialPull');
-        el.value=Math.min(85,Math.max(1,deg));
-        const out=document.getElementById('initialPull-val');
-        if(out)out.textContent=el.value+'\u00B0';
-        // Compute physics and start animation (no snap to rest angle!)
-        const p=Physics.readParams();
-        const results=Physics.computeAll(p);
-        R._restInfo=results;
-        this.startAnimation(results);
+      // RULE: ANY drag movement or hold > 120ms → ALWAYS FLAP. Never snap.
+      if(this._dragAngle>0.0005||dragDuration>120){
+        triggerFlap(this._dragAngle);
       } else {
-        // Tap/click without dragging — check for double-tap (full pull) vs single tap (hint)
+        // Pure instant tap — double-tap = full flap, single-tap = mini flap
         const now=performance.now();
         if(this._lastWeightTap&&now-this._lastWeightTap<400){
-          // DOUBLE-TAP: Full pull using initialPull slider value!
           clearTimeout(this._tapHintTimer);
           this._lastWeightTap=0;
-          const p=Physics.readParams();
-          const results=Physics.computeAll(p);
-          if(typeof recalc==='function') recalc();
-          this.startAnimation(results);
-          navigator.vibrate?.([10,50,10]); // distinct vibration pattern for double-tap
+          triggerFlap(0);
+          navigator.vibrate?.([10,50,10]);
         } else {
-          // First tap — wait to see if it becomes a double-tap
           this._lastWeightTap=now;
-          const _ra=this._restInfo?this._restInfo.restAngle:0;this.currentAngle=_ra;this.draw(_ra);
           this._tapHintTimer=setTimeout(()=>{
-            // Single tap confirmed — pulse drag hint to teach user to PULL down
-            const hint=document.getElementById('drag-hint');
-            if(hint&&!hint.classList.contains('hide')){
-              hint.style.animation='none';hint.offsetHeight;
-              hint.style.animation='hintPulse 0.5s ease-in-out 3';
-            }
-            setTimeout(()=>{if(!this.animating&&!this._dragging)this._startBreathing();},500);
+            triggerFlap(0); // even single tap = mini flap (10°), never nothing
           },350);
         }
       }
     };
-    // Handle touchcancel (e.g., system gesture, notification)
-    c.addEventListener('touchcancel',(e)=>{
+    // Pointer events — unified mouse+touch with capture support
+    c.addEventListener('pointerdown',start,{passive:false});
+    c.addEventListener('pointermove',move,{passive:false});
+    c.addEventListener('pointerup',end,{passive:false});
+    c.addEventListener('pointercancel',(e)=>{
       if(!this._dragging)return;
       this._dragging=false;
       c.style.cursor='grab';
       c.style.touchAction='pan-y';
-      const _ra=this._restInfo?this._restInfo.restAngle:0;this.currentAngle=_ra;this.draw(_ra);
-      setTimeout(()=>{if(!this.animating&&!this._dragging)this._startBreathing();},500);
+      this._pointerId=null;
+      triggerFlap(this._dragAngle); // ALWAYS flap on cancel
+    });
+    // Touch fallback for browsers without pointer events
+    c.addEventListener('touchstart',(e)=>{if(window.PointerEvent)return;start(e);},{passive:false});
+    c.addEventListener('touchmove',(e)=>{if(window.PointerEvent)return;move(e);},{passive:false});
+    c.addEventListener('touchend',(e)=>{if(window.PointerEvent)return;end(e);},{passive:false});
+    c.addEventListener('touchcancel',(e)=>{
+      if(window.PointerEvent)return;
+      if(!this._dragging)return;
+      this._dragging=false;
+      c.style.cursor='grab';
+      c.style.touchAction='pan-y';
+      triggerFlap(this._dragAngle);
     });
     // Hover cursor
-    c.addEventListener('mousemove',(e)=>{
+    c.addEventListener('pointermove',(e)=>{
       if(this._dragging)return;
       if(!this._weightPos)return;
-      const r=c.getBoundingClientRect();
-      const y=e.clientY-r.top;
+      if(!this._canvasRect)this._canvasRect=c.getBoundingClientRect();
+      const y=e.clientY-this._canvasRect.top;
       const dist=Math.abs(y-this._weightPos.y);
-      // Show grab cursor even during animation — user can stop and re-pull
       c.style.cursor=dist<this._weightPos.r+30?'grab':'default';
     });
-    c.addEventListener('mousedown',start);
-    c.addEventListener('mousemove',move);
-    c.addEventListener('mouseup',end);
-    c.addEventListener('mouseleave',(e)=>{if(this._dragging)end(e);});
-    c.addEventListener('touchstart',start,{passive:false});
-    c.addEventListener('touchmove',move,{passive:false});
-    c.addEventListener('touchend',end);
   },
   resize() {
     const r=this.canvas.getBoundingClientRect();
@@ -1157,20 +1210,31 @@ const R = {
     const cx = W / 2;
     // Layout: ceiling -> bar -> strings -> wings+body -> pull string -> weight
     const ceilingY = 20;
-    const bodyY = H * 0.35; // Move wings down ~35% of canvas
+    const barY = ceilingY + 22;
     const bodyH = Math.max(20, Math.min(40, p.bodyMass * 250));
     const bodyW = Math.max(10, Math.min(22, bodyH * 0.5));
-    const pivotY = bodyY + bodyH * 0.35;
+    // Body drop: strings from bar to wing pivots have FIXED length.
+    // When wings angle up by θ, body MUST drop to maintain string constraint.
+    // δ(θ) = R·sin(θ) − d₀ + √(d₀² − R²·(cos(θ)−1)²)
+    const bodyY_rest = H * 0.35;
+    const pivotY_rest = bodyY_rest + bodyH * 0.35;
+    const d0 = pivotY_rest - barY; // rest string length (bar to pivot)
+    const cosA = Math.cos(angle), sinA = Math.sin(angle);
+    const caDiff = cosA - 1; // always ≤ 0
+    const sqArg = d0 * d0 - linkagePx * linkagePx * caDiff * caDiff;
+    // Smooth blend avoids snap-discontinuity at small angles during settling
+    const rawDrop = d0 > linkagePx
+      ? linkagePx * sinA - d0 + Math.sqrt(Math.max(0, sqArg))
+      : 0;
+    const bodyDrop = rawDrop * Math.min(1, Math.abs(angle) / 0.01);
+    const bodyY = bodyY_rest + bodyDrop;
+    const pivotY = pivotY_rest + bodyDrop;
     const stringDropPx = Math.max(50, Math.min(180, p.stringLen * scaleFactor));
-    // Weight position responds to wing angle — linkage mechanics:
-    // When wings tilt up, linkage string shortens → weight drops down
-    // When wings return to level, weight rises back up
-    const dragExtra = this._dragging ? (this._dragAngle / (60*Math.PI/180)) * 200 : 0;
-    const _restA = this._restInfo ? this._restInfo.restAngle : 0;
-    const animExtra = (!this._dragging && Math.abs(angle - _restA) > 0.01) ? Math.abs(angle - _restA) * linkagePx * 1.5 : 0;
-    const weightY = bodyY + bodyH + stringDropPx + dragExtra + animExtra;
+    // Lower string is fixed length (inextensible). Weight moves down ONLY
+    // because the body drops (upper string geometry). No artificial stretch.
+    const weightY = bodyY + bodyH + stringDropPx;
     const _mob = window.innerWidth < 600;
-    const weightR = Math.max(_mob?14:7, Math.min(_mob?22:16, Math.sqrt(p.pullMass * 1000) * 2));
+    const weightR = Math.max(_mob?18:10, Math.min(_mob?24:18, Math.sqrt(p.pullMass * 1000) * 2));
 
     // ===== CEILING (subtle gradient line) =====
     const ceilW = Math.max(wingLenPx * 2 + 40, 120);
@@ -1194,8 +1258,7 @@ const R = {
     const lkRy = lkLy;
 
     // ===== SPREADER BAR + CEILING STRING =====
-    // Bar hangs from ceiling by a single string, positioned between ceiling and wings
-    const barY = ceilingY + 22;
+    // barY already defined above (body drop section)
     // Bar width matches the linkage point spread at rest (no angle)
     const barHalfW = linkagePx;
     const barLx = cx - barHalfW;
@@ -1221,10 +1284,10 @@ const R = {
     if(!_mob){ctx.font='bold 9px Inter,system-ui,sans-serif'; ctx.fillStyle='#c9a96e';
     ctx.textAlign='left'; ctx.fillText('SPREADER BAR', barRx + 6, barY + 3);}
 
-    // ===== GHOST WINGS (at rest angle, not flat) =====
+    // ===== GHOST WINGS (at rest angle, at rest pivot position — no body drop) =====
     const ghostAngle=this._restInfo?this._restInfo.restAngle:0;
-    this._wing(ctx,cx,pivotY,wingLenPx,chordPx,ghostAngle,p.taper,true,false);
-    this._wing(ctx,cx,pivotY,wingLenPx,chordPx,ghostAngle,p.taper,true,true);
+    this._wing(ctx,cx,pivotY_rest,wingLenPx,chordPx,ghostAngle,p.taper,true,false);
+    this._wing(ctx,cx,pivotY_rest,wingLenPx,chordPx,ghostAngle,p.taper,true,true);
 
     // ===== WING SHADOW (moves with flap angle) =====
     ctx.save();
@@ -1619,10 +1682,10 @@ const R = {
 
       // ===== TRACER DOT (synced to wing animation) =====
       if (this.animating && this.simIndex < sd.length) {
-        const elapsed = this.simIndex * sDt;
+        const elapsed = this._animElapsed || (this.simIndex * sDt);
         if (elapsed <= showDur) {
           const dotX = toX2(elapsed);
-          const dotY = toY2(sd[this.simIndex]);
+          const dotY = toY2(this.currentAngle);
 
           // Vertical scan line (subtle)
           ctx.beginPath(); ctx.moveTo(dotX, plotY + 6); ctx.lineTo(dotX, plotY + plotH - 6);
@@ -1783,21 +1846,35 @@ const R = {
   },
   startAnimation(results) {
     this._stopBreathing();
-    this.stopAnimation();
+    this._stopAnimationQuiet(); // avoid flash-to-rest (don't call full stopAnimation)
     this._sparkles = [];
     const dur=Math.min(Math.max(results.decayTime*4,10),60);
     this.simDt=1/120; this.simData=Physics.simulate(results,dur,this.simDt);
     this.flapInfo=Physics.analyzeFlaps(this.simData,this.simDt,results.params.halfSpan);
     this.simIndex=0; this.animating=true; this._r=results;
+    // Draw first frame immediately (no blank gap before RAF fires)
+    if(this.simData&&this.simData.length>0){this.currentAngle=this.simData[0];this.draw(this.currentAngle);}
     this.animStartTime=performance.now();
     const go=(now)=>{if(!this.animating)return;
       if(typeof _canvasVisible!=='undefined'&&!_canvasVisible){this.animId=requestAnimationFrame(go);return;} // skip draw when offscreen
-      const elapsed=(now-this.animStartTime)/1000;
-      this.simIndex=Math.min(Math.floor(elapsed/this.simDt),this.simData.length-1);
-      if(this.simIndex>=this.simData.length-1){this.stopAnimation();return;}
-      this.currentAngle=this.simData[this.simIndex];this.draw(this.currentAngle);
+      const elapsed=Math.max(0,(now-this.animStartTime)/1000);
+      const rawIdx=elapsed/this.simDt;
+      const idx=Math.max(0,Math.min(Math.floor(rawIdx),this.simData.length-2));
+      if(idx>=this.simData.length-2){this.stopAnimation();return;}
+      this.simIndex=idx;
+      const frac=Math.max(0,Math.min(1,rawIdx-idx));
+      const a=this.simData[idx], b=this.simData[idx+1];
+      this.currentAngle=Number.isFinite(a)&&Number.isFinite(b)?a+(b-a)*frac:0;
+      this._animElapsed=elapsed;
+      this.draw(this.currentAngle);
       this.animId=requestAnimationFrame(go);};
     this.animId=requestAnimationFrame(go);
+  },
+  // Stop animation without drawing — used by drag start to avoid visual flash
+  _stopAnimationQuiet() {
+    this.animating=false;
+    if(this.animId) cancelAnimationFrame(this.animId);
+    this.animId=null;
   },
   stopAnimation() {
     this.animating=false;if(this.animId){cancelAnimationFrame(this.animId);this.animId=null;}
@@ -1815,6 +1892,7 @@ document.addEventListener('DOMContentLoaded', () => {
   if (_loadOv) { _loadOv.classList.add('fade-out'); setTimeout(() => _loadOv.remove(), 600); }
 
   let _celebTriggered = false;
+  let _userInteracted = false; // only celebrate after user touches a slider
   let _sliderColorTimer = 0;
   R.init();
 
@@ -2071,7 +2149,7 @@ document.addEventListener('DOMContentLoaded', () => {
       });
       row.insertBefore(lockBtn, row.firstChild);
     }
-    const up=()=>{if(out&&fmt[id])out.textContent=fmt[id](el.value);scheduleRecalc();};el.addEventListener('input',up);up();});
+    const up=()=>{if(out&&fmt[id])out.textContent=fmt[id](el.value);_userInteracted=true;scheduleRecalc();};el.addEventListener('input',up);up();});
 
   // Optimize unlocked sliders for max perfection score
   document.getElementById('optimize-btn').addEventListener('click', () => {
@@ -2396,11 +2474,11 @@ document.addEventListener('DOMContentLoaded', () => {
     if (fc >= 10) s += Math.min(30, fc * 2);
     else if (fc >= 5) s += fc * 2;
     // Damping: lower zeta = more flaps (20 pts) — favor 0.1-0.3
-    if (r.zeta >= 0.1 && r.zeta <= 0.35 && r.zeta < 1) s += 20;
-    else if (r.zeta < 1 && r.zeta > 0.05) s += Math.max(0, 20 - Math.abs(r.zeta - 0.2) * 50);
+    if (r.zeta >= 0.1 && r.zeta <= 0.35) s += 20;
+    else if (r.zeta > 0.05) s += Math.max(0, 20 - Math.abs(r.zeta - 0.2) * 50);
     // Frequency: nice visible flap speed (15 pts)
-    if (r.freq_d >= 0.3 && r.freq_d <= 0.8 && r.zeta < 1) s += 15;
-    else if (r.zeta < 1) s += Math.max(0, 15 - Math.abs(r.freq_d - 0.55) * 25);
+    if (r.freq_d >= 0.3 && r.freq_d <= 0.8) s += 15;
+    else s += Math.max(0, 15 - Math.abs(r.freq_d - 0.55) * 25);
     // Sweep: good visible swing range (15 pts)
     if (r.sweepDeg >= 20 && r.sweepDeg <= 40) s += 15;
     else s += Math.max(0, 15 - Math.abs(r.sweepDeg - 30) * 0.7);
@@ -2541,7 +2619,7 @@ document.addEventListener('DOMContentLoaded', () => {
       perfNum.style.color = col;
     }
     // Celebrate when entering green zone (97-100)
-    if (pScore >= 97 && !_celebTriggered) { _celebTriggered = true; setTimeout(() => triggerCelebration(), 300); }
+    if (pScore >= 97 && !_celebTriggered && _userInteracted) { _celebTriggered = true; setTimeout(() => triggerCelebration(), 300); }
     else if (pScore < 95) { _celebTriggered = false; }
     // Restart breathing with fresh restAngle after recalc settles
     setTimeout(() => { if (!R.animating && !R._dragging) R._startBreathing(); }, 200);
@@ -2553,8 +2631,7 @@ document.addEventListener('DOMContentLoaded', () => {
   function updateDash(r,flapInfo) {
     // FLAP SPEED
     const fv=document.getElementById('freq-val'),fs=document.getElementById('freq-sub'),fb=document.getElementById('freq-bar'),fe=document.getElementById('freq-explain'),fm=document.getElementById('freq-math'),fc=document.getElementById('card-freq');
-    if(r.zeta>=1){animateValue(fv,'No flap');fs.textContent='Too much friction';setBar(fb,0,'--red');setSt(fc,'bad');fe.textContent="Hinge too sticky. Wings won't oscillate.";}
-    else{animateValue(fv,r.freq_d.toFixed(2)+' Hz');fs.textContent=(r.freq_d*60).toFixed(0)+' flaps/min \u00B7 '+r.period_d.toFixed(1)+'s per flap';
+    {animateValue(fv,r.freq_d.toFixed(2)+' Hz');fs.textContent=(r.freq_d*60).toFixed(0)+' flaps/min \u00B7 '+r.period_d.toFixed(1)+'s per flap';
       let p,s;if(r.freq_d<0.1){p=10;s='bad';}else if(r.freq_d<0.3){p=30;s='warn';}else if(r.freq_d<=1.5){p=50+(r.freq_d-0.3)/1.2*30;s='great';}else if(r.freq_d<=3){p=70;s='ok';}else{p=90;s='warn';}
       setBar(fb,p,'--'+(s==='great'?'green':s==='ok'?'yellow':s==='warn'?'orange':'red'));setSt(fc,s);
       fe.textContent=r.freq_d<0.3?"Very slow \u2014 barely perceptible.":r.freq_d<=0.8?"Beautiful! Slow, graceful flapping.":r.freq_d<=1.5?"Nice gentle flapping.":r.freq_d<=3?"Fairly quick. Lively.":"Too fast \u2014 add tip weight to slow down.";}
@@ -2563,9 +2640,9 @@ document.addEventListener('DOMContentLoaded', () => {
     // DAMPING
     const dv=document.getElementById('damping-val'),ds=document.getElementById('damping-sub'),db=document.getElementById('damping-bar'),de=document.getElementById('damping-explain'),dm=document.getElementById('damping-math'),dc=document.getElementById('card-damping');
     const z=r.zeta;let dl,dst;
-    if(z<0.1){dl='Bouncy';dst='warn';}else if(z<0.3){dl='Lively';dst='ok';}else if(z<0.7){dl='Graceful';dst='great';}else if(z<1){dl='Gentle';dst='ok';}else{dl='Overdamped';dst='bad';}
+    if(z<0.1){dl='Bouncy';dst='warn';}else if(z<0.3){dl='Lively';dst='ok';}else if(z<0.7){dl='Graceful';dst='great';}else{dl='Gentle';dst='ok';}
     dv.textContent=dl;ds.textContent='\u03B6 = '+z.toFixed(3);setBar(db,Math.min(z/2,1)*100,'--'+(dst==='great'?'green':dst==='ok'?'yellow':dst==='warn'?'orange':'red'));setSt(dc,dst);
-    de.textContent=z<0.1?"Almost no friction \u2014 twitchy.":z<0.3?"Low damping \u2014 lively oscillation.":z<0.7?"Sweet spot! Elegant and natural.":z<1?"Gentle \u2014 few flaps.":"Won't flap. Loosen the hinge!";
+    de.textContent=z<0.1?"Almost no friction \u2014 twitchy.":z<0.3?"Low damping \u2014 lively oscillation.":z<0.7?"Sweet spot! Elegant and natural.":"Gentle \u2014 few flaps.";
     dm.textContent='\u03B6 = c/(2\u221A(I\u00B7k)) = '+z.toFixed(4)+'\n\u03B6<1: flaps! \u03B6=1: no oscillation \u03B6>1: overdamped';
 
     // INERTIA
@@ -2578,8 +2655,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
     // DURATION — uses real simulation-derived perceptibility analysis
     const hv=document.getElementById('duration-val'),hs=document.getElementById('duration-sub'),hb=document.getElementById('duration-bar'),he=document.getElementById('duration-explain'),hm=document.getElementById('duration-math'),hc=document.getElementById('card-duration');
-    if(r.zeta>=1){animateValue(hv,'0');hs.textContent='No oscillation';setBar(hb,0,'--red');setSt(hc,'bad');he.textContent="Too much friction.";}
-    else if(flapInfo){
+    if(flapInfo){
       const vt=flapInfo.visibleTime, vf=flapInfo.visibleFlaps;
       if(vt>100){animateValue(hv,vf+'+');hs.textContent='Visible '+vt.toFixed(0)+'+ sec';}
       else{animateValue(hv,vt.toFixed(1)+'s');hs.textContent=vf+' visible flap'+(vf!==1?'s':'')+' · settles at '+flapInfo.settleTime.toFixed(1)+'s';}
@@ -2623,19 +2699,18 @@ document.addEventListener('DOMContentLoaded', () => {
     const box=document.getElementById('verdict-box'),icon=document.getElementById('verdict-icon'),text=document.getElementById('verdict-text'),tips=document.getElementById('verdict-tips');
     box.className='';
     const issues=[],goods=[];
-    if(r.zeta>=1)issues.push("Too much friction \u2014 won't flap. Loosen the hinge.");
-    if(r.zeta>=0.8&&r.zeta<1)issues.push("Very heavy damping \u2014 only 1-2 tiny flaps.");
+    if(r.zeta>=0.55)issues.push("Heavy damping \u2014 only a few gentle flaps.");
     if(r.zeta<0.05)issues.push("Almost zero friction \u2014 bounces forever. Add a felt washer.");
-    if(r.freq_d>3&&r.zeta<1)issues.push("Too fast \u2014 add tip weight (weight far out = much slower).");
-    if(r.freq_d<0.2&&r.zeta<1)issues.push("Too slow \u2014 increase spring or reduce wing weight.");
+    if(r.freq_d>3)issues.push("Too fast \u2014 add tip weight (weight far out = much slower).");
+    if(r.freq_d<0.2)issues.push("Too slow \u2014 increase spring or reduce wing weight.");
     if(r.maxTorque<0.0005)issues.push("No driving force \u2014 increase pull-weight or move linkage out.");
     if(r.sweepDeg<10)issues.push("Very small sweep \u2014 hard to see.");
     if(r.sweepDeg>50)issues.push("Huge sweep \u2014 may bind at extremes.");
     if(r.balanceRatio<0.5)issues.push("Wings will collapse \u2014 tips far too heavy for string support. Add body/pull weight or move linkage outward.");
     else if(r.balanceRatio<0.85)issues.push("Wings will droop at rest \u2014 increase body weight, pull weight, or move linkage point outward.");
     if(r.balanceRatio>=0.95&&r.balanceRatio<=2)goods.push("Wings nicely balanced \u2014 will sit level at rest.");
-    if(r.zeta>=0.3&&r.zeta<=0.7&&r.zeta<1)goods.push("Graceful damping \u2014 beautiful settling.");
-    if(r.freq_d>=0.3&&r.freq_d<=1.5&&r.zeta<1)goods.push("Perfect flap speed for an elegant butterfly.");
+    if(r.zeta>=0.3&&r.zeta<=0.7)goods.push("Graceful damping \u2014 beautiful settling.");
+    if(r.freq_d>=0.3&&r.freq_d<=1.5)goods.push("Perfect flap speed for an elegant butterfly.");
     if(r.numFlaps>=5&&r.numFlaps<=15)goods.push("Great number of flaps.");
     if(r.sweepDeg>=15&&r.sweepDeg<=40)goods.push("Wing sweep in the sweet spot.");
 
