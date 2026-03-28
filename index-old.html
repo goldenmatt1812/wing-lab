@@ -1,0 +1,286 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Butterfly Wing Lab — San Domenico 175th Gala</title>
+  <link rel="stylesheet" href="style.css">
+</head>
+<body>
+  <header>
+    <div class="gala-badge">San Domenico · 175th Anniversary · Roots &amp; Wings</div>
+    <h1>🦋 Butterfly Wing Lab</h1>
+    <p class="subtitle">Design Hanging Butterflies That Flap Beautifully</p>
+    <p class="header-desc">Adjust wingspan, weights, and distances — see exactly how your butterfly will flap when hanging from the ceiling. Pull the weight, watch it flutter.</p>
+  </header>
+
+  <main>
+    <!-- Live Visualization -->
+    <section id="wing-viz-section">
+      <canvas id="wingCanvas"></canvas>
+      <div id="anim-controls">
+        <button id="flapBtn" title="Give it a pull and watch it flap">▶ Pull &amp; Release</button>
+        <button id="resetViewBtn" title="Stop animation">⏹ Stop</button>
+      </div>
+      <div id="canvas-label">Side view — your butterfly hanging from a string</div>
+    </section>
+
+    <!-- Controls -->
+    <section id="controls-section">
+      <h2>Build Your Butterfly</h2>
+      <div class="controls-grid">
+
+        <!-- Wing Shape -->
+        <div class="control-group">
+          <h3>🪽 Wings</h3>
+          <label>
+            <span class="label-text">Wingspan (tip to tip)</span>
+            <span class="label-detail">Total spread when wings are level</span>
+            <div class="slider-row">
+              <input type="range" id="wingspan" min="15" max="150" step="1" value="60">
+              <output id="wingspan-val">60 cm</output>
+            </div>
+          </label>
+          <label>
+            <span class="label-text">Wing Width (front to back)</span>
+            <span class="label-detail">How wide each wing is from leading to trailing edge</span>
+            <div class="slider-row">
+              <input type="range" id="chord" min="3" max="30" step="0.5" value="10">
+              <output id="chord-val">10 cm</output>
+            </div>
+          </label>
+          <label>
+            <span class="label-text">Weight of Each Wing</span>
+            <span class="label-detail">Wood, paper, fabric — whatever it's made of</span>
+            <div class="slider-row">
+              <input type="range" id="wingWeight" min="1" max="100" step="1" value="15">
+              <output id="wingWeight-val">15 g</output>
+            </div>
+          </label>
+          <label>
+            <span class="label-text">Wing Shape (taper)</span>
+            <span class="label-detail">100% = rectangular · Lower = pointy tips</span>
+            <div class="slider-row">
+              <input type="range" id="taper" min="20" max="100" step="5" value="50">
+              <output id="taper-val">50%</output>
+            </div>
+          </label>
+        </div>
+
+        <!-- Body & Weights -->
+        <div class="control-group">
+          <h3>⚖️ Body &amp; Weights</h3>
+          <label>
+            <span class="label-text">Body Weight</span>
+            <span class="label-detail">The center piece the wings are attached to</span>
+            <div class="slider-row">
+              <input type="range" id="bodyWeight" min="5" max="200" step="1" value="30">
+              <output id="bodyWeight-val">30 g</output>
+            </div>
+          </label>
+          <label>
+            <span class="label-text">Hanging Pull-Weight</span>
+            <span class="label-detail">Weight dangling below that pulls the wings — this is the "engine"</span>
+            <div class="slider-row">
+              <input type="range" id="pullWeight" min="1" max="200" step="1" value="20">
+              <output id="pullWeight-val">20 g</output>
+            </div>
+          </label>
+          <label>
+            <span class="label-text">Wingtip Weights</span>
+            <span class="label-detail">Extra mass at each wingtip — slows flapping, makes it elegant</span>
+            <div class="slider-row">
+              <input type="range" id="tipWeight" min="0" max="50" step="0.5" value="2">
+              <output id="tipWeight-val">2 g</output>
+            </div>
+          </label>
+        </div>
+
+        <!-- Mechanism -->
+        <div class="control-group">
+          <h3>🔧 Mechanism</h3>
+          <label>
+            <span class="label-text">String Drop Length</span>
+            <span class="label-detail">How far below the body the pull-weight hangs</span>
+            <div class="slider-row">
+              <input type="range" id="stringLength" min="5" max="60" step="1" value="25">
+              <output id="stringLength-val">25 cm</output>
+            </div>
+          </label>
+          <label>
+            <span class="label-text">Hinge Friction</span>
+            <span class="label-detail">How "sticky" the wing pivot is — more friction = dies out faster</span>
+            <div class="slider-row">
+              <input type="range" id="friction" min="1" max="100" step="1" value="15">
+              <output id="friction-val">Low</output>
+            </div>
+          </label>
+          <label>
+            <span class="label-text">Return Spring / Elasticity</span>
+            <span class="label-detail">Does anything pull the wings back to center? (rubber band, bent wire, etc.)</span>
+            <div class="slider-row">
+              <input type="range" id="springK" min="0" max="100" step="1" value="10">
+              <output id="springK-val">Slight</output>
+            </div>
+          </label>
+          <label>
+            <span class="label-text">Initial Pull (how far you tug)</span>
+            <span class="label-detail">How much you displace the weight before letting go</span>
+            <div class="slider-row">
+              <input type="range" id="initialPull" min="5" max="60" step="1" value="25">
+              <output id="initialPull-val">25°</output>
+            </div>
+          </label>
+        </div>
+
+        <!-- Linkage -->
+        <div class="control-group">
+          <h3>🔗 Wing-to-Weight Linkage</h3>
+          <label>
+            <span class="label-text">Linkage Attach Point</span>
+            <span class="label-detail">Where the string connects on the wing (% from pivot to tip)</span>
+            <div class="slider-row">
+              <input type="range" id="linkagePoint" min="10" max="90" step="5" value="30">
+              <output id="linkagePoint-val">30%</output>
+            </div>
+          </label>
+          <label>
+            <span class="label-text">Linkage Type</span>
+            <span class="label-detail">How the weight connects to the wings</span>
+            <div class="slider-row">
+              <select id="linkageType">
+                <option value="string">String / Thread</option>
+                <option value="rigid">Rigid Rod</option>
+                <option value="elastic">Elastic / Rubber Band</option>
+              </select>
+            </div>
+          </label>
+        </div>
+
+      </div>
+    </section>
+
+    <!-- Dashboard -->
+    <section id="dashboard-section">
+      <h2>How It Will Behave</h2>
+      <div class="dashboard-grid">
+
+        <div class="metric-card" id="card-freq">
+          <div class="metric-icon">🔄</div>
+          <div class="metric-label">Flap Speed</div>
+          <div class="metric-value" id="freq-val">—</div>
+          <div class="metric-sublabel" id="freq-sub"></div>
+          <div class="metric-bar-wrap">
+            <div class="metric-bar" id="freq-bar"></div>
+          </div>
+          <div class="metric-explain" id="freq-explain"></div>
+          <details class="math-details">
+            <summary>Show the math</summary>
+            <div class="math-content" id="freq-math"></div>
+          </details>
+        </div>
+
+        <div class="metric-card" id="card-damping">
+          <div class="metric-icon">🌊</div>
+          <div class="metric-label">Flap Style</div>
+          <div class="metric-value" id="damping-val">—</div>
+          <div class="metric-sublabel" id="damping-sub"></div>
+          <div class="metric-bar-wrap">
+            <div class="metric-bar" id="damping-bar"></div>
+          </div>
+          <div class="metric-explain" id="damping-explain"></div>
+          <details class="math-details">
+            <summary>Show the math</summary>
+            <div class="math-content" id="damping-math"></div>
+          </details>
+        </div>
+
+        <div class="metric-card" id="card-inertia">
+          <div class="metric-icon">💪</div>
+          <div class="metric-label">Wing Heaviness</div>
+          <div class="metric-value" id="inertia-val">—</div>
+          <div class="metric-sublabel" id="inertia-sub"></div>
+          <div class="metric-bar-wrap">
+            <div class="metric-bar" id="inertia-bar"></div>
+          </div>
+          <div class="metric-explain" id="inertia-explain"></div>
+          <details class="math-details">
+            <summary>Show the math</summary>
+            <div class="math-content" id="inertia-math"></div>
+          </details>
+        </div>
+
+        <div class="metric-card" id="card-duration">
+          <div class="metric-icon">⏱️</div>
+          <div class="metric-label">How Long It Flaps</div>
+          <div class="metric-value" id="duration-val">—</div>
+          <div class="metric-sublabel" id="duration-sub"></div>
+          <div class="metric-bar-wrap">
+            <div class="metric-bar" id="duration-bar"></div>
+          </div>
+          <div class="metric-explain" id="duration-explain"></div>
+          <details class="math-details">
+            <summary>Show the math</summary>
+            <div class="math-content" id="duration-math"></div>
+          </details>
+        </div>
+
+        <div class="metric-card" id="card-torque">
+          <div class="metric-icon">🔧</div>
+          <div class="metric-label">Pull Force</div>
+          <div class="metric-value" id="torque-val">—</div>
+          <div class="metric-sublabel" id="torque-sub"></div>
+          <div class="metric-bar-wrap">
+            <div class="metric-bar" id="torque-bar"></div>
+          </div>
+          <div class="metric-explain" id="torque-explain"></div>
+          <details class="math-details">
+            <summary>Show the math</summary>
+            <div class="math-content" id="torque-math"></div>
+          </details>
+        </div>
+
+        <div class="metric-card" id="card-amplitude">
+          <div class="metric-icon">📐</div>
+          <div class="metric-label">Wing Sweep</div>
+          <div class="metric-value" id="amplitude-val">—</div>
+          <div class="metric-sublabel" id="amplitude-sub"></div>
+          <div class="metric-bar-wrap">
+            <div class="metric-bar" id="amplitude-bar"></div>
+          </div>
+          <div class="metric-explain" id="amplitude-explain"></div>
+          <details class="math-details">
+            <summary>Show the math</summary>
+            <div class="math-content" id="amplitude-math"></div>
+          </details>
+        </div>
+
+      </div>
+    </section>
+
+    <!-- Verdict / Tuning Tips -->
+    <section id="verdict-section">
+      <div id="verdict-box">
+        <div id="verdict-icon"></div>
+        <div id="verdict-text"></div>
+        <div id="verdict-tips"></div>
+      </div>
+    </section>
+
+    <!-- Live Time-Domain Plot -->
+    <section id="plot-section">
+      <h2>Flap Motion Over Time</h2>
+      <canvas id="plotCanvas"></canvas>
+    </section>
+
+  </main>
+
+  <footer>
+    <p>Butterfly Wing Lab — San Domenico 175th Anniversary · Roots &amp; Wings</p>
+  </footer>
+
+  <script src="physics.js"></script>
+  <script src="renderer.js"></script>
+  <script src="app.js"></script>
+</body>
+</html>
